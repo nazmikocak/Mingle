@@ -31,6 +31,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 
 
+
+
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
