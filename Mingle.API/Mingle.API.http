@@ -1,0 +1,6 @@
+@Mingle.API_HostAddress = http://localhost:5069
+
+GET {{Mingle.API_HostAddress}}
+Accept: application/json
+
+###
