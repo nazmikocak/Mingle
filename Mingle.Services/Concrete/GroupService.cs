@@ -13,16 +13,16 @@
 //{
 //    public sealed class GroupService : IGroupService
 //    {
-//        private readonly IGroupRepository _groupChatRepository;
+//        private readonly IChatRepository _chatRepository;
 //        private readonly IUserRepository _userRepository;
 //        private readonly ICloudRepository _cloudRepository;
 //        private readonly IMapper _mapper;
 
 
 
-//        public GroupService(IGroupRepository groupChatRepository, IUserRepository userRepository, ICloudRepository cloudRepository, IMapper mapper)
+//        public GroupService(IChatRepository chatRepository, IUserRepository userRepository, ICloudRepository cloudRepository, IMapper mapper)
 //        {
-//            _groupChatRepository = groupChatRepository;
+//            _chatRepository = chatRepository;
 //            _userRepository = userRepository;
 //            _cloudRepository = cloudRepository;
 //            _mapper = mapper;

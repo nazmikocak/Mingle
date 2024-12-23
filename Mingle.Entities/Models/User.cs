@@ -12,7 +12,7 @@
 
         public required Uri ProfilePhoto { get; set; }
 
-        public DateTime? Status { get; set; }
+        public DateTime? LastConnectionDate { get; set; }
 
         public List<string> ConnectionIds { get; set; } = [];
 

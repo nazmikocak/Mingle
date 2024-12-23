@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
-using Firebase.Auth;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
-using System;
-using System.Text.RegularExpressions;
 
 namespace Mingle.Services.Concrete
 {

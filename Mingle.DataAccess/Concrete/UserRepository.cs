@@ -35,9 +35,7 @@ namespace Mingle.DataAccess.Concrete
 
         public async Task UpdateUserFieldAsync(string userId, string fieldName, object newValue)
         {
-            await _databaseClient.Child("Users").Child(userId).PatchAsync(new { fieldName = newValue });
+            await _databaseClient.Child("Users").Child(userId).Child(fieldName).PatchAsync(newValue);
         }
-
-
     }
 }

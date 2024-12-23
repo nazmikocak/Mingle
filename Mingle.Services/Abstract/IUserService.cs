@@ -2,6 +2,7 @@
 using Mingle.Entities.Models;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
+using Mingle.Services.DTOs.Shared;
 
 namespace Mingle.Services.Abstract
 {
@@ -28,5 +29,9 @@ namespace Mingle.Services.Abstract
         Task ChangeChatBackgroundAsync(string userId, ChangeChatBackground dto);
 
         Task<RecipientProfile> RecipientProfileAsync(string recipientId);
+
+        Task<ConnectionSettings> GetConnectionSettingsAsync(string userId);
+
+        Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto);
     }
 }

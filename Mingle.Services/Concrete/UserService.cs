@@ -5,6 +5,7 @@ using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
+using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
 
@@ -132,6 +133,20 @@ namespace Mingle.Services.Concrete
             var recipientProfile = _mapper.Map<RecipientProfile>(user);
 
             return recipientProfile;
+        }
+
+        public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId) 
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+
+            return _mapper.Map<ConnectionSettings>(user);
+        }
+
+        public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto) 
+        {
+            await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", dto.LastConnectionDate!);
+
+            await _userRepository.UpdateUserFieldAsync(userId, "ConnectionIds", dto.ConnectionIds);
         }
     }
 }
