@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace Mingle.DataAccess.Configurations
 {
-    public class CloudinaryConfiguration
+    public class CloudinaryConfig
     {
         public Cloudinary Cloudinary { get; }
 
-        public CloudinaryConfiguration(IConfiguration configuration)
+        public CloudinaryConfig(IConfiguration configuration)
         {
             var cloudName = configuration["CloudinarySettings:CloudName"];
             var apiKey = configuration["CloudinarySettings:ApiKey"];

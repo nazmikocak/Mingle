@@ -5,12 +5,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace Mingle.DataAccess.Configurations
 {
-    public class FirebaseConfiguration
+    public class FirebaseConfig
     {
         public FirebaseAuthClient AuthClient { get; }
         public FirebaseClient DatabaseClient { get; }
 
-        public FirebaseConfiguration(IConfiguration configuration)
+        public FirebaseConfig(IConfiguration configuration)
         {
             var firebaseApiKey = configuration["FirebaseSettings:ApiKey"];
             var authDomain = configuration["FirebaseSettings:AuthDomain"];

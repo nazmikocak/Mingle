@@ -2,7 +2,7 @@
 
 namespace Mingle.Entities.Models
 {
-    internal sealed class Message
+    public sealed class Message
     {
         public required string Content { get; set; }
 
@@ -10,6 +10,6 @@ namespace Mingle.Entities.Models
 
         public required MessageStatus Status { get; set; }
 
-        public required Dictionary<string, DateTime> DeletedFor { get; set; }
+        public Dictionary<string, DateTime>? DeletedFor { get; set; } = [];
     }
 }

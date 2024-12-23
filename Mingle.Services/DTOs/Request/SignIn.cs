@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mingle.Services.DTOs
+namespace Mingle.Services.DTOs.Request
 {
-    public sealed record SignInRequest
+    public sealed record SignIn
     {
         [Required(ErrorMessage = "Lütfen e-posta adresinizi giriniz.")]
         [EmailAddress(ErrorMessage = "Lütfen geçerli bir e-posta adresi giriniz.")]

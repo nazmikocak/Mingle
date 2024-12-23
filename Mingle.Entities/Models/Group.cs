@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mingle.Entities.Enums;
 
 namespace Mingle.Entities.Models
 {
-    internal sealed class Group
+    public sealed class Group
     {
         public required string Name { get; set; }
 
         public required string Description { get; set; }
 
-        public required string Photo { get; set; }
+        public required Uri Photo { get; set; }
 
-        public required Dictionary<string, string> Participants { get; set; }
+        public required Dictionary<string, GroupParticipant> Participants { get; set; }
 
         public required string CreatedBy { get; set; }
 

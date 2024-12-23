@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
+using Mingle.Core.Abstract;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs;
+using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 
 namespace Mingle.Services.Concrete
@@ -11,37 +12,32 @@ namespace Mingle.Services.Concrete
     {
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IJwtManager _jwtManager;
         private readonly IMapper _mapper;
 
-        public AuthService(IAuthRepository authRepository, IUserRepository userRepository, IMapper mapper)
+        public AuthService(IAuthRepository authRepository, IUserRepository userRepository, IJwtManager jwtManager, IMapper mapper)
         {
             _authRepository = authRepository;
             _userRepository = userRepository;
+            _jwtManager = jwtManager;
             _mapper = mapper;
         }
 
 
-        public async Task SignUpAsync(SignUpRequest dto) 
+        public async Task SignUpAsync(SignUp dto)
         {
-            var userCredential = await _authRepository.SignUpUserAsync(dto.Email, dto.Password, dto.DisplayName);
+            var userCredential = await _authRepository.CreateUserAsync(dto.Email, dto.Password, dto.DisplayName);
+            var user = _mapper.Map<User>(dto);
 
-            if (userCredential != null)
-            {
-                var user = _mapper.Map<User>(dto);
-                await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
-            }
-            else
-            {
-                throw new BadRequestException("Kullancı eklenemedi.");
-            }
+            await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
         }
 
 
-        public async Task SignInAsync(SignInRequest dto)
+        public async Task<string> SignInAsync(SignIn dto)
         {
             var userCredential = await _authRepository.SignInUserAsync(dto.Email, dto.Password);
 
-            // JWT Üretilecek
+            return await Task.Run(() => _jwtManager.GenerateToken(userCredential.User.Uid));
         }
     }
 }

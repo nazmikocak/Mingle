@@ -10,14 +10,22 @@ namespace Mingle.DataAccess.Concrete
     {
         private readonly FirebaseClient _databaseClient;
 
-        public UserRepository(FirebaseConfiguration firebaseConfiguration)
+
+        public UserRepository(FirebaseConfig firebaseConfig)
         {
-            _databaseClient = firebaseConfiguration.DatabaseClient;
+            _databaseClient = firebaseConfig.DatabaseClient;
         }
+
+
+        public async Task<IReadOnlyCollection<FirebaseObject<User>>> GetUsersAsync()
+        {
+            return await _databaseClient.Child("Users").OnceAsync<User>();
+        }
+
 
         public async Task CreateUserAsync(string userId, User user)
         {
-            await _databaseClient.Child("Users").Child(userId).PostAsync(user);
+            await _databaseClient.Child("Users").Child(userId).PatchAsync(user);
         }
 
         public async Task<User> GetUserByIdAsync(string userId)
@@ -29,5 +37,7 @@ namespace Mingle.DataAccess.Concrete
         {
             await _databaseClient.Child("Users").Child(userId).PatchAsync(new { fieldName = newValue });
         }
+
+
     }
 }

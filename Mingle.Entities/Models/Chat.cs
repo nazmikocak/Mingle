@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mingle.Entities.Models
+﻿namespace Mingle.Entities.Models
 {
-    internal sealed class Chat
+    public sealed class Chat
     {
         public required List<string> Participants { get; set; }
 

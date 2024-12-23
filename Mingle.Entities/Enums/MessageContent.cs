@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mingle.Entities.Enums
 {
-    internal enum MessageContent
+    public enum MessageContent
     {
         Text,
         Image,

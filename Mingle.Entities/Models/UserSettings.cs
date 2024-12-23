@@ -6,6 +6,6 @@ namespace Mingle.Entities.Models
     {
         public Theme Theme { get; set; } = Enums.Theme.DefaultSystemMode;
 
-        public string ChatBackground { get; set; } = "Default";
+        public string ChatBackground { get; set; } = "color1";
     }
 }

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mingle.Services.DTOs
+namespace Mingle.Services.DTOs.Request
 {
-    public sealed record SignUpRequest
+    public sealed record SignUp
     {
         [Required(ErrorMessage = "Lütfen adınızı ve soyadınızı giriniz.")]
         [MinLength(5, ErrorMessage = "Adınız ve soyadınız en az 5 karakter uzunluğunda olmalıdır.")]

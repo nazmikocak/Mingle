@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.API", "Mingle.API\Mingle.API.csproj", "{4EE6FED1-E8F1-470B-9F64-C7F5DF438783}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.DataAccess", "Mingle.DataAccess\Mingle.DataAccess.csproj", "{B5BC7E38-B215-4052-9854-EDB687CFA088}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.Entities", "Mingle.Entities\Mingle.Entities.csproj", "{23DC67DD-0C37-4141-8A4E-BF64D6C62E04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.Core", "Mingle.Core\Mingle.Core.csproj", "{824A3715-7E77-4269-845D-6504D9D956CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{23DC67DD-0C37-4141-8A4E-BF64D6C62E04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23DC67DD-0C37-4141-8A4E-BF64D6C62E04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23DC67DD-0C37-4141-8A4E-BF64D6C62E04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{824A3715-7E77-4269-845D-6504D9D956CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{824A3715-7E77-4269-845D-6504D9D956CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{824A3715-7E77-4269-845D-6504D9D956CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{824A3715-7E77-4269-845D-6504D9D956CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
