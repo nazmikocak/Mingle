@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Mingle.API.Hubs;
 using Mingle.Core.Abstract;
 using Mingle.Core.Concrete;
 using Mingle.DataAccess.Abstract;
@@ -6,11 +10,7 @@ using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Mapping;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.OpenApi.Models;
-using Mingle.API.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +19,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Mingle.Cors", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 
 
@@ -130,6 +142,8 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
+
+app.UseCors("Mingle.Cors");
 
 app.UseAuthentication();
 

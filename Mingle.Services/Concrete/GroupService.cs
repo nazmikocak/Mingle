@@ -167,16 +167,17 @@ namespace Mingle.Services.Concrete
 
         //    var groupProfile = new Dictionary<string, GroupProfile>
         //    {
-        //        { 
+        //        {
         //            groupId,
-        //            new GroupProfile 
+        //            new GroupProfile
         //            {
         //                Name = group.Name,
         //                Description = group.Description,
         //                PhotoUrl = group.Photo,
         //                Participants = new Dictionary<string, string>
-                        
-                        
+
+
+
         //                groupUsers
         //                    .Where(gu => gu)
         //            }
