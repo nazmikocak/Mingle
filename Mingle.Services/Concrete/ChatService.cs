@@ -38,6 +38,8 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("chatType gereklidir.");
             }
 
+
+
             if (chatType.Equals("Individual"))
             {
                 var user = _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
@@ -64,9 +66,9 @@ namespace Mingle.Services.Concrete
                     };
 
                     await _chatRepository.CreateChatAsync(chatType, chatId, chat);
-
-                    return chatId;
                 }
+
+                return chatId;
             }
             else if (chatType.Equals("Group"))
             {
@@ -82,8 +84,10 @@ namespace Mingle.Services.Concrete
 
                 return chatId;
             }
-
-            throw new BadRequestException("chatType geçersiz.");
+            else
+            {
+                throw new BadRequestException("chatType geçersiz.");
+            }
         }
 
 
@@ -233,7 +237,7 @@ namespace Mingle.Services.Concrete
             return recipientProfile;
         }
 
-        
+
 
 
 

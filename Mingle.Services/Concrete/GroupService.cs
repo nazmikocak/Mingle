@@ -97,9 +97,10 @@ namespace Mingle.Services.Concrete
                 }
             }
 
-
-            // Geçersiz üye kontrolü
-
+            foreach (var participant in groupParticipants.Keys)
+            {
+                var user = await _userRepository.GetUserByIdAsync(participant) ?? throw new BadRequestException("Bazı kullanıcılar geçersiz.");
+            }
 
             Uri photoUrl;
 
