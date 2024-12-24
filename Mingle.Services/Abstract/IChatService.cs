@@ -30,7 +30,7 @@ namespace Mingle.Services.Abstract
 
 
 
-        Task SendMessageAsync(string userId, SendMessage dto);
+
 
         Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatType, string chatId);
 

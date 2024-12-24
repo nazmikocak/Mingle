@@ -183,6 +183,49 @@ namespace Mingle.Services.Concrete
         //            }
         //        }
         //    };
+        //}        //public async Task<GroupProfile> GetGroupProfileAsync(string userId, string chatId)
+        //{
+        //    if (String.IsNullOrEmpty(chatId))
+        //    {
+        //        throw new BadRequestException("chatId gereklidir.");
+        //    }
+
+        //    var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Group", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+
+        //    string groupId = chatParticipants[0];
+
+        //    var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
+
+        //    if (!group.Participants.ContainsKey(userId))
+        //    {
+        //        throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+        //    }
+
+        //    List<User> groupUsers = [];
+
+        //    foreach (var participantId in group.Participants.Keys)
+        //    {
+        //        groupUsers.Add(await _userRepository.GetUserByIdAsync(participantId));
+        //    }
+
+        //    var groupProfile = new Dictionary<string, GroupProfile>
+        //    {
+        //        {
+        //            groupId,
+        //            new GroupProfile
+        //            {
+        //                Name = group.Name,
+        //                Description = group.Description,
+        //                PhotoUrl = group.Photo,
+        //                Participants = new Dictionary<string, string>
+
+
+
+        //                groupUsers
+        //                    .Where(gu => gu)
+        //            }
+        //        }
+        //    };
         //}
 
 

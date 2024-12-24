@@ -208,7 +208,7 @@ namespace Mingle.API.Hubs
             try
             {
                 string recipientId = await _chatService.GetChatRecipientId(UserId, "Individual", chatId);
-                var recipientProfile = await _userService.RecipientProfileAsync(recipientId);
+                var recipientProfile = await _userService.GetRecipientProfileAsync(recipientId);
 
                 await Clients.Caller.SendAsync("ReceiveRecipientProfile", recipientProfile);
             }

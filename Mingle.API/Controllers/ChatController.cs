@@ -155,7 +155,7 @@ namespace Mingle.API.Controllers
             try
             {
                 string recipientId = await _chatService.GetChatRecipientId(UserId, "Individual", chatId);
-                return Ok(await _userService.RecipientProfileAsync(recipientId));
+                return Ok(await _userService.GetRecipientProfileAsync(recipientId));
 
             }
             catch (NotFoundException ex)
