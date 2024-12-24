@@ -17,6 +17,7 @@ namespace Mingle.Services.Concrete
         private readonly IAuthRepository _authRepository;
         private readonly ICloudRepository _cloudRepository;
         private readonly IMapper _mapper;
+        
 
         public UserService(IUserRepository userRepository, IAuthRepository authRepository, ICloudRepository cloudRepository, IMapper mapper)
         {
@@ -27,7 +28,6 @@ namespace Mingle.Services.Concrete
         }
 
 
-        
         public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(SearchedUsers dto)
         {
             var usersSnapshot = await _userRepository.GetUsersAsync();
@@ -75,14 +75,12 @@ namespace Mingle.Services.Concrete
 
         public async Task<Uri> UpdateProfilePhotoAsync(string userId, UpdateProfilePhoto dto)
         {
-            const int maxFileSize = 5 * 1024 * 1024;
-            string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".svg", "webp " };
-            FileValidationHelper.ValidatePhoto(dto.ProfilePhoto, maxFileSize, allowedExtensions);
+            FileValidationHelper.ValidateProfilePhoto(dto.ProfilePhoto);
 
-            var newPhoto = await _cloudRepository.UploadProfilePhotoAsync(userId, dto.ProfilePhoto);
+            var newPhotoUrl = await _cloudRepository.UploadProfilePhotoAsync(userId, dto.ProfilePhoto);
 
-            await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", newPhoto);
-            return newPhoto;
+            await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", newPhotoUrl);
+            return newPhotoUrl;
         }
 
 
@@ -126,7 +124,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<RecipientProfile> RecipientProfileAsync(string recipientId) 
+        public async Task<RecipientProfile> GetRecipientProfileAsync(string recipientId) 
         {
             var user = await _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
@@ -135,12 +133,14 @@ namespace Mingle.Services.Concrete
             return recipientProfile;
         }
 
+
         public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId) 
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
 
             return _mapper.Map<ConnectionSettings>(user);
         }
+
 
         public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto) 
         {

@@ -2,7 +2,9 @@
 using Firebase.Database.Query;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
+using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
+
 
 namespace Mingle.DataAccess.Concrete
 {
@@ -16,9 +18,22 @@ namespace Mingle.DataAccess.Concrete
             _databaseClient = firebaseConfig.DatabaseClient;
         }
 
-        public async Task CreateGroupAsync(string groupId, Group group)
+
+        public async Task CreateOrUpdateGroupAsync(string groupId, Group group)
         {
             await _databaseClient.Child("Groups").Child(groupId).PutAsync(group);
+        }
+
+
+        public async Task<Group> GetGroupByIdAsync(string groupId)
+        {
+            return await _databaseClient.Child("Groups").Child(groupId).OnceSingleAsync<Group>();
+        }
+
+
+        public async Task UpdateGroupParticipantsAsync(string groupId, Dictionary<string, GroupParticipant> groupParticipants) 
+        {
+            await _databaseClient.Child("Groups").Child(groupId).Child("Participants").PutAsync(groupParticipants);
         }
     }
 }

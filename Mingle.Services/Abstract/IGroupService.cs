@@ -1,14 +1,14 @@
-﻿using Mingle.Services.DTOs.Request;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mingle.Entities.Models;
+using Mingle.Services.DTOs.Request;
 
 namespace Mingle.Services.Abstract
 {
     public interface IGroupService
     {
-        Task CreateGroupAsync(string userId, CreateGroup dto);
+        Task<string> CreateGroupAsync(string userId, CreateGroup dto);
+
+        Task EditGroupAsync(string userId, string groupId, CreateGroup dto);
+
+        Task LeaveGroupAsync(string userId, string groupId);
     }
 }

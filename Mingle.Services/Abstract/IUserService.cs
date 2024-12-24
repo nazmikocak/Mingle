@@ -28,7 +28,7 @@ namespace Mingle.Services.Abstract
 
         Task ChangeChatBackgroundAsync(string userId, ChangeChatBackground dto);
 
-        Task<RecipientProfile> RecipientProfileAsync(string recipientId);
+        Task<RecipientProfile> GetRecipientProfileAsync(string recipientId);
 
         Task<ConnectionSettings> GetConnectionSettingsAsync(string userId);
 

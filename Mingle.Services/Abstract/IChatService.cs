@@ -15,23 +15,34 @@ namespace Mingle.Services.Abstract
 
         Task ClearChatAsync(string userId, string chatType, string chatId);
 
-        Task SendMessageAsync(string userId, SendMessage dto);
+        Task ArchiveIndividualChatAsync(string userId, string chatId);
 
-        Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatType, string chatId);
+        Task UnarchiveIndividualChatAsync(string userId, string chatId);
+
+        Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId);
+
+
 
         Task<string> GetChatRecipientId(string userId, string chatType, string chatId);
 
 
 
 
-        Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId);
+
+
+        Task SendMessageAsync(string userId, SendMessage dto);
+
+        Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatType, string chatId);
 
 
 
 
 
-        Task ArchiveIndividualChatAsync(string userId, string chatId);
 
-        Task UnarchiveIndividualChatAsync(string userId, string chatId);
+
+
+
+
+        
     }
 }

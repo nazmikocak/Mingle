@@ -1,6 +1,9 @@
-﻿using Mingle.DataAccess.Abstract;
+﻿using Firebase.Auth;
+using Mingle.DataAccess.Abstract;
+using Mingle.DataAccess.Concrete;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
+using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -13,14 +16,61 @@ namespace Mingle.Services.Concrete
     public sealed class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly ICloudRepository _cloudRepository;
+        private readonly IChatRepository _chatRepository;
 
 
 
-        public MessageService(IMessageRepository messageRepository)
+        public MessageService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
         {
             _messageRepository = messageRepository;
+            _cloudRepository = cloudRepository;
+            _chatRepository = chatRepository;
         }
 
+
+        public async Task SendMessageAsync(string userId, SendMessage dto) 
+        {
+            if (!(String.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
+            {
+                throw new BadRequestException("TextContent veya FileContent gereklidir.");
+            }
+
+            var chat = await _chatRepository.GetChatByIdAsync("Individual", dto.ChatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+
+            if (!chat.Participants.Contains(userId))
+            {
+                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+            }
+
+            string messageId = Guid.NewGuid().ToString();
+            string messageContent;
+
+            if (dto.FileContent != null)
+            {
+                var fileUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{dto.ChatId}", "image_message", dto.FileContent);
+                messageContent = fileUrl.ToString();
+            }
+            else
+            {
+                messageContent = dto.TextContent;
+            }
+
+            var message = new Message
+            {
+                Content = messageContent,
+                Type = dto.ContentType,
+                Status = new MessageStatus
+                {
+                    Sent = new Dictionary<string, DateTime>
+                    {
+                        { userId, DateTime.UtcNow }
+                    }
+                }
+            };
+
+            await _messageRepository.CreateMessageAsync("Individual", dto.ChatId, messageId, message);
+        }
 
 
         public async Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType, Chat chat)
