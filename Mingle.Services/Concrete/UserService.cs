@@ -118,17 +118,17 @@ namespace Mingle.Services.Concrete
             {
                 { "Theme", dto.Theme }
             };
-            await _userRepository.UpdateUserFieldAsync(userId, "Settings", dto.Theme);
+            await _userRepository.UpdateUserFieldAsync(userId, "Settings", newTheme);
         }
 
 
         public async Task ChangeChatBackgroundAsync(string userId, ChangeChatBackground dto)
         {
-            var newTheme = new Dictionary<string, object>
+            var newChatBackground = new Dictionary<string, object>
             {
                 { "ChatBackground", dto.ChatBackground }
             };
-            await _userRepository.UpdateUserFieldAsync(userId, "Settings", dto.ChatBackground);
+            await _userRepository.UpdateUserFieldAsync(userId, "Settings", newChatBackground);
         }
 
 
