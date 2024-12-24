@@ -124,14 +124,14 @@ namespace Mingle.Services.Concrete
             {
                 Name = dto.Name,
                 Description = String.IsNullOrEmpty(dto.Description)
-                        ? "Merhaba, bu bir Mingle grubudur."
-                        : dto.Description,
+                    ? "Merhaba, bu bir Mingle grubudur."
+                    : dto.Description,
                 Photo = photoUrl,
                 Participants = groupParticipants
-                        .ToDictionary(
-                            participant => participant.Key,
-                            participant => participant.Value
-                        ),
+                    .ToDictionary(
+                        participant => participant.Key,
+                        participant => participant.Value
+                    ),
                 CreatedBy = group.CreatedBy,
                 CreatedDate = group.CreatedDate
             };
@@ -140,93 +140,57 @@ namespace Mingle.Services.Concrete
         }
 
 
-        //public async Task<GroupProfile> GetGroupProfileAsync(string userId, string chatId)
-        //{
-        //    if (String.IsNullOrEmpty(chatId))
-        //    {
-        //        throw new BadRequestException("chatId gereklidir.");
-        //    }
+        public async Task<Dictionary<string, GroupProfile>> GetGroupProfileAsync(string userId, string chatId)
+        {
+            if (String.IsNullOrEmpty(chatId))
+            {
+                throw new BadRequestException("chatId gereklidir.");
+            }
 
-        //    var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Group", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Group", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
-        //    string groupId = chatParticipants[0];
+            string groupId = chatParticipants[0];
 
-        //    var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
+            var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
-        //    if (!group.Participants.ContainsKey(userId))
-        //    {
-        //        throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
-        //    }
+            if (!group.Participants.ContainsKey(userId))
+            {
+                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+            }
 
-        //    List<User> groupUsers = [];
+            Dictionary<string, ParticipantProfile> groupUsers = [];
 
-        //    foreach (var participantId in group.Participants.Keys)
-        //    {
-        //        groupUsers.Add(await _userRepository.GetUserByIdAsync(participantId));
-        //    }
+            foreach (var participantId in group.Participants.Keys)
+            {
+                var user = await _userRepository.GetUserByIdAsync(participantId);
 
-        //    var groupProfile = new Dictionary<string, GroupProfile>
-        //    {
-        //        {
-        //            groupId,
-        //            new GroupProfile
-        //            {
-        //                Name = group.Name,
-        //                Description = group.Description,
-        //                PhotoUrl = group.Photo,
-        //                Participants = new Dictionary<string, string>
+                var participant = new ParticipantProfile
+                {
+                    DisplayName = user.DisplayName,
+                    ProfilePhoto = user.ProfilePhoto,
+                    Role = group.Participants[participantId]
+                };
 
+                groupUsers.Add(participantId, participant);
+            }
 
+            var groupProfile = new Dictionary<string, GroupProfile>
+            {
+                { 
+                    groupId,
+                    new GroupProfile 
+                    {
+                        Name = group.Name,
+                        Description = group.Description,
+                        PhotoUrl = group.Photo,
+                        Participants = groupUsers,
+                        CreatedDate = group.CreatedDate,
+                    }
+                }
+            };
 
-        //                groupUsers
-        //                    .Where(gu => gu)
-        //            }
-        //        }
-        //    };
-        //}        //public async Task<GroupProfile> GetGroupProfileAsync(string userId, string chatId)
-        //{
-        //    if (String.IsNullOrEmpty(chatId))
-        //    {
-        //        throw new BadRequestException("chatId gereklidir.");
-        //    }
-
-        //    var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Group", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
-
-        //    string groupId = chatParticipants[0];
-
-        //    var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
-
-        //    if (!group.Participants.ContainsKey(userId))
-        //    {
-        //        throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
-        //    }
-
-        //    List<User> groupUsers = [];
-
-        //    foreach (var participantId in group.Participants.Keys)
-        //    {
-        //        groupUsers.Add(await _userRepository.GetUserByIdAsync(participantId));
-        //    }
-
-        //    var groupProfile = new Dictionary<string, GroupProfile>
-        //    {
-        //        {
-        //            groupId,
-        //            new GroupProfile
-        //            {
-        //                Name = group.Name,
-        //                Description = group.Description,
-        //                PhotoUrl = group.Photo,
-        //                Participants = new Dictionary<string, string>
-
-
-
-        //                groupUsers
-        //                    .Where(gu => gu)
-        //            }
-        //        }
-        //    };
-        //}
+            return groupProfile;
+        }
 
 
         public async Task LeaveGroupAsync(string userId, string groupId)

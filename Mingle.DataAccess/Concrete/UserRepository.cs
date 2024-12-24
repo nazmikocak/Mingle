@@ -28,10 +28,12 @@ namespace Mingle.DataAccess.Concrete
             await _databaseClient.Child("Users").Child(userId).PatchAsync(user);
         }
 
+
         public async Task<User> GetUserByIdAsync(string userId)
         {
             return await _databaseClient.Child("Users").Child(userId).OnceSingleAsync<User>();
         }
+
 
         public async Task UpdateUserFieldAsync(string userId, string fieldName, object newValue)
         {
@@ -42,6 +44,7 @@ namespace Mingle.DataAccess.Concrete
 
             await _databaseClient.Child("Users").Child(userId).PatchAsync(fieldData);
         }
+
 
         public async Task UpdateUserSettingsAsync(string userId, string fieldName, object newValue)
         {

@@ -8,7 +8,7 @@ namespace Mingle.Services.Abstract
 {
     public interface IUserService
     {
-        Task<Dictionary<string, FoundUsers>> SearchUsersAsync(SearchedUsers dto);
+        Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, SearchedUsers dto);
 
         Task<UserProfile> GetUserProfileAsync(string userId);
 

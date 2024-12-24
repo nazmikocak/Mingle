@@ -84,7 +84,7 @@ namespace Mingle.API.Hubs
             try
             {
                 var chatId = await _chatService.CreateChatAsync(UserId, chatType, recipientId);
-                await Clients.Caller.SendAsync("ReceiveClearChat", new { chatId = chatId });
+                await Clients.Caller.SendAsync("ReceiveCreateChat", new { chatId = chatId });
             }
             catch (NotFoundException ex)
             {

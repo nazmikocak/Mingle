@@ -17,7 +17,7 @@ namespace Mingle.Services.Concrete
         private readonly IAuthRepository _authRepository;
         private readonly ICloudRepository _cloudRepository;
         private readonly IMapper _mapper;
-        
+
 
         public UserService(IUserRepository userRepository, IAuthRepository authRepository, ICloudRepository cloudRepository, IMapper mapper)
         {
@@ -28,13 +28,15 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(SearchedUsers dto)
+        public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, SearchedUsers dto)
         {
             var usersSnapshot = await _userRepository.GetUsersAsync();
 
             var users = usersSnapshot
                 .Where(user =>
-                    user.Object.DisplayName.ToLower().Contains(dto.Query.ToLower())
+                    !user.Key.Equals(userId)
+                    &&
+                    user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
                     ||
                     user.Object.Email.ToLower().Contains(dto.Query.ToLower())
                 )
@@ -124,7 +126,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<RecipientProfile> GetRecipientProfileAsync(string recipientId) 
+        public async Task<RecipientProfile> GetRecipientProfileAsync(string recipientId)
         {
             var user = await _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
@@ -134,7 +136,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId) 
+        public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
 
@@ -142,7 +144,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto) 
+        public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto)
         {
             await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", dto.LastConnectionDate!);
 

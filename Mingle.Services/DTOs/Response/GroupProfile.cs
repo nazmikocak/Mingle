@@ -1,4 +1,6 @@
-﻿namespace Mingle.Services.DTOs.Response
+﻿using Mingle.Entities.Enums;
+
+namespace Mingle.Services.DTOs.Response
 {
     public sealed record GroupProfile
     {
@@ -8,8 +10,18 @@
 
         public required Uri PhotoUrl { get; init; }
 
-        public required Dictionary<string, Dictionary<string, string>> Participants { get; init; }
+        public required Dictionary<string, ParticipantProfile> Participants { get; init; }
 
         public required DateTime CreatedDate { get; init; }
+    }
+
+
+    public sealed record ParticipantProfile
+    {
+        public required string DisplayName { get; init; }
+
+        public required GroupParticipant Role { get; init; }
+
+        public required Uri ProfilePhoto { get; init; }
     }
 }
