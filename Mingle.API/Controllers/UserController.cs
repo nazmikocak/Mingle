@@ -30,7 +30,7 @@ namespace Mingle.API.Controllers
             }
             try
             {
-                return Ok(await _userService.SearchUsersAsync(dto));
+                return Ok(await _userService.SearchUsersAsync(UserId, dto));
             }
             catch (NotFoundException ex)
             {
