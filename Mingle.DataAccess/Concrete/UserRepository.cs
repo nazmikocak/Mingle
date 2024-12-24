@@ -42,5 +42,15 @@ namespace Mingle.DataAccess.Concrete
 
             await _databaseClient.Child("Users").Child(userId).PatchAsync(fieldData);
         }
+
+        public async Task UpdateUserSettingsAsync(string userId, string fieldName, object newValue)
+        {
+            var fieldData = new Dictionary<string, object>
+            {
+                { fieldName, newValue }
+            };
+
+            await _databaseClient.Child("Users").Child(userId).Child("Settings").PatchAsync(fieldData);
+        }
     }
 }
