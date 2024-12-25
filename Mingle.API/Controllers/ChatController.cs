@@ -154,7 +154,7 @@ namespace Mingle.API.Controllers
         {
             try
             {
-                string recipientId = await _chatService.GetChatRecipientId(UserId, "Individual", chatId);
+                string recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
                 return Ok(await _userService.GetRecipientProfileAsync(recipientId));
 
             }
