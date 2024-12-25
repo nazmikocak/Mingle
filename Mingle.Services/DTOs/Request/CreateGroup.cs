@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Mingle.Services.DTOs.Request
 {
@@ -18,11 +12,11 @@ namespace Mingle.Services.DTOs.Request
         [MaxLength(100, ErrorMessage = "Grup açıklaması en fazla 100 karakter uzunluğunda olmalıdır.")]
         public string? Description { get; init; }
 
-        public IFormFile? Photo { get; init; }
+        public byte[]? Photo { get; init; }
 
-        public string? PhotuUrl { get; init; }
+        public string? PhotoUrl { get; init; }
 
         [Required(ErrorMessage = "Grup oluşturabilmek için en az bir üye eklenmelidir.")]
-        public string Participants { get; set; }
+        public string Participants { get; init; }
     }
 }

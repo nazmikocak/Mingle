@@ -20,7 +20,6 @@ namespace Mingle.Services.Concrete
         private readonly IChatRepository _chatRepository;
 
 
-
         public MessageService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
         {
             _messageRepository = messageRepository;
@@ -29,14 +28,45 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task SendMessageAsync(string userId, SendMessage dto) 
+        public async Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatId, string chatType)
+        {
+            if (String.IsNullOrEmpty(chatId))
+            {
+                throw new BadRequestException("chatId gereklidir.");
+            }
+
+            var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı!");
+
+            if (!chat.Participants.Contains(userId))
+            {
+                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+            }
+
+            var messages = chat.Messages
+                .Where(message => !message.Value.DeletedFor.ContainsKey(userId))
+                .OrderBy(message => message.Value.Status.Sent)
+                .ToDictionary(
+                    message => message.Key,
+                    message => message.Value
+                );
+
+            if (messages.Count == 0)
+            {
+                throw new NotFoundException("Mesaj bulunamadı.");
+            }
+
+            return messages;
+        }
+
+
+        public async Task<Dictionary<string, Message>> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
             if (!(String.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
-            var chat = await _chatRepository.GetChatByIdAsync("Individual", dto.ChatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
             if (!chat.Participants.Contains(userId))
             {
@@ -48,7 +78,8 @@ namespace Mingle.Services.Concrete
 
             if (dto.FileContent != null)
             {
-                var fileUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{dto.ChatId}", "image_message", dto.FileContent);
+                var photo = new MemoryStream(dto.FileContent);
+                var fileUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo);
                 messageContent = fileUrl.ToString();
             }
             else
@@ -69,7 +100,9 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            await _messageRepository.CreateMessageAsync("Individual", dto.ChatId, messageId, message);
+            await _messageRepository.CreateMessageAsync(chatType, chatId, messageId, message);
+
+            return new Dictionary<string, Message> { {messageId, message } };
         }
 
 

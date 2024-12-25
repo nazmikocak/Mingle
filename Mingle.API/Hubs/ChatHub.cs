@@ -1,11 +1,8 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Mingle.DataAccess.Abstract;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Response;
+using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -16,6 +13,7 @@ namespace Mingle.API.Hubs
     {
         private readonly IChatService _chatService;
         private readonly IUserService _userService;
+        private readonly IMessageService _messageService;
 
 
 
@@ -33,10 +31,11 @@ namespace Mingle.API.Hubs
 
 
 
-        public ChatHub(IChatService chatService, IUserService userService)
+        public ChatHub(IChatService chatService, IUserService userService, IMessageService messageService)
         {
             _chatService = chatService;
             _userService = userService;
+            _messageService = messageService;
         }
 
 
@@ -207,10 +206,85 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                string recipientId = await _chatService.GetChatRecipientId(UserId, "Individual", chatId);
+                string recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
                 var recipientProfile = await _userService.GetRecipientProfileAsync(recipientId);
 
                 await Clients.Caller.SendAsync("ReceiveRecipientProfile", recipientProfile);
+            }
+            catch (NotFoundException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+            }
+            catch (BadRequestException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
+            }
+            catch (ForbiddenException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
+            }
+            catch (FirebaseException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
+        public async Task GetMessages(string chatType, string chatId)
+        {
+            try
+            {
+                var messages = await _messageService.GetMessagesAsync(UserId, chatId, chatType);
+
+                await Clients.Caller.SendAsync("ReceiveGetMessages", messages);
+            }
+            catch (NotFoundException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+            }
+            catch (BadRequestException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
+            }
+            catch (ForbiddenException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
+            }
+            catch (FirebaseException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
+        public async Task SendMessage(string chatId, SendMessage dto)
+        {
+            try
+            {
+                var message = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+
+                var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
+                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
+
+                if (!userCS.ConnectionIds.Count.Equals(0))
+                {
+                    foreach (var connectionId in userCS.ConnectionIds)
+                    {
+                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
+                    }
+                }
+
+                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
             }
             catch (NotFoundException ex)
             {

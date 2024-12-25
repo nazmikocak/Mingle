@@ -8,6 +8,7 @@ using Mingle.Services.DTOs.Response;
 using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
+using System.Text.RegularExpressions;
 
 namespace Mingle.Services.Concrete
 {
@@ -77,9 +78,10 @@ namespace Mingle.Services.Concrete
 
         public async Task<Uri> UpdateProfilePhotoAsync(string userId, UpdateProfilePhoto dto)
         {
-            FileValidationHelper.ValidateProfilePhoto(dto.ProfilePhoto);
+            var photo = new MemoryStream(dto.ProfilePhoto);
+            FileValidationHelper.ValidateProfilePhoto(photo);
 
-            var newPhotoUrl = await _cloudRepository.UploadProfilePhotoAsync(userId, dto.ProfilePhoto);
+            var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", photo);
 
             await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", newPhotoUrl);
             return newPhotoUrl;

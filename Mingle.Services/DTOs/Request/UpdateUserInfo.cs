@@ -12,7 +12,7 @@ namespace Mingle.Services.DTOs.Request
     public sealed record UpdateProfilePhoto
     {
         [Required(ErrorMessage = "Lütfen bir fotoğraf yükleyiniz.")]
-        public IFormFile? ProfilePhoto { get; init; }
+        public byte[]? ProfilePhoto { get; init; }
     }
 
 

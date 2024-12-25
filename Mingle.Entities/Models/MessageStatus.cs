@@ -12,6 +12,6 @@ namespace Mingle.Entities.Models
 
         public Dictionary<string, DateTime>? Delivered { get; set; } = [];
 
-        public Dictionary<string, DateTime>? Seen { get; set; } = [];
+        public Dictionary<string, DateTime>? Read { get; set; } = [];
     }
 }

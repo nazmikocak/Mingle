@@ -12,6 +12,7 @@ namespace Mingle.API.Hubs
     public sealed class GroupHub : Hub
     {
         private readonly IGroupService _groupService;
+        private readonly IChatService _chatService;
 
         private string UserId
         {
@@ -25,9 +26,10 @@ namespace Mingle.API.Hubs
             }
         }
 
-        public GroupHub(IGroupService groupService)
+        public GroupHub(IGroupService groupService, IChatService chatService)
         {
             _groupService = groupService;
+            _chatService = chatService;
         }
 
 
@@ -124,11 +126,13 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task GetGroupProfile(string groupId)
+        public async Task GetGroupProfile(string chatId)
         {
             try
             {
+                var groupId = await _chatService.GetChatRecipientIdAsync(UserId, "Group", chatId);
                 var group = await _groupService.GetGroupProfileAsync(UserId, groupId);
+
                 await Clients.Caller.SendAsync("ReceiveGetGroupProfile", group);
             }
             catch (NotFoundException ex)
@@ -152,9 +156,5 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
-
-
-
-
     }
 }

@@ -2,6 +2,7 @@
 using Mingle.Services.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,20 +29,13 @@ namespace Mingle.Services.Utilities
         }
 
 
-        public static void ValidateProfilePhoto(IFormFile file)
+        public static void ValidateProfilePhoto(MemoryStream file)
         {
             int maxFileSize = 5 * 1024 * 1024;
-            string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".svg", "webp " };
 
             if (file.Length > maxFileSize)
             {
                 throw new BadRequestException($"Dosya boyutu en fazla 5 MB olmalıdır.");
-            }
-
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(fileExtension))
-            {
-                throw new BadRequestException($"Geçersiz dosya türü. Kabul edilen türler: {string.Join(", ", allowedExtensions)}");
             }
         }
     }

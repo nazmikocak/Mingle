@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mingle.Services.DTOs.Response
+﻿namespace Mingle.Services.DTOs.Response
 {
     public sealed record RecipientProfile
     {
@@ -17,5 +11,7 @@ namespace Mingle.Services.DTOs.Response
         public required string ProfilePhoto { get; init; }
 
         public DateTime? Status { get; init; }
+
+        public DateTime? LastConnectionDate { get; set; }
     }
 }

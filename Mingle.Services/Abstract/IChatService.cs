@@ -1,11 +1,4 @@
-﻿using Mingle.Entities.Models;
-using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mingle.Services.DTOs.Response;
 
 namespace Mingle.Services.Abstract
 {
@@ -20,29 +13,7 @@ namespace Mingle.Services.Abstract
         Task UnarchiveIndividualChatAsync(string userId, string chatId);
 
         Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId);
-
-
-
-        Task<string> GetChatRecipientId(string userId, string chatType, string chatId);
-
-
-
-
-
-
-
-
-        Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatType, string chatId);
-
-
-
-
-
-
-
-
-
-
         
+        Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);  
     }
 }

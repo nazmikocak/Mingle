@@ -15,7 +15,7 @@ namespace Mingle.DataAccess.Concrete
         {
             _databaseClient = firebaseConfig.DatabaseClient;
         }
-        
+
 
         public async Task CreateMessageAsync(string chatType, string chatId, string messageId, Message message)
         {
@@ -26,6 +26,24 @@ namespace Mingle.DataAccess.Concrete
         public async Task UpdateMessageDeletedForAsync(string chatType, string chatId, string messageId, Dictionary<string, DateTime> deletedFor)
         {
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).PatchAsync(new { DeletedFor = deletedFor });
+        }
+
+
+        public async Task<IReadOnlyCollection<FirebaseObject<Message>>> GetMessagesByChatIdAsync(string chatType, string chatId)
+        {
+            return await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").OnceAsync<Message>();
+        }
+
+        public async Task<Message> GetLastMessageByChatIdAsync(string chatType, string chatId) 
+        {
+            var messages = await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").OnceAsync<Message>();
+
+            var lastMessage = messages
+                .Select(message => message.Object)
+                .OrderBy(message => message.Status.Sent)
+                .LastOrDefault();
+
+            return lastMessage;
         }
     }
 }
