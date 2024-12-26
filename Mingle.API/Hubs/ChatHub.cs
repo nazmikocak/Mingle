@@ -38,43 +38,6 @@ namespace Mingle.API.Hubs
         }
 
 
-
-        public override async Task OnConnectedAsync()
-        {
-            var connectionId = Context.ConnectionId;
-
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
-
-            if (!userCS.ConnectionIds.Contains(connectionId))
-            {
-                userCS.ConnectionIds.Add(connectionId);
-                userCS.LastConnectionDate = null;
-
-                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
-            }
-
-            await base.OnConnectedAsync();
-        }
-
-
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {
-            var connectionId = Context.ConnectionId;
-
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
-
-            if (!userCS.ConnectionIds.Count.Equals(0) && userCS.ConnectionIds.Contains(connectionId))
-            {
-                userCS.ConnectionIds.Remove(connectionId);
-                userCS.LastConnectionDate = DateTime.UtcNow;
-
-                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
-            }
-
-            await base.OnDisconnectedAsync(exception);
-        }
-
-
         /// <summary>
         /// Kullanıcının belirli bir sohbet türüne göre sohbetlerini alır.
         /// </summary>
@@ -334,6 +297,5 @@ namespace Mingle.API.Hubs
             }
         }
         */
-
     }
 }

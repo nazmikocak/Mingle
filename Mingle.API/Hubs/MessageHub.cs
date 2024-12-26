@@ -37,9 +37,37 @@ namespace Mingle.API.Hubs
         }
 
 
+        public override async Task OnConnectedAsync()
+        {
+            var connectionId = Context.ConnectionId;
+
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+
+            if (!userCS.ConnectionIds.Contains(connectionId))
+            {
+                userCS.ConnectionIds.Add(connectionId);
+                userCS.LastConnectionDate = null;
+
+                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
+            }
+
+            await base.OnConnectedAsync();
+        }
+
+
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            await Clients.Caller.SendAsync("Error", exception);
+            var connectionId = Context.ConnectionId;
+
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+
+            if (!userCS.ConnectionIds.Count.Equals(0) && userCS.ConnectionIds.Contains(connectionId))
+            {
+                userCS.ConnectionIds.Remove(connectionId);
+                userCS.LastConnectionDate = DateTime.UtcNow;
+
+                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
