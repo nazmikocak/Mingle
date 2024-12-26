@@ -1,15 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Mingle.Services.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mingle.Services.Utilities
 {
-    public class FileValidationHelper
+    internal class FileValidationHelper
     {
         public static void ValidatePhoto(IFormFile file, int maxFileSizeInMb, string[] allowedExtensions)
         {

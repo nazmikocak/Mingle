@@ -1,15 +1,9 @@
-﻿using Firebase.Auth;
-using Mingle.DataAccess.Abstract;
-using Mingle.DataAccess.Concrete;
+﻿using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mingle.Services.Utilities;
 
 namespace Mingle.Services.Concrete
 {
@@ -66,6 +60,8 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
+
+
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
             if (!chat.Participants.Contains(userId))
@@ -102,7 +98,7 @@ namespace Mingle.Services.Concrete
 
             await _messageRepository.CreateMessageAsync(chatType, chatId, messageId, message);
 
-            return new Dictionary<string, Message> { {messageId, message } };
+            return new Dictionary<string, Message> { { messageId, message } };
         }
 
 
@@ -151,6 +147,27 @@ namespace Mingle.Services.Concrete
             }
 
             await _messageRepository.UpdateMessageDeletedForAsync(chatType, chatId, messageId, deletedFor);
+        }
+
+
+        public async Task<Message> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName) 
+        {
+            FieldValidator.ValidateRequiredFields(
+                (chatType, "chatType"),
+                (chatId, "chatId"),
+                (messageId, "messageId")
+            );
+
+            var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı!");
+
+            if (!chat.Participants.Contains(userId))
+            {
+                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+            }
+
+            await _messageRepository.UpdateMessageStatusAsync(chatType, chatId, messageId, fieldName);
+
+            return await _messageRepository.GetMessageByIdAsync(chatType, chatId, messageId);
         }
     }
 }

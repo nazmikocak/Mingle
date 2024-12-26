@@ -10,5 +10,7 @@ namespace Mingle.Services.Abstract
         Task<Dictionary<string, Message>> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto);
 
         Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType, Chat chat);
+
+        Task<Message> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName);
     }
 }

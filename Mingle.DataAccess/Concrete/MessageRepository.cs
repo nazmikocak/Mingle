@@ -3,6 +3,7 @@ using Firebase.Database.Query;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 using Mingle.Entities.Models;
+using System.Xml.Linq;
 
 namespace Mingle.DataAccess.Concrete
 {
@@ -34,7 +35,8 @@ namespace Mingle.DataAccess.Concrete
             return await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").OnceAsync<Message>();
         }
 
-        public async Task<Message> GetLastMessageByChatIdAsync(string chatType, string chatId) 
+
+        public async Task<Message> GetLastMessageByChatIdAsync(string chatType, string chatId)
         {
             var messages = await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").OnceAsync<Message>();
 
@@ -44,6 +46,23 @@ namespace Mingle.DataAccess.Concrete
                 .LastOrDefault();
 
             return lastMessage;
+        }
+
+
+        public async Task UpdateMessageStatusAsync(string chatType, string chatId, string messageId, string fieldName)
+        {
+            var fieldData = new Dictionary<string, DateTime>
+            {
+                { fieldName, DateTime.UtcNow }
+            };
+
+            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).Child("Status").Child(fieldName).PutAsync(fieldData);
+        }
+
+
+        public async Task<Message> GetMessageByIdAsync(string chatType, string chatId, string messageId)
+        {
+            return await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).OnceSingleAsync<Message>();
         }
     }
 }

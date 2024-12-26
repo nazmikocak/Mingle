@@ -153,5 +153,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("ChatHub");
+app.MapHub<GroupHub>("GroupHub");
+app.MapHub<MessageHub>("MessageHub");
+
+
 
 app.Run();

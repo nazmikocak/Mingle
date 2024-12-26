@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mingle.Entities.Models
+﻿namespace Mingle.Entities.Models
 {
     public sealed class MessageStatus
     {

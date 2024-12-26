@@ -35,7 +35,7 @@ namespace Mingle.Services.Concrete
 
             var users = usersSnapshot
                 .Where(user =>
-                    !user.Key.Equals(userId)
+                    user.Key.Equals(userId).Equals(false)
                     &&
                     user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
                     ||

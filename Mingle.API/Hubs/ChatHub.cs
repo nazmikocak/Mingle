@@ -234,7 +234,7 @@ namespace Mingle.API.Hubs
         }
 
 
-
+        /*
         public async Task GetMessages(string chatType, string chatId)
         {
             try
@@ -266,12 +266,12 @@ namespace Mingle.API.Hubs
         }
 
 
-
         public async Task SendMessage(string chatId, SendMessage dto)
         {
             try
             {
                 var message = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
                 var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
@@ -283,8 +283,6 @@ namespace Mingle.API.Hubs
                         await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
                     }
                 }
-
-                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
             }
             catch (NotFoundException ex)
             {
@@ -307,5 +305,7 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+        */
+
     }
 }

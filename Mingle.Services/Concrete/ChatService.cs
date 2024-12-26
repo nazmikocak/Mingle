@@ -5,6 +5,7 @@ using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
+using Mingle.Services.Utilities;
 using System;
 
 
@@ -31,14 +32,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<string> CreateChatAsync(string userId, string chatType, string recipientId)
         {
-            if (String.IsNullOrEmpty(recipientId))
-            {
-                throw new BadRequestException("recipientId gereklidir.");
-            }
-            if (String.IsNullOrEmpty(chatType))
-            {
-                throw new BadRequestException("chatType gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (recipientId, "recipientId"));
 
             if (chatType.Equals("Individual"))
             {
@@ -93,10 +87,7 @@ namespace Mingle.Services.Concrete
 
         public async Task ClearChatAsync(string userId, string chatType, string chatId)
         {
-            if (String.IsNullOrEmpty(chatId))
-            {
-                throw new BadRequestException("chatId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -128,10 +119,7 @@ namespace Mingle.Services.Concrete
 
         public async Task ArchiveIndividualChatAsync(string userId, string chatId)
         {
-            if (String.IsNullOrEmpty(chatId))
-            {
-                throw new BadRequestException("chatId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatId, chatId));
 
             var chat = await _chatRepository.GetChatByIdAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -156,10 +144,7 @@ namespace Mingle.Services.Concrete
 
         public async Task UnarchiveIndividualChatAsync(string userId, string chatId)
         {
-            if (String.IsNullOrEmpty(chatId))
-            {
-                throw new BadRequestException("chatId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatId, "chatId"));
 
             var chat = await _chatRepository.GetChatByIdAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -184,10 +169,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId)
         {
-            if (String.IsNullOrEmpty(chatId))
-            {
-                throw new BadRequestException("chatId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
             var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -217,10 +199,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId)
         {
-            if (String.IsNullOrEmpty(chatId))
-            {
-                throw new BadRequestException("chatId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((chatId, "chatId"));
 
             var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -231,10 +210,7 @@ namespace Mingle.Services.Concrete
 
             var recipientId = chatParticipants
                 .FirstOrDefault(participant => !participant.Equals(userId));
-
-
-
-
+            
             var user = _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
             var recipientProfile = _mapper.Map<RecipientProfile>(user);
@@ -256,7 +232,9 @@ namespace Mingle.Services.Concrete
                 .Where(chat =>
                     chat.Object.Participants.Contains(userId)
                     &&
-                    chat.Object.Messages.Values.Any(message => !message.DeletedFor.ContainsKey(userId))
+                    chat.Object.Messages.Values.Any(message => message.DeletedFor.ContainsKey(userId).Equals(false))
+                    &&
+                    chat.Object.ArchivedFor.ContainsKey(userId).Equals(false)
                 )
                 .ToDictionary(
                     x => x.Key,
@@ -286,8 +264,5 @@ namespace Mingle.Services.Concrete
 
             return chatsPreviews;
         }
-
-
-
     }
 }
