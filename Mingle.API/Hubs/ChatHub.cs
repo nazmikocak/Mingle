@@ -58,7 +58,6 @@ namespace Mingle.API.Hubs
         }
 
 
-
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var connectionId = Context.ConnectionId;
@@ -77,12 +76,17 @@ namespace Mingle.API.Hubs
         }
 
 
+        /// <summary>
+        /// Kullanıcının belirli bir sohbet türüne göre sohbetlerini alır.
+        /// </summary>
+        /// <param name="chatType">Alınacak sohbetlerin türü.</param>
+        /// <returns>Belirtilen sohbet türüne göre kullanıcının sohbetlerini döner.</returns>
         public async Task GetChats(string chatType)
         {
             try
             {
                 var chats = _chatService.GetChatsAsync(UserId, chatType);
-                await Clients.Caller.SendAsync("ReceiveCreateChat", chats);
+                await Clients.Caller.SendAsync("ReceiveGetChats", chats);
             }
             catch (NotFoundException ex)
             {
@@ -135,7 +139,6 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
-
 
 
         public async Task ClearChat(string chatType, string chatId)
@@ -199,7 +202,6 @@ namespace Mingle.API.Hubs
         }
 
 
-
         public async Task UnarchiveChat(string chatId)
         {
             try
@@ -228,7 +230,6 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
-
 
 
         public async Task RecipientProfile(string chatId)
