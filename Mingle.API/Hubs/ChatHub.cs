@@ -15,6 +15,7 @@ namespace Mingle.API.Hubs
         private readonly IMessageService _messageService;
 
 
+
         private string UserId
         {
             get

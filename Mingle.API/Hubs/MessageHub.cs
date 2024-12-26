@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Shared;
@@ -16,7 +15,6 @@ namespace Mingle.API.Hubs
     public sealed class MessageHub : Hub
     {
         private readonly IMessageService _messageService;
-        private readonly IMessageRepository _messageRepository;
         private readonly IChatService _chatService;
         private readonly IUserService _userService;
 
@@ -34,10 +32,9 @@ namespace Mingle.API.Hubs
         }
 
 
-        public MessageHub(IMessageService messageService, IMessageRepository messageRepository, IChatService chatService, IUserService userService)
+        public MessageHub(IMessageService messageService, IChatService chatService, IUserService userService)
         {
             _messageService = messageService;
-            _messageRepository = messageRepository;
             _chatService = chatService;
             _userService = userService;
         }
@@ -128,8 +125,6 @@ namespace Mingle.API.Hubs
                         await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
                     }
                 }
-
-                await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
             }
             catch (NotFoundException ex)
             {
