@@ -94,8 +94,6 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            await _messageRepository.CreateMessageAsync(chatType, chatId, messageId, message);
-
             return new Dictionary<string, Message> { { messageId, message } };
         }
 
