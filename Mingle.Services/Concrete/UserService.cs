@@ -39,7 +39,7 @@ namespace Mingle.Services.Concrete
                     &&
                     user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
                     ||
-                    user.Object.Email.ToLower().Contains(dto.Query.ToLower())
+                    user.Object.Email.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
                 )
                 .ToDictionary(
                     user => user.Key,

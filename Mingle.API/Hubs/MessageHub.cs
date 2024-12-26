@@ -1,6 +1,7 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
@@ -29,11 +30,19 @@ namespace Mingle.API.Hubs
         }
 
 
-        protected MessageHub(IMessageService messageService, IChatService chatService, IUserService userService)
+        public MessageHub(IMessageService messageService, IChatService chatService, IUserService userService)
         {
             _messageService = messageService;
             _chatService = chatService;
             _userService = userService;
+        }
+
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            await Clients.Caller.SendAsync("Error", exception);
+
+            await base.OnDisconnectedAsync(exception);
         }
 
 
