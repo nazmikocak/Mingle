@@ -35,11 +35,13 @@ namespace Mingle.Services.Concrete
 
             var users = usersSnapshot
                 .Where(user =>
-                    user.Key.Equals(userId).Equals(false)
+                    !user.Key.Equals(userId)
                     &&
-                    user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
-                    ||
-                    user.Object.Email.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
+                    (
+                        user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
+                        ||
+                        user.Object.Email.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
+                    )
                 )
                 .ToDictionary(
                     user => user.Key,

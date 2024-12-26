@@ -154,6 +154,7 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("ChatHub");
 app.MapHub<GroupHub>("GroupHub");
+app.MapHub<MessagesHub>("MessagesHub");
 app.MapHub<MessageHub>("MessageHub");
 
 
