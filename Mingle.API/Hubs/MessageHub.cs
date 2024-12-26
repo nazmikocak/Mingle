@@ -1,4 +1,5 @@
 ﻿using Firebase.Database;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
@@ -7,6 +8,7 @@ using System.Security.Claims;
 
 namespace Mingle.API.Hubs
 {
+    [Authorize]
     public abstract class MessageHub : Hub
     {
         private readonly IMessageService _messageService;

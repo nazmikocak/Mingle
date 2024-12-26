@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -169,7 +168,6 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
-
 
 
         public async Task ArchiveChat(string chatId)
