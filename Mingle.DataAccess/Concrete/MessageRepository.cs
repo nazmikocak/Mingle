@@ -18,9 +18,8 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task CreateMessageAsync(string userId, string chatType, string chatId, string messageId, Message message)
+        public async Task CreateMessageAsync(string chatType, string chatId, string messageId, Message message)
         {
-            message.Status.Sent.Add(userId, DateTime.UtcNow);
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).PutAsync(message);
         }
 

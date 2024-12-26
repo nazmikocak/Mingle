@@ -41,7 +41,7 @@ namespace Mingle.API.Hubs
             try
             {
                 var groupId = await _groupService.CreateGroupAsync(UserId, dto);
-                await Clients.Caller.SendAsync("ReceiveGroup", new { groupId = groupId });
+                await Clients.Caller.SendAsync("ReceiveCreateGroup", new { groupId = groupId });
             }
             catch (NotFoundException ex)
             {
@@ -71,7 +71,7 @@ namespace Mingle.API.Hubs
             try
             {
                 await _groupService.EditGroupAsync(UserId, groupId, dto);
-                await Clients.Caller.SendAsync("ReceiveGroup", new { message = "Grup bilgileri güncellendi." });
+                await Clients.Caller.SendAsync("ReceiveEditGroup", new { message = "Grup bilgileri güncellendi." });
             }
             catch (NotFoundException ex)
             {
@@ -101,7 +101,7 @@ namespace Mingle.API.Hubs
             try
             {
                 await _groupService.LeaveGroupAsync(UserId, groupId);
-                await Clients.Caller.SendAsync("ReceiveGroup", new { message = "Gruptan çıkıldı." });
+                await Clients.Caller.SendAsync("ReceiveLeaveGroup", new { message = "Gruptan çıkıldı." });
             }
             catch (NotFoundException ex)
             {
@@ -133,7 +133,7 @@ namespace Mingle.API.Hubs
                 var groupId = await _chatService.GetChatRecipientIdAsync(UserId, "Group", chatId);
                 var group = await _groupService.GetGroupProfileAsync(UserId, groupId);
 
-                await Clients.Caller.SendAsync("ReceiveGroup", group);
+                await Clients.Caller.SendAsync("ReceiveGetGroupProfile", group);
             }
             catch (NotFoundException ex)
             {
