@@ -77,6 +77,35 @@ namespace Mingle.API.Hubs
         }
 
 
+        public async Task GetChats(string chatType)
+        {
+            try
+            {
+                var chats = _chatService.GetChatsAsync(UserId, chatType);
+                await Clients.Caller.SendAsync("ReceiveCreateChat", chats);
+            }
+            catch (NotFoundException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+            }
+            catch (BadRequestException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
+            }
+            catch (ForbiddenException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
+            }
+            catch (FirebaseException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
 
         public async Task CreateChat(string chatType, string recipientId)
         {

@@ -13,7 +13,9 @@ namespace Mingle.Services.Abstract
         Task UnarchiveIndividualChatAsync(string userId, string chatId);
 
         Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId);
-        
-        Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);  
+
+        Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);
+
+        Task<Dictionary<string, ChatPreview>> GetChatsAsync(string userId, string chatType);
     }
 }
