@@ -2,9 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
+using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -39,19 +42,21 @@ namespace Mingle.API.Hubs
             _userService = userService;
         }
 
+        private string recipientId;
+        private ConnectionSettings userCS;
+
+        private Dictionary<string, List<string>> userConnectionIds = [];
+
 
         public override async Task OnConnectedAsync()
         {
             var connectionId = Context.ConnectionId;
 
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            userConnectionIds.Add(UserId, new List<string> { connectionId });
 
-            if (!userCS.ConnectionIds.Contains(connectionId))
+            if (!userConnectionIds.Any(x=> x.Value.Contains(connectionId)))
             {
-                userCS.ConnectionIds.Add(connectionId);
-                userCS.LastConnectionDate = null;
-
-                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
+                userConnectionIds[UserId].Add(connectionId);
             }
 
             await base.OnConnectedAsync();
@@ -115,11 +120,10 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("ReceiveGetMessages", message);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
-                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
 
-                if (!userCS.ConnectionIds.Count.Equals(0))
+                if (!userConnectionIds.Count.Equals(0))
                 {
-                    foreach (var connectionId in userCS.ConnectionIds)
+                    foreach (var connectionId in userConnectionIds[recipientId])
                     {
                         await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
                     }
