@@ -60,11 +60,9 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
+            var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
-
-            var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
-
-            if (!chat.Participants.Contains(userId))
+            if (!chatParticipants.Contains(userId))
             {
                 throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
             }
