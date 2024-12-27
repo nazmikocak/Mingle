@@ -14,6 +14,6 @@ namespace Mingle.Services.DTOs.Response
 
         public required Uri ProfilePhoto { get; init; }
 
-        public required UserSettings Settings { get; set; }
+        public required UserSettings UserSettings { get; set; }
     }
 }
