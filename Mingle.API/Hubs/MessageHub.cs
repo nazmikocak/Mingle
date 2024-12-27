@@ -7,6 +7,7 @@ using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 
@@ -111,14 +112,26 @@ namespace Mingle.API.Hubs
 
         public async Task SendMessage(string chatId, SendMessage dto)
         {
+            var stopwatch = Stopwatch.StartNew();
             try
             {
+                stopwatch.Restart();
                 var message = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                Console.WriteLine($"Mesajın varlık haline getirilmesi süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
                 await Clients.Caller.SendAsync("ReceiveGetMessages", message);
+                Console.WriteLine($"Mesajın göndericiye iletilme süresi: {stopwatch.ElapsedMilliseconds} ms");
 
+                stopwatch.Restart();
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
-                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
+                Console.WriteLine($"Alıcı ID nin databaseden alınma süresi: {stopwatch.ElapsedMilliseconds} ms");
 
+                stopwatch.Restart();
+                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
+                Console.WriteLine($"Alıcı bağlantı ID sini databaseden alınma süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
                 if (!userCS.ConnectionIds.Count.Equals(0))
                 {
                     foreach (var connectionId in userCS.ConnectionIds)
@@ -126,8 +139,11 @@ namespace Mingle.API.Hubs
                         await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
                     }
                 }
+                Console.WriteLine($"Alıcıya mesajın iletilme süresi: {stopwatch.ElapsedMilliseconds} ms");
 
+                stopwatch.Restart();
                 await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+                Console.WriteLine($"Mesajın database kaydedilme süresi: {stopwatch.ElapsedMilliseconds} ms");
             }
             catch (NotFoundException ex)
             {

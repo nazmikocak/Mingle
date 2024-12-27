@@ -4,6 +4,7 @@ using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
+using System.Diagnostics;
 
 namespace Mingle.Services.Concrete
 {
@@ -55,12 +56,16 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Message>> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
+            var stopwatch = Stopwatch.StartNew();
             if (!(String.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
+            stopwatch.Restart();
             var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            Console.WriteLine($"Sohbet katılımcılarının databaseden alınma süresi: {stopwatch.ElapsedMilliseconds} ms");
+
 
             if (!chatParticipants.Contains(userId))
             {
@@ -87,10 +92,7 @@ namespace Mingle.Services.Concrete
                 Type = dto.ContentType,
                 Status = new MessageStatus
                 {
-                    Sent = new Dictionary<string, DateTime>
-                    {
-                        { userId, DateTime.UtcNow }
-                    }
+                    Sent = []
                 }
             };
 
@@ -146,7 +148,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Message> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName) 
+        public async Task<Message> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
             FieldValidator.ValidateRequiredFields(
                 (chatType, "chatType"),
