@@ -52,7 +52,7 @@ namespace Mingle.API.Hubs
             if (!userCS.ConnectionIds.Contains(connectionId))
             {
                 userCS.ConnectionIds.Add(connectionId);
-                userCS.LastConnectionDate = DateTime.UtcNow;
+                userCS.LastConnectionDate = null;
                 await _userService.SaveConnectionSettingsAsync(UserId, userCS);
             }
 
