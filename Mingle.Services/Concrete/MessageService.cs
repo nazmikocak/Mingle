@@ -4,7 +4,6 @@ using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
-using System.Diagnostics;
 
 namespace Mingle.Services.Concrete
 {

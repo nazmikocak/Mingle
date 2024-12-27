@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Shared;
@@ -116,7 +117,12 @@ namespace Mingle.API.Hubs
             {
                 var message = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
 
-                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
+                var messageVM = new Dictionary<string, Dictionary<string, Message>>
+                {
+                    { chatId, message }
+                };
+
+                await Clients.Caller.SendAsync("ReceiveGetMessages", messageVM);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
 
@@ -126,7 +132,7 @@ namespace Mingle.API.Hubs
                 {
                     foreach (var connectionId in userCS.ConnectionIds)
                     {
-                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
+                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", messageVM);
                     }
                 }
 
