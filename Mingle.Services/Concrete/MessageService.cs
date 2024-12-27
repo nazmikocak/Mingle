@@ -56,15 +56,12 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Message>> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
-            var stopwatch = Stopwatch.StartNew();
             if (!(String.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
-            stopwatch.Restart();
             var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
-            Console.WriteLine($"Sohbet katılımcılarının databaseden alınma süresi: {stopwatch.ElapsedMilliseconds} ms");
 
 
             if (!chatParticipants.Contains(userId))
@@ -92,7 +89,10 @@ namespace Mingle.Services.Concrete
                 Type = dto.ContentType,
                 Status = new MessageStatus
                 {
-                    Sent = []
+                    Sent = new Dictionary<string, DateTime>
+                    {
+                        { userId, DateTime.UtcNow }
+                    }
                 }
             };
 
