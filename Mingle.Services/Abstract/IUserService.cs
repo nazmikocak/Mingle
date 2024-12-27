@@ -2,7 +2,6 @@
 using Mingle.Entities.Models;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
-using Mingle.Services.DTOs.Shared;
 
 namespace Mingle.Services.Abstract
 {

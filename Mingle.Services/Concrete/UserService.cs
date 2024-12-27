@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
-using Firebase.Database;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
-using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
-using System.Text.RegularExpressions;
 
 namespace Mingle.Services.Concrete
 {
@@ -142,9 +139,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
-
-            return _mapper.Map<ConnectionSettings>(user);
+            return await _userRepository.GetUserConnectionStringByIdAsync(userId);
         }
 
 

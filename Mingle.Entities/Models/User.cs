@@ -12,13 +12,11 @@
 
         public required Uri ProfilePhoto { get; set; }
 
-        public DateTime? LastConnectionDate { get; set; }
-
-        public List<string> ConnectionIds { get; set; } = [];
+        public ConnectionSettings ConnectionSettings { get; set; } = new ConnectionSettings();
 
         public required DateTime BirthDate { get; set; }
 
-        public required UserSettings Settings { get; set; }
+        public required UserSettings UserSettings { get; set; }
 
         public required DateTime CreatedDate { get; set; }
     }

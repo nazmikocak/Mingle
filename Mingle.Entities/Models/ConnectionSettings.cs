@@ -1,6 +1,6 @@
-﻿namespace Mingle.Services.DTOs.Shared
+﻿namespace Mingle.Entities.Models
 {
-    public sealed record ConnectionSettings
+    public class ConnectionSettings
     {
         public DateTime? LastConnectionDate { get; set; }
 
