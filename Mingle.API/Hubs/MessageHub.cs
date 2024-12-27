@@ -1,5 +1,6 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
 using Mingle.Services.Abstract;
@@ -41,21 +42,18 @@ namespace Mingle.API.Hubs
             _userService = userService;
         }
 
-        private string recipientId;
-        private ConnectionSettings userCS;
-
-        private Dictionary<string, List<string>> userConnectionIds = [];
-
 
         public override async Task OnConnectedAsync()
         {
             var connectionId = Context.ConnectionId;
 
-            userConnectionIds.Add(UserId, new List<string> { connectionId });
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
 
-            if (!userConnectionIds.Any(x=> x.Value.Contains(connectionId)))
+            if (!userCS.ConnectionIds.Contains(connectionId))
             {
-                userConnectionIds[UserId].Add(connectionId);
+                userCS.ConnectionIds.Add(connectionId);
+                userCS.LastConnectionDate = DateTime.UtcNow;
+                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
             }
 
             await base.OnConnectedAsync();
@@ -119,8 +117,9 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("ReceiveGetMessages", message);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
+                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
 
-                if (!userConnectionIds.Count.Equals(0))
+                if (!userCS.ConnectionIds.Count.Equals(0))
                 {
                     foreach (var connectionId in userConnectionIds[recipientId])
                     {
