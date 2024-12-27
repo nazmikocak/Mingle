@@ -121,7 +121,7 @@ namespace Mingle.API.Hubs
 
                 if (!userCS.ConnectionIds.Count.Equals(0))
                 {
-                    foreach (var connectionId in userConnectionIds[recipientId])
+                    foreach (var connectionId in userCS.ConnectionIds)
                     {
                         await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
                     }
