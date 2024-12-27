@@ -25,13 +25,19 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
+        public async Task<IReadOnlyCollection<FirebaseObject<Group>>> GetAllGroupAsync()
+        {
+            return await _databaseClient.Child("Groups").OnceAsync<Group>();
+        }
+
+
         public async Task<Group> GetGroupByIdAsync(string groupId)
         {
             return await _databaseClient.Child("Groups").Child(groupId).OnceSingleAsync<Group>();
         }
 
 
-        public async Task UpdateGroupParticipantsAsync(string groupId, Dictionary<string, GroupParticipant> groupParticipants) 
+        public async Task UpdateGroupParticipantsAsync(string groupId, Dictionary<string, GroupParticipant> groupParticipants)
         {
             await _databaseClient.Child("Groups").Child(groupId).Child("Participants").PutAsync(groupParticipants);
         }

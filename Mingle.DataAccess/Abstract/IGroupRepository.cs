@@ -1,4 +1,5 @@
-﻿using Mingle.Entities.Enums;
+﻿using Firebase.Database;
+using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 
 namespace Mingle.DataAccess.Abstract
@@ -6,6 +7,8 @@ namespace Mingle.DataAccess.Abstract
     public interface IGroupRepository
     {
         Task CreateOrUpdateGroupAsync(string groupId, Group group);
+
+        Task<IReadOnlyCollection<FirebaseObject<Group>>> GetAllGroupAsync();
 
         Task<Group> GetGroupByIdAsync(string groupId);
 

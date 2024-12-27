@@ -7,6 +7,8 @@ namespace Mingle.DataAccess.Abstract
     {
         Task CreateChatAsync(string chatType, string chatId, Chat chat);
 
+        Task<object> GelAllChatAsync(string chatType);
+
         Task<IReadOnlyCollection<FirebaseObject<Chat>>> GetChatsAsync(string chatType);
 
         Task<Chat> GetChatByIdAsync(string chatType, string chatId);

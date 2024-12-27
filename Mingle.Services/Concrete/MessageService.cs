@@ -53,35 +53,38 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, Message>> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
+        public async Task<(Dictionary<string, Message>, string recipientId)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
-            if (!(String.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
+            if (!(string.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
-            var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            // Katılımcıları ve dosya yükleme işlemini paralel başlat
+            var participantsTask = _chatRepository.GetChatParticipantsAsync(chatType, chatId);
+            Task<string>? fileUrlTask = null;
 
+            if (dto.FileContent != null)
+            {
+                var photo = new MemoryStream(dto.FileContent);
+                fileUrlTask = _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo)
+                    .ContinueWith(task => task.Result.ToString());
+            }
 
+            // Katılımcıları kontrol et
+            var chatParticipants = await participantsTask ?? throw new NotFoundException("Sohbet bulunamadı.");
             if (!chatParticipants.Contains(userId))
             {
                 throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
             }
 
+            // Mesaj içeriği belirle
+            string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent;
+
+            var recipientId = chatParticipants.SingleOrDefault(participant => !participant.Equals(userId));
+
+            // Mesaj oluştur
             string messageId = Guid.NewGuid().ToString();
-            string messageContent;
-
-            if (dto.FileContent != null)
-            {
-                var photo = new MemoryStream(dto.FileContent);
-                var fileUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo);
-                messageContent = fileUrl.ToString();
-            }
-            else
-            {
-                messageContent = dto.TextContent;
-            }
-
             var message = new Message
             {
                 Content = messageContent,
@@ -95,8 +98,9 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            return new Dictionary<string, Message> { { messageId, message } };
+            return (new Dictionary<string, Message> { { messageId, message } }, recipientId);
         }
+
 
 
         public async Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType, Chat chat)
@@ -147,7 +151,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Message> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
+        public async Task<Dictionary<string, Message>> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
             FieldValidator.ValidateRequiredFields(
                 (chatType, "chatType"),
@@ -162,9 +166,10 @@ namespace Mingle.Services.Concrete
                 throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
             }
 
-            await _messageRepository.UpdateMessageStatusAsync(chatType, chatId, messageId, fieldName);
+            var message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
+            message.Status.Delivered.Add(userId, DateTime.UtcNow);
 
-            return await _messageRepository.GetMessageByIdAsync(chatType, chatId, messageId);
+            return new Dictionary<string, Message> { { messageId, message } };
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Mingle.Services.DTOs.Response;
+﻿using Mingle.Entities.Models;
+using Mingle.Services.DTOs.Response;
 
 namespace Mingle.Services.Abstract
 {
@@ -16,6 +17,6 @@ namespace Mingle.Services.Abstract
 
         Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);
 
-        Task<Dictionary<string, ChatPreview>> GetChatsAsync(string userId, string chatType);
+        Task<Dictionary<string, Dictionary<string, Chat>>> GetChatsAsync(string userId);
     }
 }

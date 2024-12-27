@@ -79,6 +79,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICloudRepository, CloudRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 

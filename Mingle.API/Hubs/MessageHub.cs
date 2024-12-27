@@ -1,15 +1,12 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Shared;
 using Mingle.Services.Exceptions;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -80,42 +77,132 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task GetMessages(string chatType, string chatId)
+        public async Task SendDemoMessage(string chatId, SendMessage dto)
         {
-            try
-            {
-                var messages = await _messageService.GetMessagesAsync(UserId, chatId, chatType);
+            Console.WriteLine($"\nYeni Metot İle Deneme");
 
-                await Clients.Caller.SendAsync("ReceiveGetMessages", messages);
-            }
-            catch (NotFoundException ex)
+            var stopwatch = Stopwatch.StartNew();
+
+            stopwatch.Restart();
+            // Mesaj oluşturma ve kaydetme
+            var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+            Console.WriteLine($"Mesaj oluşturma: {stopwatch.ElapsedMilliseconds} ms");
+
+
+            stopwatch.Restart();
+            // Paralel işler: RecipientId ve kullanıcı ayarlarını alma
+            var createMessageTask = _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+            Console.WriteLine($"Paralel işler (RecipientId ve kullanıcı ayarlarını alma süresi): {stopwatch.ElapsedMilliseconds} ms");
+
+            stopwatch.Restart();
+            // Caller istemcisine mesaj gönderimi
+            await Clients.Caller.SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Message>>
+                {
+                    { chatId, message }
+                }
+            );
+            Console.WriteLine($"Caller istemcisine mesaj gönderim süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+
+            stopwatch.Restart();
+            // Alıcı istemcisine mesaj gönderimi
+            var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
+            Console.WriteLine($"recipientId ve userCS: {stopwatch.ElapsedMilliseconds} ms");
+
+
+
+            stopwatch.Restart();
+            if (!userCS.ConnectionIds.Count.Equals(0))
             {
-                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+                var sendTasks = userCS.ConnectionIds
+                    .Select(connectionId => Clients.Client(connectionId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Message>>
+                    {
+            { chatId, message }
+                    }));
+                await Task.WhenAll(sendTasks);
             }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
-            }
-            catch (Exception ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
-            }
+            Console.WriteLine($"Alıcı istemcisine mesaj gönderim süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+            stopwatch.Restart();
+            // Mesajın veri tabanına kaydedilmesi
+            await createMessageTask;
+            Console.WriteLine($"Mesajın veri tabanına kaydedilme süresi: {stopwatch.ElapsedMilliseconds} ms");
         }
 
 
         public async Task SendMessage(string chatId, SendMessage dto)
         {
+            Console.WriteLine($"\nEski Metot İle Deneme");
             try
             {
-                var message = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                var stopwatch = Stopwatch.StartNew();
+
+
+                stopwatch.Restart();
+                var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                Console.WriteLine($"Mesaj oluşturma süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
+                var messageVM = new Dictionary<string, Dictionary<string, Message>>
+                {
+                    { chatId, message }
+                };
+                Console.WriteLine($"VM haline getirme süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
+                await Clients.Caller.SendAsync("ReceiveGetMessages", messageVM);
+                Console.WriteLine($"Caller istemcisine mesaj gönderim süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
+                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
+                Console.WriteLine($"RecipientId ve kullanıcı ayarlarını alma süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+                stopwatch.Restart();
+                if (!userCS.ConnectionIds.Count.Equals(0))
+                {
+                    foreach (var connectionId in userCS.ConnectionIds)
+                    {
+                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", messageVM);
+                    }
+                }
+                Console.WriteLine($"Alıcı istemcisine mesaj gönderim süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+
+                stopwatch.Restart();
+                await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+                Console.WriteLine($"Mesajın veri tabanına kaydedilme süresi: {stopwatch.ElapsedMilliseconds} ms");
+
+
+                Console.WriteLine($"Eski metot ile ölçüm süresi: {stopwatch.ElapsedMilliseconds} ms");
+            }
+            catch (NotFoundException ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+            }
+            catch (BadRequestException ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+            }
+            catch (ForbiddenException ex)
+            {
+                await Clients.Caller.SendAsync("Error", ex.Message);
+            }
+            catch (FirebaseException ex)
+            {
+                await Clients.Caller.SendAsync("Error", $"Firebase ile ilgili bir hata oluştu: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", $"Beklenmedik bir hata oluştu: {ex.Message}");
+            }
+        }
+
+
+        public async Task DeliverMessage(string chatType, string chatId, string messageId)
+        {
+            try
+            {
+                var message = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
@@ -125,7 +212,6 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("ReceiveGetMessages", messageVM);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
-
                 var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
 
                 if (!userCS.ConnectionIds.Count.Equals(0))
@@ -136,68 +222,27 @@ namespace Mingle.API.Hubs
                     }
                 }
 
-                await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+                await _messageRepository.UpdateMessageStatusAsync(chatType, chatId, messageId, "Delivered", message.Values.Select(x => x.Status.Delivered.Keys.SingleOrDefault(x => x.Equals(UserId))));
             }
             catch (NotFoundException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (BadRequestException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (ForbiddenException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (FirebaseException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", $"Firebase ile ilgili bir hata oluştu: {ex.Message}");
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
-            }
-        }
-
-
-        public async Task DeliverMessage(string chatType, string chatId, string messageId)
-        {
-            try
-            {
-                var message = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
-                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
-
-                var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
-                var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
-
-                if (!userCS.ConnectionIds.Count.Equals(0))
-                {
-                    foreach (var connectionId in userCS.ConnectionIds)
-                    {
-                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
-                    }
-                }
-            }
-            catch (NotFoundException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
-            }
-            catch (Exception ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", $"Beklenmedik bir hata oluştu: {ex.Message}");
             }
         }
 
@@ -207,7 +252,13 @@ namespace Mingle.API.Hubs
             try
             {
                 var message = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Read");
-                await Clients.Caller.SendAsync("ReceiveGetMessages", message);
+
+                var messageVM = new Dictionary<string, Dictionary<string, Message>>
+                {
+                    { chatId, message }
+                };
+
+                await Clients.Caller.SendAsync("ReceiveGetMessages", messageVM);
 
                 var recipientId = await _chatService.GetChatRecipientIdAsync(UserId, "Individual", chatId);
                 var userCS = await _userService.GetConnectionSettingsAsync(recipientId);
@@ -216,29 +267,31 @@ namespace Mingle.API.Hubs
                 {
                     foreach (var connectionId in userCS.ConnectionIds)
                     {
-                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", message);
+                        await Clients.Client(connectionId).SendAsync("ReceiveGetMessages", messageVM);
                     }
                 }
+
+                await _messageRepository.UpdateMessageStatusAsync(chatType, chatId, messageId, "Read", message.Values.Select(x => x.Status.Read.Keys.SingleOrDefault(x => x.Equals(UserId))));
             }
             catch (NotFoundException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "NotFound", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (BadRequestException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "BadRequest", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (ForbiddenException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "Forbidden", message = ex.Message });
+                await Clients.Caller.SendAsync("Error", ex.Message);
             }
             catch (FirebaseException ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", $"Firebase ile ilgili bir hata oluştu: {ex.Message}");
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { type = "InternalServerError", message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", $"Beklenmedik bir hata oluştu: {ex.Message}");
             }
         }
     }

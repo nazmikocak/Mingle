@@ -1,6 +1,8 @@
 ﻿using Firebase.Auth;
 using Firebase.Database;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mingle.DataAccess.Abstract;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
@@ -12,10 +14,12 @@ namespace Mingle.API.Controllers
     public sealed class UserController : BaseController
     {
         private readonly IUserService _userService;
+        private readonly IChatService _chatService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IChatService chatService)
         {
             _userService = userService;
+            _chatService = chatService;
         }
 
 
@@ -276,6 +280,13 @@ namespace Mingle.API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> TestFirebase()
+        {
+            return Ok(await _chatService.GetChatsAsync(UserId));
         }
     }
 }

@@ -7,6 +7,7 @@ using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
 using System;
+using System.Diagnostics;
 
 
 namespace Mingle.Services.Concrete
@@ -17,15 +18,17 @@ namespace Mingle.Services.Concrete
         private readonly ICloudRepository _cloudRepository;
         private readonly IChatRepository _chatRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IMapper _mapper;
 
 
-        public ChatService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository, IUserRepository userRepository, IMapper mapper)
+        public ChatService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository, IUserRepository userRepository, IGroupRepository groupRepository, IMapper mapper)
         {
             _messageRepository = messageRepository;
             _cloudRepository = cloudRepository;
             _chatRepository = chatRepository;
             _userRepository = userRepository;
+            _groupRepository = groupRepository;
             _mapper = mapper;
         }
 
@@ -210,7 +213,7 @@ namespace Mingle.Services.Concrete
 
             var recipientId = chatParticipants
                 .FirstOrDefault(participant => !participant.Equals(userId));
-            
+
             var user = _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
             var recipientProfile = _mapper.Map<RecipientProfile>(user);
@@ -219,50 +222,39 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, ChatPreview>> GetChatsAsync(string userId, string chatType)
+        public async Task<Dictionary<string, Dictionary<string, Chat>>> GetChatsAsync(string userId)
         {
-            if (!(chatType.Equals("Individual") || chatType.Equals("Group")))
-            {
-                throw new BadRequestException("chatType geçersiz.");
-            }
+            var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
+            var groupChatsTask = _chatRepository.GetChatsAsync("Group");
+            var groupsTask = _groupRepository.GetAllGroupAsync();
 
-            var chats = await _chatRepository.GetChatsAsync(chatType) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            await Task.WhenAll(individualChatsTask, groupChatsTask, groupsTask);
 
-            var chatAndRecipientIds = chats
+            var individualChats = await individualChatsTask;
+            var groupChats = await groupChatsTask;
+            var groups = await groupsTask;
+
+            var userGroupIds = new HashSet<string>(
+                groups.Where(group => group.Object.Participants.ContainsKey(userId))
+                      .Select(group => group.Key)
+            );
+
+            var userIndividualChats = individualChats
                 .Where(chat =>
-                    chat.Object.Participants.Contains(userId)
-                    &&
-                    chat.Object.Messages.Values.Any(message => message.DeletedFor.ContainsKey(userId).Equals(false))
-                    &&
-                    chat.Object.ArchivedFor.ContainsKey(userId).Equals(false)
+                    chat.Object.Participants.Contains(userId) &&
+                    chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
                 )
-                .ToDictionary(
-                    x => x.Key,
-                    x => x.Object.Participants.SingleOrDefault(participant => !participant.Equals(userId))
-                );
+                .ToDictionary(chat => chat.Key, chat => chat.Object);
 
-            if (chatAndRecipientIds.Count.Equals(0))
+            var userGroupChats = groupChats
+                .Where(chat => userGroupIds.Contains(chat.Key))
+                .ToDictionary(chat => chat.Key, chat => chat.Object);
+
+            return new Dictionary<string, Dictionary<string, Chat>>
             {
-                throw new NotFoundException("Sohbet bulunamadı.");
-            }
-
-            var chatsPreviews = new Dictionary<string, ChatPreview>();
-
-            foreach (var item in chatAndRecipientIds)
-            {
-                var user = await _userRepository.GetUserByIdAsync(item.Value);
-
-                var chatPreview = new ChatPreview
-                {
-                    Name = user.DisplayName,
-                    Photo = user.ProfilePhoto,
-                    LastMessage = await _messageRepository.GetLastMessageByChatIdAsync(chatType, item.Key)
-                };
-
-                chatsPreviews.Add(item.Key, chatPreview);
-            }
-
-            return chatsPreviews;
+                { "Individual", userIndividualChats },
+                { "Group", userGroupChats }
+            };
         }
     }
 }

@@ -49,13 +49,8 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task UpdateMessageStatusAsync(string chatType, string chatId, string messageId, string fieldName)
+        public async Task UpdateMessageStatusAsync(string chatType, string chatId, string messageId, string fieldName, object fieldData)
         {
-            var fieldData = new Dictionary<string, DateTime>
-            {
-                { fieldName, DateTime.UtcNow }
-            };
-
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).Child("Status").Child(fieldName).PutAsync(fieldData);
         }
 

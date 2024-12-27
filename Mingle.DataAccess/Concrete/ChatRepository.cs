@@ -3,6 +3,7 @@ using Firebase.Database.Query;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 using Mingle.Entities.Models;
+using System.Diagnostics;
 
 namespace Mingle.DataAccess.Concrete
 {
@@ -19,6 +20,12 @@ namespace Mingle.DataAccess.Concrete
         public async Task CreateChatAsync(string chatType, string chatId, Chat chat)
         {
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).PutAsync(chat);
+        }
+
+
+        public async Task<object> GelAllChatAsync(string chatType)
+        {
+            return await _databaseClient.Child("Chats").Child(chatType).OnceAsync<Chat>();
         }
 
 
