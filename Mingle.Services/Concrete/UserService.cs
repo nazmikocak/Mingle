@@ -117,13 +117,13 @@ namespace Mingle.Services.Concrete
 
         public async Task ChangeThemeAsync(string userId, ChangeTheme dto)
         {
-            await _userRepository.UpdateUserSettingsAsync(userId, "Theme", dto.Theme);
+            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "Theme", dto.Theme);
         }
 
 
         public async Task ChangeChatBackgroundAsync(string userId, ChangeChatBackground dto)
         {
-            await _userRepository.UpdateUserSettingsAsync(userId, "ChatBackground", dto.ChatBackground);
+            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "ChatBackground", dto.ChatBackground);
         }
 
 
@@ -145,9 +145,9 @@ namespace Mingle.Services.Concrete
 
         public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto)
         {
-            await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", dto.LastConnectionDate!);
+            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "LastConnectionDate", dto.LastConnectionDate!);
 
-            await _userRepository.UpdateUserFieldAsync(userId, "ConnectionIds", dto.ConnectionIds);
+            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "ConnectionIds", dto.ConnectionIds);
         }
     }
 }

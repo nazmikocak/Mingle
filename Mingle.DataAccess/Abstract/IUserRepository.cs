@@ -15,6 +15,6 @@ namespace Mingle.DataAccess.Abstract
 
         Task UpdateUserFieldAsync(string userId, string fieldName, object newValue);
 
-        Task UpdateUserSettingsAsync(string userId, string fieldName, object newValue);
+        Task UpdateSettingsAsync(string userId, string settingsName, string fieldName, object newValue);
     }
 }
