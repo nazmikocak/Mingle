@@ -145,9 +145,9 @@ namespace Mingle.Services.Concrete
 
         public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto)
         {
-            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "LastConnectionDate", dto.LastConnectionDate!);
+            await _userRepository.UpdateSettingsAsync(userId, "ConnectionSettings", "LastConnectionDate", dto.LastConnectionDate!);
 
-            await _userRepository.UpdateSettingsAsync(userId, "UserSettings", "ConnectionIds", dto.ConnectionIds);
+            await _userRepository.UpdateSettingsAsync(userId, "ConnectionSettings", "ConnectionIds", dto.ConnectionIds);
         }
     }
 }
