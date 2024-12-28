@@ -14,6 +14,6 @@ namespace Mingle.Services.Abstract
 
         Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);
 
-        Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetChatsAsync(string userId);
+        Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetChatsAsync(string userId);
     }
 }

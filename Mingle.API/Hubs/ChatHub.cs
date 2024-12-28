@@ -10,6 +10,7 @@ using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
 using System;
+using System.Diagnostics;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -49,12 +50,18 @@ namespace Mingle.API.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var (chats, userChatIds, chatsRecipientIds, userGroupIds) = await _chatService.GetChatsAsync(UserId);
+            var connectionId = Context.ConnectionId;
 
-            foreach (var chatId in userChatIds)
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            if (!userCS.ConnectionIds.Contains(connectionId))
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
+                userCS.ConnectionIds.Add(connectionId);
+                userCS.LastConnectionDate = null;
+                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
             }
+
+
+            var (chats, chatsRecipientIds, userGroupIds) = await _chatService.GetChatsAsync(UserId);
 
             var recipientProfiles = await _userService.GetRecipientProfilesAsync(chatsRecipientIds);
             var groupProfiles = await _groupService.GetGroupProfilesAsync(userGroupIds);
@@ -69,11 +76,15 @@ namespace Mingle.API.Hubs
 
         public async override Task OnDisconnectedAsync(Exception? exception)
         {
-            var (_, userChatIds, _, _) = await _chatService.GetChatsAsync(UserId);
+            var connectionId = Context.ConnectionId;
 
-            foreach (var chatId in userChatIds)
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            if (!userCS.ConnectionIds.Count.Equals(0) && userCS.ConnectionIds.Contains(connectionId))
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
+                userCS.ConnectionIds.Remove(connectionId);
+                userCS.LastConnectionDate = DateTime.UtcNow;
+
+                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -241,8 +252,11 @@ namespace Mingle.API.Hubs
 
         public async Task SendMessage(string chatId, SendMessage dto)
         {
+            var stopwatch = Stopwatch.StartNew();
+
             try
             {
+                stopwatch.Restart();
                 var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
@@ -264,6 +278,7 @@ namespace Mingle.API.Hubs
                 await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new { Individual = messageVM });
 
                 await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+                Console.WriteLine($"\nMesaj gönderme, veritabanı ile birlikte toplam süresi: {stopwatch.ElapsedMilliseconds} ms");
             }
             catch (NotFoundException ex)
             {
@@ -286,5 +301,77 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
+
+        public async Task SendDemoMessage(string chatId, SendMessage dto)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                // 1. Mesaj oluşturma ve alıcı ID'sini elde etme
+                var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+
+                var messageVM = new Dictionary<string, Dictionary<string, Message>>
+        {
+            { chatId, message }
+        };
+
+                // 2. Katılımcılar listesi oluşturma
+                List<string> chatParticipants = new() { UserId, recipientId };
+
+                // 3. Kullanıcı bağlantı ID'lerini eş zamanlı olarak al
+                var userConnectionIdsTask = _userService.GetUserConnectionIdsAsync(chatParticipants);
+
+                // 4. Veritabanına mesaj kaydetme işlemini paralel olarak başlat
+                var saveMessageTask = _messageRepository.CreateMessageAsync(
+                    UserId,
+                    "Individual",
+                    chatId,
+                    message.Keys.First(),
+                    message.Values.First()
+                );
+
+                // Kullanıcı bağlantı ID'lerini al
+                var userConnectionIds = await userConnectionIdsTask;
+
+                // 5. Gruplara bağlantı ID'lerini toplu olarak ekleme
+                var addToGroupTasks = userConnectionIds
+                    .SelectMany(user => user)
+                    .Select(connectionId => Groups.AddToGroupAsync(connectionId, chatId));
+
+                await Task.WhenAll(addToGroupTasks);
+
+                // 6. Mesajı gruba gönder
+                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new { Individual = messageVM });
+
+                // 7. Mesaj kaydetme işleminin tamamlanmasını bekle
+                await saveMessageTask;
+
+                stopwatch.Stop();
+                Console.WriteLine($"\nDemo Mesaj gönderme işlemi toplam süresi: {stopwatch.ElapsedMilliseconds} ms");
+            }
+            catch (NotFoundException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (BadRequestException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (ForbiddenException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (FirebaseException ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
     }
 }

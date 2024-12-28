@@ -40,15 +40,12 @@ namespace Mingle.Services.Concrete
                         &&
                         chat.Object.Participants.Contains(recipientId)
                     )
-                    .Where(chat =>
-                        chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
-                    )
                     .ToDictionary(
                         chat => chat.Key,
                         chat => chat.Object
                     );
 
-                if (oldChat == null)
+                if (oldChat.Count.Equals(0))
                 {
                     string chatId = Guid.NewGuid().ToString();
 
@@ -86,7 +83,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetChatsAsync(string userId)
+        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetChatsAsync(string userId)
         {
             var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
             var groupChatsTask = _chatRepository.GetChatsAsync("Group");
@@ -125,17 +122,6 @@ namespace Mingle.Services.Concrete
                 .Where(chat => userGroupIds.Contains(chat.Key))
                 .ToDictionary(chat => chat.Key, chat => chat.Object);
 
-            var userChatIds = new List<string>();
-
-            foreach (var chatId in userIndividualChats.Keys)
-            {
-                userChatIds.Add(chatId);
-            }
-            foreach (var chatId in userGroupChats.Keys)
-            {
-                userChatIds.Add(chatId);
-            }
-
             var chatsRecipientIds = userIndividualChats
                 .Select(chat => chat.Value.Participants.FirstOrDefault(participant => !participant.Equals(userId))!)
                 .ToList();
@@ -145,7 +131,6 @@ namespace Mingle.Services.Concrete
                 { "Individual", userIndividualChats },
                 { "Group", userGroupChats }
             },
-            userChatIds,
             chatsRecipientIds,
             userGroupIds
             );
