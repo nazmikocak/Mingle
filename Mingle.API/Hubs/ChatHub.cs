@@ -101,7 +101,7 @@ namespace Mingle.API.Hubs
 
                     var recipientProfile = await _userService.GetRecipientProfileAsync(recipientId);
 
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new { Individual = chat });
+                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new Dictionary<string, object> { { "Individual", chat } });
                     await Clients.Group(chat.Keys.First()).SendAsync("ReceiveRecipientProfiles", recipientProfile);
 
                 }
