@@ -36,7 +36,7 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<List<string>> GetChatParticipantsAsync(string chatType, string chatId)
+        public async Task<List<string>> GetChatParticipantsByIdAsync(string chatType, string chatId)
         {
             return await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Participants").OnceSingleAsync<List<string>>();
         }

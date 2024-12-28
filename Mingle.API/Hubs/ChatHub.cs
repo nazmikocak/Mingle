@@ -2,14 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
-using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.Concrete;
 using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
-using System;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -52,39 +48,57 @@ namespace Mingle.API.Hubs
         {
             var connectionId = Context.ConnectionId;
 
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            var userCSTask = _userService.GetConnectionSettingsAsync(UserId);
+            var chatsTask = _chatService.GetAllChatsAsync(UserId);
+
+            var userCS = await userCSTask;
+
             if (!userCS.ConnectionIds.Contains(connectionId))
             {
                 userCS.ConnectionIds.Add(connectionId);
                 userCS.LastConnectionDate = null;
-                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
+
+                var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
+
+                var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
+
+                var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
+                var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
+
+                var recipientProfiles = await recipientProfilesTask;
+                var groupProfiles = await groupProfilesTask;
+
+                var sendTasks = new[]
+                {
+                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
+                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
+                Clients.All.SendAsync("ReceiveRecipientProfiles", userCS)
+                };
+
+                await Task.WhenAll(sendTasks);
+                await saveSettingsTask;
             }
-
-
-            var (chats, chatsRecipientIds, userGroupIds) = await _chatService.GetChatsAsync(UserId);
-
-            var recipientProfiles = await _userService.GetRecipientProfilesAsync(chatsRecipientIds);
-            var groupProfiles = await _groupService.GetGroupProfilesAsync(userGroupIds);
-
-            await Clients.Caller.SendAsync("ReceiveInitialChats", chats);
-            await Clients.Caller.SendAsync("ReceiveGroupProfiles", groupProfiles);
-            await Clients.Caller.SendAsync("ReceiveRecipientProfiles", recipientProfiles);
 
             await base.OnConnectedAsync();
         }
 
 
-        public async override Task OnDisconnectedAsync(Exception? exception)
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var connectionId = Context.ConnectionId;
 
             var userCS = await _userService.GetConnectionSettingsAsync(UserId);
-            if (!userCS.ConnectionIds.Count.Equals(0) && userCS.ConnectionIds.Contains(connectionId))
+
+            if (userCS.ConnectionIds.Remove(connectionId))
             {
-                userCS.ConnectionIds.Remove(connectionId);
                 userCS.LastConnectionDate = DateTime.UtcNow;
 
-                await _userService.SaveConnectionSettingsAsync(UserId, userCS);
+                var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
+                var notifyClientsTask = Clients.All.SendAsync("ReceiveRecipientProfiles", userCS);
+
+                await Task.WhenAll(saveSettingsTask, notifyClientsTask);
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -99,23 +113,22 @@ namespace Mingle.API.Hubs
 
                 if (chatType.Equals("Individual"))
                 {
-                    List<string> chatParticipants = [UserId, recipientId];
+                    List<string> chatParticipants = new() { UserId, recipientId };
                     var userConnectionIds = await _userService.GetUserConnectionIdsAsync(chatParticipants);
 
-                    foreach (var user in userConnectionIds)
-                    {
-                        foreach (var connectionId in user)
-                        {
-                            await Groups.AddToGroupAsync(connectionId, chat.Keys.First());
-                        }
-                    }
 
-                    var recipientProfile = await _userService.GetRecipientProfileAsync(recipientId);
+                    var groupTasks = userConnectionIds.SelectMany(user =>
+                        user.Select(connectionId => Groups.AddToGroupAsync(connectionId, chat.Keys.First()))
+                    );
 
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new Dictionary<string, object> { { "Individual", chat } });
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveRecipientProfiles", recipientProfile);
+                    await Task.WhenAll(groupTasks);
 
+                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new Dictionary<string, Dictionary<string, Chat>> { { "Individual", chat } });
+
+                    var recipientProfile = await _userService.GetRecipientProfileByIdAsync(recipientId);
+                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveRecipientProfile", recipientProfile);
                 }
+
                 else
                 {
                     var groupParticipants = await _groupService.GetGroupParticipantsAsync(UserId, chat.Values.First().Participants.First());
@@ -129,27 +142,20 @@ namespace Mingle.API.Hubs
                         }
                     }
 
-                    var groupProfile = await _groupService.GetGroupProfileAsync(UserId, chat.Values.First().Participants.First());
-
                     await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", chat);
+
+                    var groupProfile = await _groupService.GetGroupProfileByIdAsync(UserId, chat.Values.First().Participants.First());
+
                     await Clients.Group(chat.Keys.First()).SendAsync("ReceiveGroupProfiles", groupProfile);
                 }
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {
@@ -165,21 +171,13 @@ namespace Mingle.API.Hubs
                 await _chatService.ClearChatAsync(UserId, chatType, chatId);
                 await Clients.Caller.SendAsync("ReceiveClearChat", new { message = "Sohbet temizlendi." });
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {
@@ -195,27 +193,20 @@ namespace Mingle.API.Hubs
                 await _chatService.ArchiveIndividualChatAsync(UserId, chatId);
                 await Clients.Caller.SendAsync("ReceiveArchiveChat", new { message = "Sohbet arşivlendi." });
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
 
 
         public async Task UnarchiveChat(string chatId)
@@ -225,21 +216,13 @@ namespace Mingle.API.Hubs
                 await _chatService.UnarchiveIndividualChatAsync(UserId, chatId);
                 await Clients.Caller.SendAsync("ReceiveUnarchiveChat", new { message = "Sohbet arşivden çıkarıldı." });
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {
@@ -249,15 +232,61 @@ namespace Mingle.API.Hubs
 
 
 
-
         public async Task SendMessage(string chatId, SendMessage dto)
         {
-            var stopwatch = Stopwatch.StartNew();
-
             try
             {
-                stopwatch.Restart();
                 var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+
+                var messageVM = new Dictionary<string, Dictionary<string, Message>>
+                {
+                    { chatId, message }
+                };
+
+                List<string> chatParticipants = [UserId, recipientId];
+
+                var userConnectionIdsTask = _userService.GetUserConnectionIdsAsync(chatParticipants);
+
+                var saveMessageTask = _messageRepository.CreateMessageAsync(
+                    UserId,
+                    "Individual",
+                    chatId,
+                    message.Keys.First(),
+                    message.Values.First()
+                );
+
+                var userConnectionIds = await userConnectionIdsTask;
+
+                var addToGroupTasks = userConnectionIds
+                    .SelectMany(user => user)
+                    .Select(connectionId => Groups.AddToGroupAsync(connectionId, chatId));
+
+                await Task.WhenAll(addToGroupTasks);
+
+                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
+
+                await saveMessageTask;
+            }
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+        public async Task DeliverMessage(string chatType, string chatId, string messageId)
+        {
+            try
+            {
+                var (message, recipientId) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
@@ -275,26 +304,17 @@ namespace Mingle.API.Hubs
                     }
                 }
 
-                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new { Individual = messageVM });
+                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
 
-                await _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
-                Console.WriteLine($"\nMesaj gönderme, veritabanı ile birlikte toplam süresi: {stopwatch.ElapsedMilliseconds} ms");
+                await _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.Keys.First(), message.Values.First());
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {
@@ -303,69 +323,39 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendDemoMessage(string chatId, SendMessage dto)
+        public async Task ReadMessage(string chatType, string chatId, string messageId)
         {
-            var stopwatch = Stopwatch.StartNew();
-
             try
             {
-                // 1. Mesaj oluşturma ve alıcı ID'sini elde etme
-                var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                var (message, recipientId) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Read");
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
-        {
-            { chatId, message }
-        };
+                {
+                    { chatId, message }
+                };
 
-                // 2. Katılımcılar listesi oluşturma
-                List<string> chatParticipants = new() { UserId, recipientId };
+                List<string> chatParticipants = [UserId, recipientId];
+                var userConnectionIds = await _userService.GetUserConnectionIdsAsync(chatParticipants);
 
-                // 3. Kullanıcı bağlantı ID'lerini eş zamanlı olarak al
-                var userConnectionIdsTask = _userService.GetUserConnectionIdsAsync(chatParticipants);
+                foreach (var user in userConnectionIds)
+                {
+                    foreach (var connectionId in user)
+                    {
+                        await Groups.AddToGroupAsync(connectionId, chatId);
+                    }
+                }
 
-                // 4. Veritabanına mesaj kaydetme işlemini paralel olarak başlat
-                var saveMessageTask = _messageRepository.CreateMessageAsync(
-                    UserId,
-                    "Individual",
-                    chatId,
-                    message.Keys.First(),
-                    message.Values.First()
-                );
+                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
 
-                // Kullanıcı bağlantı ID'lerini al
-                var userConnectionIds = await userConnectionIdsTask;
-
-                // 5. Gruplara bağlantı ID'lerini toplu olarak ekleme
-                var addToGroupTasks = userConnectionIds
-                    .SelectMany(user => user)
-                    .Select(connectionId => Groups.AddToGroupAsync(connectionId, chatId));
-
-                await Task.WhenAll(addToGroupTasks);
-
-                // 6. Mesajı gruba gönder
-                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new { Individual = messageVM });
-
-                // 7. Mesaj kaydetme işleminin tamamlanmasını bekle
-                await saveMessageTask;
-
-                stopwatch.Stop();
-                Console.WriteLine($"\nDemo Mesaj gönderme işlemi toplam süresi: {stopwatch.ElapsedMilliseconds} ms");
+                await _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.Keys.First(), message.Values.First());
             }
-            catch (NotFoundException ex)
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
             {
                 await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (BadRequestException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (ForbiddenException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
             }
             catch (Exception ex)
             {

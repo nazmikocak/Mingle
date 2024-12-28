@@ -9,7 +9,7 @@ namespace Mingle.Services.Abstract
 
         Task EditGroupAsync(string userId, string groupId, CreateGroup dto);
 
-        Task<Dictionary<string, GroupProfile>> GetGroupProfileAsync(string userId, string groupId);
+        Task<Dictionary<string, GroupProfile>> GetGroupProfileByIdAsync(string userId, string groupId);
 
         Task<Dictionary<string, GroupProfile>> GetGroupProfilesAsync(List<string> userGroupIds);
 

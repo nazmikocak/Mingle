@@ -139,7 +139,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateDisplayNameAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.DisplayName } });
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.DisplayName } } } });
 
                 return Ok(new { message = "Kullanıcı adı güncellendi." });
             }
@@ -301,7 +301,7 @@ namespace Mingle.API.Controllers
         [HttpGet]
         public async Task<IActionResult> TestFirebase()
         {
-            return Ok(await _chatService.GetChatsAsync(UserId));
+            return Ok(await _chatService.GetAllChatsAsync(UserId));
         }
     }
 }

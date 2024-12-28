@@ -11,7 +11,7 @@ namespace Mingle.DataAccess.Abstract
 
         Task<Chat> GetChatByIdAsync(string chatType, string chatId);
 
-        Task<List<string>> GetChatParticipantsAsync(string chatType, string chatId);
+        Task<List<string>> GetChatParticipantsByIdAsync(string chatType, string chatId);
 
         Task UpdateChatArchivedForAsync(string chatType, string chatId, Dictionary<string, DateTime> archivedFor);
 

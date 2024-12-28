@@ -29,7 +29,7 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
-            var participantsTask = _chatRepository.GetChatParticipantsAsync(chatType, chatId);
+            var participantsTask = _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId);
 
             Task<string>? fileUrlTask = null;
 
@@ -118,11 +118,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<(Dictionary<string, Message>, string recipientId)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
-            FieldValidator.ValidateRequiredFields(
-                (chatType, "chatType"),
-                (chatId, "chatId"),
-                (messageId, "messageId")
-            );
+            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı!");
 

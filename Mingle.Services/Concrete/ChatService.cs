@@ -83,7 +83,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetChatsAsync(string userId)
+        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetAllChatsAsync(string userId)
         {
             var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
             var groupChatsTask = _chatRepository.GetChatsAsync("Group");
@@ -135,7 +135,6 @@ namespace Mingle.Services.Concrete
             userGroupIds
             );
         }
-
 
 
         public async Task ClearChatAsync(string userId, string chatType, string chatId)
@@ -222,7 +221,7 @@ namespace Mingle.Services.Concrete
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
-            var chatParticipants = await _chatRepository.GetChatParticipantsAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
+            var chatParticipants = await _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
             string recipientId;
 

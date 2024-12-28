@@ -6,6 +6,8 @@ namespace Mingle.Services.Abstract
     {
         Task<Dictionary<string, Chat>> CreateChatAsync(string userId, string chatType, string recipientId);
 
+        Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetAllChatsAsync(string userId);
+
         Task ClearChatAsync(string userId, string chatType, string chatId);
 
         Task ArchiveIndividualChatAsync(string userId, string chatId);
@@ -13,7 +15,5 @@ namespace Mingle.Services.Abstract
         Task UnarchiveIndividualChatAsync(string userId, string chatId);
 
         Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);
-
-        Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetChatsAsync(string userId);
     }
 }

@@ -15,15 +15,13 @@ namespace Mingle.Services.Concrete
     {
         private readonly IGroupRepository _groupRepository;
         private readonly ICloudRepository _cloudRepository;
-        private readonly IChatRepository _chatRepository;
         private readonly IUserRepository _userRepository;
 
 
-        public GroupService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IChatRepository chatRepository, IUserRepository userRepository)
+        public GroupService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IUserRepository userRepository)
         {
             _groupRepository = groupRepository;
             _cloudRepository = cloudRepository;
-            _chatRepository = chatRepository;
             _userRepository = userRepository;
         }
 
@@ -75,13 +73,10 @@ namespace Mingle.Services.Concrete
 
         public async Task EditGroupAsync(string userId, string groupId, CreateGroup dto)
         {
+            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
+
             var groupParticipants = JsonSerializer.Deserialize<Dictionary<string, GroupParticipant>>(dto.Participants)
                                     ?? throw new BadRequestException("Grup katılımcıları hatalı.");
-
-            if (String.IsNullOrEmpty(groupId))
-            {
-                throw new BadRequestException("groupId gereklidir.");
-            }
 
             var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
@@ -143,7 +138,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, GroupProfile>> GetGroupProfileAsync(string userId, string groupId)
+        public async Task<Dictionary<string, GroupProfile>> GetGroupProfileByIdAsync(string userId, string groupId)
         {
             FieldValidator.ValidateRequiredFields((groupId, "groupId"));
 
@@ -230,6 +225,8 @@ namespace Mingle.Services.Concrete
 
         public async Task<List<string>> GetGroupParticipantsAsync(string userId, string groupId)
         {
+            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
+
             var groupParticipants = await _groupRepository.GetGroupParticipantsByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
             if (!groupParticipants.Contains(userId))
@@ -243,10 +240,7 @@ namespace Mingle.Services.Concrete
 
         public async Task LeaveGroupAsync(string userId, string groupId)
         {
-            if (String.IsNullOrEmpty(groupId))
-            {
-                throw new BadRequestException("groupId gereklidir.");
-            }
+            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
 
             var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 

@@ -127,7 +127,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<RecipientProfile> GetRecipientProfileAsync(string recipientId)
+        public async Task<RecipientProfile> GetRecipientProfileByIdAsync(string recipientId)
         {
             var user = await _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
@@ -137,7 +137,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds) 
+        public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds)
         {
             var users = await _userRepository.GetAllUsersAsync();
 
@@ -152,7 +152,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds) 
+        public async Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds)
         {
             var users = await _userRepository.GetAllUsersAsync();
 
@@ -164,17 +164,22 @@ namespace Mingle.Services.Concrete
             return connectionIds;
         }
 
+
         public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
         {
-            return await _userRepository.GetUserConnectionSettingsByIdAsync(userId);
+            return await _userRepository.GetUserConnectionSettingsByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bağlantı ayarları alınamadı.");
         }
 
 
         public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto)
         {
-            await _userRepository.UpdateSettingsAsync(userId, "ConnectionSettings", "LastConnectionDate", dto.LastConnectionDate!);
+            var fieldData = new Dictionary<string, object>
+            {
+                { "LastConnectionDate", dto.LastConnectionDate! },
+                { "ConnectionIds", dto.ConnectionIds }
+            };
 
-            await _userRepository.UpdateSettingsAsync(userId, "ConnectionSettings", "ConnectionIds", dto.ConnectionIds);
+            await _userRepository.UpdateUserFieldAsync(userId, "ConnectionSettings", fieldData);
         }
     }
 }

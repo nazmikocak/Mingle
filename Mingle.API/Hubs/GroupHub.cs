@@ -131,7 +131,7 @@ namespace Mingle.API.Hubs
             try
             {
                 var groupId = await _chatService.GetChatRecipientIdAsync(UserId, "Group", chatId);
-                var group = await _groupService.GetGroupProfileAsync(UserId, groupId);
+                var group = await _groupService.GetGroupProfileByIdAsync(UserId, groupId);
 
                 await Clients.Caller.SendAsync("ReceiveGroup", group);
             }
