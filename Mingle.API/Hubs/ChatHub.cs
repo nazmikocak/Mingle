@@ -73,7 +73,7 @@ namespace Mingle.API.Hubs
                 Clients.Caller.SendAsync("ReceiveInitialChats", chats),
                 Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
                 Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
-                Clients.All.SendAsync("ReceiveRecipientProfiles", userCS)
+                Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> {{UserId, userCS}})
                 };
 
                 await Task.WhenAll(sendTasks);
@@ -96,7 +96,7 @@ namespace Mingle.API.Hubs
                 userCS.LastConnectionDate = DateTime.UtcNow;
 
                 var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
-                var notifyClientsTask = Clients.All.SendAsync("ReceiveRecipientProfiles", userCS);
+                var notifyClientsTask = Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
 
                 await Task.WhenAll(saveSettingsTask, notifyClientsTask);
             }
