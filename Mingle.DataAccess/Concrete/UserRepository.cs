@@ -17,7 +17,7 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<IReadOnlyCollection<FirebaseObject<User>>> GetUsersAsync()
+        public async Task<IReadOnlyCollection<FirebaseObject<User>>> GetAllUsersAsync()
         {
             return await _databaseClient.Child("Users").OnceAsync<User>();
         }
@@ -35,7 +35,7 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<ConnectionSettings> GetUserConnectionStringByIdAsync(string userId)
+        public async Task<ConnectionSettings> GetUserConnectionSettingsByIdAsync(string userId)
         {
             return await _databaseClient.Child("Users").Child(userId).Child("ConnectionSettings").OnceSingleAsync<ConnectionSettings>();
         }

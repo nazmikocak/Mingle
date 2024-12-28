@@ -1,13 +1,8 @@
-﻿using AutoMapper;
-using Mingle.DataAccess.Abstract;
+﻿using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
-using System;
-using System.Diagnostics;
 
 
 namespace Mingle.Services.Concrete
@@ -15,25 +10,21 @@ namespace Mingle.Services.Concrete
     public sealed class ChatService : IChatService
     {
         private readonly IMessageRepository _messageRepository;
-        private readonly ICloudRepository _cloudRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IChatRepository _chatRepository;
         private readonly IUserRepository _userRepository;
-        private readonly IGroupRepository _groupRepository;
-        private readonly IMapper _mapper;
 
 
-        public ChatService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository, IUserRepository userRepository, IGroupRepository groupRepository, IMapper mapper)
+        public ChatService(IMessageRepository messageRepository, IGroupRepository groupRepository, IChatRepository chatRepository, IUserRepository userRepository)
         {
             _messageRepository = messageRepository;
-            _cloudRepository = cloudRepository;
+            _groupRepository = groupRepository;
             _chatRepository = chatRepository;
             _userRepository = userRepository;
-            _groupRepository = groupRepository;
-            _mapper = mapper;
         }
 
 
-        public async Task<string> CreateChatAsync(string userId, string chatType, string recipientId)
+        public async Task<Dictionary<string, Chat>> CreateChatAsync(string userId, string chatType, string recipientId)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (recipientId, "recipientId"));
 
@@ -43,29 +34,36 @@ namespace Mingle.Services.Concrete
 
                 var chatsSnapshot = await _chatRepository.GetChatsAsync(chatType);
 
-                string? chatId = chatsSnapshot
-                .Where(chat =>
-                    chat.Object.Participants.Contains(userId)
-                    &&
-                    chat.Object.Participants.Contains(recipientId)
-                )
-                .Select(chat => chat.Key)
-                .SingleOrDefault();
+                var oldChat = chatsSnapshot
+                    .Where(chat =>
+                        chat.Object.Participants.Contains(userId)
+                        &&
+                        chat.Object.Participants.Contains(recipientId)
+                    )
+                    .Where(chat =>
+                        chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
+                    )
+                    .ToDictionary(
+                        chat => chat.Key,
+                        chat => chat.Object
+                    );
 
-                if (String.IsNullOrEmpty(chatId))
+                if (oldChat == null)
                 {
-                    chatId = Guid.NewGuid().ToString();
+                    string chatId = Guid.NewGuid().ToString();
 
-                    var chat = new Chat
+                    var newchat = new Chat
                     {
-                        Participants = new List<string> { userId, recipientId },
+                        Participants = [userId, recipientId],
                         CreatedDate = DateTime.UtcNow,
                     };
 
-                    await _chatRepository.CreateChatAsync(chatType, chatId, chat);
+                    await _chatRepository.CreateChatAsync(chatType, chatId, newchat);
+
+                    return new Dictionary<string, Chat> { { chatId, newchat } };
                 }
 
-                return chatId;
+                return oldChat;
             }
             else if (chatType.Equals("Group"))
             {
@@ -79,13 +77,80 @@ namespace Mingle.Services.Concrete
 
                 await _chatRepository.CreateChatAsync(chatType, chatId, chat);
 
-                return chatId;
+                return new Dictionary<string, Chat> { { chatId, chat } };
             }
             else
             {
                 throw new BadRequestException("chatType geçersiz.");
             }
         }
+
+
+        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetChatsAsync(string userId)
+        {
+            var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
+            var groupChatsTask = _chatRepository.GetChatsAsync("Group");
+            var groupsTask = _groupRepository.GetAllGroupAsync();
+
+            await Task.WhenAll(individualChatsTask, groupChatsTask, groupsTask);
+
+            var individualChats = await individualChatsTask;
+            var groupChats = await groupChatsTask;
+            var groups = await groupsTask;
+
+            var userGroupIds = new List<string>(
+                groups.Where(group => group.Object.Participants.ContainsKey(userId))
+                      .Select(group => group.Key)
+            );
+
+            var userIndividualChats = individualChats
+                .Where(chat =>
+                    chat.Object.Participants.Contains(userId) &&
+                    chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
+                )
+                .ToDictionary(
+                    chat => chat.Key,
+                    chat => new Chat
+                    {
+                        Participants = chat.Object.Participants,
+                        ArchivedFor = chat.Object.ArchivedFor,
+                        CreatedDate = chat.Object.CreatedDate,
+                        Messages = chat.Object.Messages
+                            .OrderBy(x => x.Value.Status.Sent.Values.First())
+                            .ToDictionary(x => x.Key, x => x.Value)
+                    }
+                );
+
+            var userGroupChats = groupChats
+                .Where(chat => userGroupIds.Contains(chat.Key))
+                .ToDictionary(chat => chat.Key, chat => chat.Object);
+
+            var userChatIds = new List<string>();
+
+            foreach (var chatId in userIndividualChats.Keys)
+            {
+                userChatIds.Add(chatId);
+            }
+            foreach (var chatId in userGroupChats.Keys)
+            {
+                userChatIds.Add(chatId);
+            }
+
+            var chatsRecipientIds = userIndividualChats
+                .Select(chat => chat.Value.Participants.FirstOrDefault(participant => !participant.Equals(userId))!)
+                .ToList();
+
+            return (new Dictionary<string, Dictionary<string, Chat>>
+            {
+                { "Individual", userIndividualChats },
+                { "Group", userGroupChats }
+            },
+            userChatIds,
+            chatsRecipientIds,
+            userGroupIds
+            );
+        }
+
 
 
         public async Task ClearChatAsync(string userId, string chatType, string chatId)
@@ -103,15 +168,13 @@ namespace Mingle.Services.Concrete
             {
                 foreach (var message in chat.Messages)
                 {
-                    var deletedFor = message.Value.DeletedFor;
-
-                    if (deletedFor != null && !deletedFor.ContainsKey(userId))
+                    if (!message.Value.DeletedFor!.ContainsKey(userId))
                     {
-                        deletedFor.Add(userId, DateTime.UtcNow);
-
-                        await _messageRepository.UpdateMessageDeletedForAsync(chatType, chatId, message.Key, deletedFor);
+                        message.Value.DeletedFor.Add(userId, DateTime.UtcNow);
                     }
                 }
+
+                await _chatRepository.UpdateChatMessageAsync(chatType, chatId, chat.Messages);
             }
             else
             {
@@ -197,64 +260,6 @@ namespace Mingle.Services.Concrete
             }
 
             return recipientId;
-        }
-
-
-        public async Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId)
-        {
-            FieldValidator.ValidateRequiredFields((chatId, "chatId"));
-
-            var chatParticipants = await _chatRepository.GetChatParticipantsAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
-
-            if (!chatParticipants.Contains(userId))
-            {
-                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
-            }
-
-            var recipientId = chatParticipants
-                .FirstOrDefault(participant => !participant.Equals(userId));
-
-            var user = _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
-
-            var recipientProfile = _mapper.Map<RecipientProfile>(user);
-
-            return recipientProfile;
-        }
-
-
-        public async Task<Dictionary<string, Dictionary<string, Chat>>> GetChatsAsync(string userId)
-        {
-            var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
-            var groupChatsTask = _chatRepository.GetChatsAsync("Group");
-            var groupsTask = _groupRepository.GetAllGroupAsync();
-
-            await Task.WhenAll(individualChatsTask, groupChatsTask, groupsTask);
-
-            var individualChats = await individualChatsTask;
-            var groupChats = await groupChatsTask;
-            var groups = await groupsTask;
-
-            var userGroupIds = new HashSet<string>(
-                groups.Where(group => group.Object.Participants.ContainsKey(userId))
-                      .Select(group => group.Key)
-            );
-
-            var userIndividualChats = individualChats
-                .Where(chat =>
-                    chat.Object.Participants.Contains(userId) &&
-                    chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
-                )
-                .ToDictionary(chat => chat.Key, chat => chat.Object);
-
-            var userGroupChats = groupChats
-                .Where(chat => userGroupIds.Contains(chat.Key))
-                .ToDictionary(chat => chat.Key, chat => chat.Object);
-
-            return new Dictionary<string, Dictionary<string, Chat>>
-            {
-                { "Individual", userIndividualChats },
-                { "Group", userGroupChats }
-            };
         }
     }
 }

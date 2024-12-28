@@ -5,13 +5,13 @@ namespace Mingle.DataAccess.Abstract
 {
     public interface IUserRepository
     {
-        Task<IReadOnlyCollection<FirebaseObject<User>>> GetUsersAsync();
+        Task<IReadOnlyCollection<FirebaseObject<User>>> GetAllUsersAsync();
 
         Task CreateUserAsync(string userId, User user);
 
         Task<User> GetUserByIdAsync(string userId);
 
-        Task<ConnectionSettings> GetUserConnectionStringByIdAsync(string userId);
+        Task<ConnectionSettings> GetUserConnectionSettingsByIdAsync(string userId);
 
         Task UpdateUserFieldAsync(string userId, string fieldName, object newValue);
 

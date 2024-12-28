@@ -17,15 +17,10 @@ namespace Mingle.DataAccess.Concrete
             _databaseClient = firebaseConfig.DatabaseClient;
         }
 
+
         public async Task CreateChatAsync(string chatType, string chatId, Chat chat)
         {
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).PutAsync(chat);
-        }
-
-
-        public async Task<object> GelAllChatAsync(string chatType)
-        {
-            return await _databaseClient.Child("Chats").Child(chatType).OnceAsync<Chat>();
         }
 
 
@@ -50,6 +45,12 @@ namespace Mingle.DataAccess.Concrete
         public async Task UpdateChatArchivedForAsync(string chatType, string chatId, Dictionary<string, DateTime> archivedFor)
         {
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).PatchAsync(new { ArchivedFor = archivedFor });
+        }
+
+
+        public async Task UpdateChatMessageAsync(string chatType, string chatId, Dictionary<string, Message> messages) 
+        {
+            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").PutAsync(messages);
         }
     }
 }

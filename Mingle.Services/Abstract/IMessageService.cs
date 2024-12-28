@@ -5,12 +5,10 @@ namespace Mingle.Services.Abstract
 {
     public interface IMessageService
     {
-        Task<Dictionary<string, Message>> GetMessagesAsync(string userId, string chatId, string chatType);
-
         Task<(Dictionary<string, Message>, string recipientId)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto);
 
-        Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType, Chat chat);
+        Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType);
 
-        Task<Dictionary<string, Message>> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName);
+        Task<(Dictionary<string, Message>, string recipientId)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName);
     }
 }

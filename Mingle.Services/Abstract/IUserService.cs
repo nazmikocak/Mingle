@@ -29,8 +29,12 @@ namespace Mingle.Services.Abstract
 
         Task<RecipientProfile> GetRecipientProfileAsync(string recipientId);
 
+        Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds);
+
         Task<ConnectionSettings> GetConnectionSettingsAsync(string userId);
 
         Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto);
+
+        Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds);
     }
 }

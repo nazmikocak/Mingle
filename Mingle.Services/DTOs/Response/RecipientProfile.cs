@@ -1,4 +1,6 @@
-﻿namespace Mingle.Services.DTOs.Response
+﻿using Mingle.Entities.Models;
+
+namespace Mingle.Services.DTOs.Response
 {
     public sealed record RecipientProfile
     {
@@ -10,8 +12,6 @@
 
         public required string ProfilePhoto { get; init; }
 
-        public DateTime? Status { get; init; }
-
-        public DateTime? LastConnectionDate { get; set; }
+        public required ConnectionSettings ConnectionSettings { get; set; }
     }
 }

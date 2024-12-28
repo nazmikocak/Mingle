@@ -1,8 +1,8 @@
 ﻿using Firebase.Auth;
 using Firebase.Database;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Mingle.DataAccess.Abstract;
+using Microsoft.AspNetCore.SignalR;
+using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
@@ -13,11 +13,13 @@ namespace Mingle.API.Controllers
     [ApiController]
     public sealed class UserController : BaseController
     {
+        private readonly IHubContext<ChatHub> _chatHubContext;
         private readonly IUserService _userService;
         private readonly IChatService _chatService;
 
-        public UserController(IUserService userService, IChatService chatService)
+        public UserController(IHubContext<ChatHub> hubContext, IUserService userService, IChatService chatService)
         {
+            _chatHubContext = hubContext;
             _userService = userService;
             _chatService = chatService;
         }
@@ -78,7 +80,10 @@ namespace Mingle.API.Controllers
         {
             try
             {
-                return Ok(new { message = "Profil fotoğrafı kaldırıldı.", profilePhoto = await _userService.RemoveProfilePhotoAsync(UserId) });
+                var profilePhoto = await _userService.RemoveProfilePhotoAsync(UserId);
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
+
+                return Ok(new { message = "Profil fotoğrafı kaldırıldı.", profilePhoto });
             }
             catch (FirebaseException ex)
             {
@@ -102,7 +107,10 @@ namespace Mingle.API.Controllers
             }
             try
             {
-                return Ok(new { message = "Profil fotoğrafı güncellendi.", profilePhoto = await _userService.UpdateProfilePhotoAsync(UserId, dto) });
+                var profilePhoto = await _userService.UpdateProfilePhotoAsync(UserId, dto);
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
+
+                return Ok(new { message = "Profil fotoğrafı güncellendi.", profilePhoto });
             }
             catch (BadRequestException ex)
             {
@@ -131,6 +139,8 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateDisplayNameAsync(UserId, dto);
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.DisplayName } });
+
                 return Ok(new { message = "Kullanıcı adı güncellendi." });
             }
             catch (FirebaseException ex)
@@ -156,6 +166,8 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdatePhoneNumberAsync(UserId, dto);
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.PhoneNumber } });
+
                 return Ok(new { message = "Telefon numrası güncellendi." });
             }
             catch (FirebaseException ex)
@@ -181,6 +193,8 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateBiographyAsync(UserId, dto);
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.Biography } });
+
                 return Ok(new { message = "Biyografi güncellendi." });
             }
             catch (FirebaseException ex)
@@ -283,6 +297,7 @@ namespace Mingle.API.Controllers
         }
 
 
+        // Test için açılmış bir endpoint.
         [HttpGet]
         public async Task<IActionResult> TestFirebase()
         {

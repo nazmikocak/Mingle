@@ -28,7 +28,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, SearchedUsers dto)
         {
-            var usersSnapshot = await _userRepository.GetUsersAsync();
+            var usersSnapshot = await _userRepository.GetAllUsersAsync();
 
             var users = usersSnapshot
                 .Where(user =>
@@ -137,9 +137,36 @@ namespace Mingle.Services.Concrete
         }
 
 
+        public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds) 
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var recipientProfiles = users
+                .Where(user => recipientIds.Contains(user.Key))
+                .ToDictionary(
+                    user => user.Key,
+                    user => _mapper.Map<RecipientProfile>(user.Object)
+                );
+
+            return recipientProfiles;
+        }
+
+
+        public async Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds) 
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var connectionIds = users
+                .Where(user => userIds.Contains(user.Key))
+                .Select(user => user.Object.ConnectionSettings.ConnectionIds)
+                .ToList();
+
+            return connectionIds;
+        }
+
         public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
         {
-            return await _userRepository.GetUserConnectionStringByIdAsync(userId);
+            return await _userRepository.GetUserConnectionSettingsByIdAsync(userId);
         }
 
 

@@ -9,12 +9,6 @@ namespace Mingle.DataAccess.Abstract
 
         Task UpdateMessageDeletedForAsync(string chatType, string chatId, string messageId, Dictionary<string, DateTime> deletedFor);
 
-        Task<IReadOnlyCollection<FirebaseObject<Message>>> GetMessagesByChatIdAsync(string chatType, string chatId);
-
-        Task<Message> GetLastMessageByChatIdAsync(string chatType, string chatId);
-
         Task UpdateMessageStatusAsync(string chatType, string chatId, string messageId, string fieldName, object fieldData);
-
-        Task<Message> GetMessageByIdAsync(string chatType, string chatId, string messageId);
     }
 }

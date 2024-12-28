@@ -1,11 +1,10 @@
 ﻿using Mingle.Entities.Models;
-using Mingle.Services.DTOs.Response;
 
 namespace Mingle.Services.Abstract
 {
     public interface IChatService
     {
-        Task<string> CreateChatAsync(string userId, string chatType, string recipientId);
+        Task<Dictionary<string, Chat>> CreateChatAsync(string userId, string chatType, string recipientId);
 
         Task ClearChatAsync(string userId, string chatType, string chatId);
 
@@ -13,10 +12,8 @@ namespace Mingle.Services.Abstract
 
         Task UnarchiveIndividualChatAsync(string userId, string chatId);
 
-        Task<RecipientProfile> RecipientProfileAsync(string userId, string chatId);
-
         Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId);
 
-        Task<Dictionary<string, Dictionary<string, Chat>>> GetChatsAsync(string userId);
+        Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetChatsAsync(string userId);
     }
 }

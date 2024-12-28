@@ -37,6 +37,12 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
+        public async Task<List<string>> GetGroupParticipantsByIdAsync(string groupId)
+        {
+            return await _databaseClient.Child("Groups").Child(groupId).Child("Participants").OnceSingleAsync<List<string>>();
+        }
+
+
         public async Task UpdateGroupParticipantsAsync(string groupId, Dictionary<string, GroupParticipant> groupParticipants)
         {
             await _databaseClient.Child("Groups").Child(groupId).Child("Participants").PutAsync(groupParticipants);
