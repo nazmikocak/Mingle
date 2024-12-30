@@ -158,7 +158,8 @@ namespace Mingle.Services.Concrete
 
             var connectionIds = users
                 .Where(user => userIds.Contains(user.Key))
-                .Select(user => user.Object.ConnectionSettings.ConnectionIds.Where(x => x != null).ToList())
+                .Select(user => user.Object.ConnectionSettings.ConnectionIds.Where(x => x != null).ToList()
+                .Where(x => x != null).ToList())
                 .ToList();
 
             return connectionIds;

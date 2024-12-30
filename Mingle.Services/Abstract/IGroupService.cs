@@ -5,9 +5,11 @@ namespace Mingle.Services.Abstract
 {
     public interface IGroupService
     {
-        Task<string> CreateGroupAsync(string userId, CreateGroup dto);
+        Task<List<string>> GetUserGroupsIdsAsync(string userId);
 
-        Task EditGroupAsync(string userId, string groupId, CreateGroup dto);
+        Task<Dictionary<string, GroupProfile>> CreateGroupAsync(string userId, CreateGroup dto);
+
+        Task<Dictionary<string, GroupProfile>> EditGroupAsync(string userId, string groupId, CreateGroup dto);
 
         Task<Dictionary<string, GroupProfile>> GetGroupProfileByIdAsync(string userId, string groupId);
 
@@ -15,6 +17,6 @@ namespace Mingle.Services.Abstract
 
         Task<List<string>> GetGroupParticipantsAsync(string userId, string groupId);
 
-        Task LeaveGroupAsync(string userId, string groupId);
+        Task<Dictionary<string, GroupProfile>> LeaveGroupAsync(string userId, string groupId);
     }
 }

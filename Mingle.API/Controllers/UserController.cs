@@ -15,13 +15,12 @@ namespace Mingle.API.Controllers
     {
         private readonly IHubContext<ChatHub> _chatHubContext;
         private readonly IUserService _userService;
-        private readonly IChatService _chatService;
 
-        public UserController(IHubContext<ChatHub> hubContext, IUserService userService, IChatService chatService)
+
+        public UserController(IHubContext<ChatHub> hubContext, IUserService userService)
         {
             _chatHubContext = hubContext;
             _userService = userService;
-            _chatService = chatService;
         }
 
 
@@ -81,7 +80,7 @@ namespace Mingle.API.Controllers
             try
             {
                 var profilePhoto = await _userService.RemoveProfilePhotoAsync(UserId);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", profilePhoto } } } });
 
                 return Ok(new { message = "Profil fotoğrafı kaldırıldı.", profilePhoto });
             }
@@ -166,7 +165,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdatePhoneNumberAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.PhoneNumber } });
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.PhoneNumber } } } });
 
                 return Ok(new { message = "Telefon numrası güncellendi." });
             }
@@ -193,7 +192,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateBiographyAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, dto.Biography } });
+                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.Biography } } } });
 
                 return Ok(new { message = "Biyografi güncellendi." });
             }
@@ -294,14 +293,6 @@ namespace Mingle.API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
-        }
-
-
-        // Test için açılmış bir endpoint.
-        [HttpGet]
-        public async Task<IActionResult> TestFirebase()
-        {
-            return Ok(await _chatService.GetAllChatsAsync(UserId));
         }
     }
 }

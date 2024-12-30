@@ -25,8 +25,20 @@ namespace Mingle.Services.Concrete
             _userRepository = userRepository;
         }
 
+        public async Task<List<string>> GetUserGroupsIdsAsync(string userId)
+        {
+            var groups = await _groupRepository.GetAllGroupAsync();
 
-        public async Task<string> CreateGroupAsync(string userId, CreateGroup dto)
+            var userGroupIds = groups
+                .Where(group => group.Object.Participants.ContainsKey(userId))
+                .Select(group => group.Key)
+                .ToList();
+
+            return userGroupIds;
+        }
+
+
+        public async Task<Dictionary<string, GroupProfile>> CreateGroupAsync(string userId, CreateGroup dto)
         {
             var groupParticipants = JsonSerializer.Deserialize<Dictionary<string, GroupParticipant>>(dto.Participants)
                                     ?? throw new BadRequestException("Grup katılımcıları hatalı.");
@@ -67,11 +79,37 @@ namespace Mingle.Services.Concrete
 
             await _groupRepository.CreateOrUpdateGroupAsync(groupId, group);
 
-            return groupId;
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var participants = users
+                .Where(user => groupParticipants.ContainsKey(user.Key))
+                .ToDictionary(
+                    x => x.Key,
+                    x => new ParticipantProfile
+                    {
+                        DisplayName = x.Object.DisplayName,
+                        ProfilePhoto = x.Object.ProfilePhoto,
+                        Role = groupParticipants[x.Key],
+                        ConnectionSettings = x.Object.ConnectionSettings
+                    }
+                );
+
+            var participantIds = participants.Keys.ToList();
+
+            var groupProfile = new GroupProfile
+            {
+                Name = group.Name,
+                Description = group.Description,
+                PhotoUrl = group.Photo,
+                Participants = participants,
+                CreatedDate = group.CreatedDate
+            };
+
+            return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
 
 
-        public async Task EditGroupAsync(string userId, string groupId, CreateGroup dto)
+        public async Task<Dictionary<string, GroupProfile>> EditGroupAsync(string userId, string groupId, CreateGroup dto)
         {
             FieldValidator.ValidateRequiredFields((groupId, "groupId"));
 
@@ -121,9 +159,7 @@ namespace Mingle.Services.Concrete
             var newGroup = new Group
             {
                 Name = dto.Name,
-                Description = String.IsNullOrEmpty(dto.Description)
-                    ? "Merhaba, bu bir Mingle grubudur."
-                    : dto.Description,
+                Description = dto.Description,
                 Photo = photoUrl,
                 Participants = groupParticipants
                     .ToDictionary(
@@ -134,8 +170,39 @@ namespace Mingle.Services.Concrete
                 CreatedDate = group.CreatedDate
             };
 
-            await _groupRepository.CreateOrUpdateGroupAsync(groupId, group);
+            await _groupRepository.CreateOrUpdateGroupAsync(groupId, newGroup);
+
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var participants = users
+                .Where(user => groupParticipants.ContainsKey(user.Key))
+                .ToDictionary(
+                    x => x.Key,
+                    x => new ParticipantProfile
+                    {
+                        DisplayName = x.Object.DisplayName,
+                        ProfilePhoto = x.Object.ProfilePhoto,
+                        Role = groupParticipants[x.Key],
+                        ConnectionSettings = x.Object.ConnectionSettings
+                    }
+                );
+
+            var participantIds = participants.Keys.ToList();
+
+            var groupProfile = new GroupProfile
+            {
+                Name = newGroup.Name,
+                Description = newGroup.Description,
+                PhotoUrl = newGroup.Photo,
+                Participants = participants,
+                CreatedDate = newGroup.CreatedDate
+            };
+
+            return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
+
+
+
 
 
         public async Task<Dictionary<string, GroupProfile>> GetGroupProfileByIdAsync(string userId, string groupId)
@@ -159,7 +226,8 @@ namespace Mingle.Services.Concrete
                 {
                     DisplayName = user.DisplayName,
                     ProfilePhoto = user.ProfilePhoto,
-                    Role = group.Participants[participantId]
+                    Role = group.Participants[participantId],
+                    ConnectionSettings = user.ConnectionSettings
                 };
 
                 groupUsers.Add(participantId, participant);
@@ -203,7 +271,8 @@ namespace Mingle.Services.Concrete
                     {
                         DisplayName = user.Object.DisplayName,
                         ProfilePhoto = user.Object.ProfilePhoto,
-                        Role = participant.Value
+                        Role = participant.Value,
+                        ConnectionSettings = user.Object.ConnectionSettings
                     };
 
                     groupUsers.Add(participant.Key, participantProfile);
@@ -238,7 +307,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task LeaveGroupAsync(string userId, string groupId)
+        public async Task<Dictionary<string, GroupProfile>> LeaveGroupAsync(string userId, string groupId)
         {
             FieldValidator.ValidateRequiredFields((groupId, "groupId"));
 
@@ -257,6 +326,34 @@ namespace Mingle.Services.Concrete
             }
 
             await _groupRepository.UpdateGroupParticipantsAsync(groupId, group.Participants);
+
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var participants = users
+                .Where(user => group.Participants.ContainsKey(user.Key))
+                .ToDictionary(
+                    x => x.Key,
+                    x => new ParticipantProfile
+                    {
+                        DisplayName = x.Object.DisplayName,
+                        ProfilePhoto = x.Object.ProfilePhoto,
+                        Role = group.Participants[x.Key],
+                        ConnectionSettings = x.Object.ConnectionSettings
+                    }
+                );
+
+            var participantIds = participants.Keys.ToList();
+
+            var groupProfile = new GroupProfile
+            {
+                Name = group.Name,
+                Description = group.Description,
+                PhotoUrl = group.Photo,
+                Participants = participants,
+                CreatedDate = group.CreatedDate
+            };
+
+            return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
     }
 }

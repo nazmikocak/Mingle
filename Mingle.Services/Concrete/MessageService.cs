@@ -22,7 +22,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Message>, string recipientId)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
+        public async Task<(Dictionary<string, Message>, List<string>)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
             if (!(string.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
@@ -65,7 +65,7 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            return (new Dictionary<string, Message> { { messageId, message } }, recipientId);
+            return (new Dictionary<string, Message> { { messageId, message } }, chatParticipants);
         }
 
 
@@ -116,7 +116,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Message>, string recipientId)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
+        public async Task<(Dictionary<string, Message>, List<string>)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
@@ -127,12 +127,24 @@ namespace Mingle.Services.Concrete
                 throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
             }
 
-            var message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
-            message.Status.Delivered.Add(userId, DateTime.UtcNow);
+            Message message;
 
-            var recipientId = chat.Participants.SingleOrDefault(participant => !participant.Equals(userId))!;
+            if (fieldName.Equals("Deliver"))
+            {
+                message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
+                message.Status.Delivered.Add(userId, DateTime.UtcNow);
+            }
+            else if (fieldName.Equals("Read"))
+            {
+                message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
+                message.Status.Read.Add(userId, DateTime.UtcNow);
+            }
+            else
+            {
+                throw new BadRequestException("fieldName geçersiz.");
+            }
 
-            return (new Dictionary<string, Message> { { messageId, message } }, recipientId);
+            return (new Dictionary<string, Message> { { messageId, message } }, chat.Participants);
         }
     }
 }

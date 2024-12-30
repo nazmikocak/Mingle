@@ -9,15 +9,13 @@ namespace Mingle.Services.Concrete
 {
     public sealed class ChatService : IChatService
     {
-        private readonly IMessageRepository _messageRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IChatRepository _chatRepository;
         private readonly IUserRepository _userRepository;
 
 
-        public ChatService(IMessageRepository messageRepository, IGroupRepository groupRepository, IChatRepository chatRepository, IUserRepository userRepository)
+        public ChatService(IGroupRepository groupRepository, IChatRepository chatRepository, IUserRepository userRepository)
         {
-            _messageRepository = messageRepository;
             _groupRepository = groupRepository;
             _chatRepository = chatRepository;
             _userRepository = userRepository;
@@ -83,7 +81,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetAllChatsAsync(string userId)
+        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetAllChatsAsync(string userId)
         {
             var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
             var groupChatsTask = _chatRepository.GetChatsAsync("Group");
@@ -122,6 +120,8 @@ namespace Mingle.Services.Concrete
                 .Where(chat => userGroupIds.Contains(chat.Key))
                 .ToDictionary(chat => chat.Key, chat => chat.Object);
 
+            var userChatIds = userIndividualChats.Keys.Concat(userGroupChats.Keys).ToList();
+
             var chatsRecipientIds = userIndividualChats
                 .Select(chat => chat.Value.Participants.FirstOrDefault(participant => !participant.Equals(userId))!)
                 .ToList();
@@ -132,12 +132,13 @@ namespace Mingle.Services.Concrete
                 { "Group", userGroupChats }
             },
             chatsRecipientIds,
-            userGroupIds
+            userGroupIds,
+            userChatIds
             );
         }
 
 
-        public async Task ClearChatAsync(string userId, string chatType, string chatId)
+        public async Task<Dictionary<string, Chat>> ClearChatAsync(string userId, string chatType, string chatId)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
@@ -159,6 +160,10 @@ namespace Mingle.Services.Concrete
                 }
 
                 await _chatRepository.UpdateChatMessageAsync(chatType, chatId, chat.Messages);
+
+                chat.Messages.Clear();
+
+                return new Dictionary<string, Chat> { { chatId, chat } };
             }
             else
             {
@@ -214,36 +219,6 @@ namespace Mingle.Services.Concrete
             {
                 throw new BadRequestException("Sohbet zaten arşivde değil.");
             }
-        }
-
-
-        public async Task<string> GetChatRecipientIdAsync(string userId, string chatType, string chatId)
-        {
-            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
-
-            var chatParticipants = await _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
-
-            string recipientId;
-
-            if (chatType.Equals("Individual"))
-            {
-                if (!chatParticipants.Contains(userId))
-                {
-                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
-                }
-
-                recipientId = chatParticipants.FirstOrDefault(participant => !participant.Equals(userId))!;
-            }
-            else if (chatType.Equals("Group"))
-            {
-                recipientId = chatParticipants[0];
-            }
-            else
-            {
-                throw new BadRequestException("chatType geçersiz.");
-            }
-
-            return recipientId;
         }
     }
 }

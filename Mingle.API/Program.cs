@@ -10,6 +10,7 @@ using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Mapping;
+using System.Reactive;
 using System.Text;
 
 
@@ -155,8 +156,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("ChatHub");
-app.MapHub<GroupHub>("GroupHub");
-app.MapHub<MessageHub>("MessageHub");
+app.MapHub<NotificationHub>("NotificationHub");
 
 
 

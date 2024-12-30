@@ -6,7 +6,6 @@ using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -48,6 +47,8 @@ namespace Mingle.API.Hubs
         {
             var connectionId = Context.ConnectionId;
 
+            await Groups.AddToGroupAsync(connectionId, UserId);
+
             var userCSTask = _userService.GetConnectionSettingsAsync(UserId);
             var chatsTask = _chatService.GetAllChatsAsync(UserId);
 
@@ -60,7 +61,12 @@ namespace Mingle.API.Hubs
 
                 var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
 
-                var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
+                var (chats, chatsRecipientIds, userGroupIds, userChatIds) = await chatsTask;
+
+                foreach (var chatId in userChatIds)
+                {
+                    await Groups.AddToGroupAsync(connectionId, chatId);
+                }
 
                 var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
                 var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
@@ -70,13 +76,14 @@ namespace Mingle.API.Hubs
 
                 var sendTasks = new[]
                 {
-                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
-                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
-                Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> {{UserId, userCS}})
+                    Clients.Caller.SendAsync("ReceiveInitialChats", chats),
+                    Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                    Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
+                    Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> {{UserId, userCS}})
                 };
 
                 await Task.WhenAll(sendTasks);
+
                 await saveSettingsTask;
             }
 
@@ -84,10 +91,11 @@ namespace Mingle.API.Hubs
         }
 
 
-
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var connectionId = Context.ConnectionId;
+
+            await Groups.RemoveFromGroupAsync(connectionId, UserId);
 
             var userCS = await _userService.GetConnectionSettingsAsync(UserId);
 
@@ -97,6 +105,13 @@ namespace Mingle.API.Hubs
 
                 var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
                 var notifyClientsTask = Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
+
+                var (_, _, userChatIds, _) = await _chatService.GetAllChatsAsync(UserId);
+
+                foreach (var chatId in userChatIds)
+                {
+                    await Groups.AddToGroupAsync(connectionId, chatId);
+                }
 
                 await Task.WhenAll(saveSettingsTask, notifyClientsTask);
             }
@@ -113,9 +128,9 @@ namespace Mingle.API.Hubs
 
                 if (chatType.Equals("Individual"))
                 {
-                    List<string> chatParticipants = new() { UserId, recipientId };
-                    var userConnectionIds = await _userService.GetUserConnectionIdsAsync(chatParticipants);
+                    var participants = chat.Values.Select(x => x.Participants).First();
 
+                    var userConnectionIds = await _userService.GetUserConnectionIdsAsync(participants);
 
                     var groupTasks = userConnectionIds.SelectMany(user =>
                         user.Select(connectionId => Groups.AddToGroupAsync(connectionId, chat.Keys.First()))
@@ -126,27 +141,32 @@ namespace Mingle.API.Hubs
                     await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new Dictionary<string, Dictionary<string, Chat>> { { "Individual", chat } });
 
                     var recipientProfile = await _userService.GetRecipientProfileByIdAsync(recipientId);
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveRecipientProfile", recipientProfile);
-                }
+                    var senderProfile = await _userService.GetRecipientProfileByIdAsync(UserId);
 
+                    for (int i = 0; i < participants.Count; i++)
+                    {
+                        var profileToSend = participants[i] == UserId ? senderProfile : recipientProfile;
+                        foreach (var connectionId in userConnectionIds[i])
+                        {
+                            await Clients.Client(connectionId).SendAsync("ReceiveRecipientProfile", new Dictionary<string, object>
+                            {
+                                { profileToSend == recipientProfile ? recipientId : UserId, profileToSend }
+                            });
+                        }
+                    }
+                }
                 else
                 {
                     var groupParticipants = await _groupService.GetGroupParticipantsAsync(UserId, chat.Values.First().Participants.First());
                     var userConnectionIds = await _userService.GetUserConnectionIdsAsync(groupParticipants);
 
-                    foreach (var user in userConnectionIds)
-                    {
-                        foreach (var connectionId in user)
-                        {
-                            await Groups.AddToGroupAsync(connectionId, chat.Keys.First());
-                        }
-                    }
+                    var groupTasks = userConnectionIds.SelectMany(user =>
+                        user.Select(connectionId => Groups.AddToGroupAsync(connectionId, chat.Keys.First()))
+                    );
 
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", chat);
+                    await Task.WhenAll(groupTasks);
 
-                    var groupProfile = await _groupService.GetGroupProfileByIdAsync(UserId, chat.Values.First().Participants.First());
-
-                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveGroupProfiles", groupProfile);
+                    await Clients.Group(chat.Keys.First()).SendAsync("ReceiveCreateChat", new Dictionary<string, Dictionary<string, Chat>> { { "Group", chat } });
                 }
             }
             catch (Exception ex) when (
@@ -168,8 +188,9 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                await _chatService.ClearChatAsync(UserId, chatType, chatId);
-                await Clients.Caller.SendAsync("ReceiveClearChat", new { message = "Sohbet temizlendi." });
+                var chat = await _chatService.ClearChatAsync(UserId, chatType, chatId);
+
+                await Clients.Group(UserId).SendAsync("ReceiveCreateChat", new Dictionary<string, Dictionary<string, Chat>> { { chatType, chat } });
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
@@ -186,6 +207,7 @@ namespace Mingle.API.Hubs
         }
 
 
+        // TODO: Dönüt tipi belli değil?
         public async Task ArchiveChat(string chatId)
         {
             try
@@ -208,7 +230,7 @@ namespace Mingle.API.Hubs
         }
 
 
-
+        // TODO: Dönüt tipi belli değil?
         public async Task UnarchiveChat(string chatId)
         {
             try
@@ -231,37 +253,18 @@ namespace Mingle.API.Hubs
         }
 
 
-
         public async Task SendMessage(string chatId, SendMessage dto)
         {
             try
             {
-                var (message, recipientId) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                var (message, chatParticipants) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
                     { chatId, message }
                 };
 
-                List<string> chatParticipants = [UserId, recipientId];
-
-                var userConnectionIdsTask = _userService.GetUserConnectionIdsAsync(chatParticipants);
-
-                var saveMessageTask = _messageRepository.CreateMessageAsync(
-                    UserId,
-                    "Individual",
-                    chatId,
-                    message.Keys.First(),
-                    message.Values.First()
-                );
-
-                var userConnectionIds = await userConnectionIdsTask;
-
-                var addToGroupTasks = userConnectionIds
-                    .SelectMany(user => user)
-                    .Select(connectionId => Groups.AddToGroupAsync(connectionId, chatId));
-
-                await Task.WhenAll(addToGroupTasks);
+                var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
 
                 await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
 
@@ -286,23 +289,12 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var (message, recipientId) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
+                var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
                     { chatId, message }
                 };
-
-                List<string> chatParticipants = [UserId, recipientId];
-                var userConnectionIds = await _userService.GetUserConnectionIdsAsync(chatParticipants);
-
-                foreach (var user in userConnectionIds)
-                {
-                    foreach (var connectionId in user)
-                    {
-                        await Groups.AddToGroupAsync(connectionId, chatId);
-                    }
-                }
 
                 await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
 
@@ -327,23 +319,12 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var (message, recipientId) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Read");
+                var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Read");
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
                     { chatId, message }
                 };
-
-                List<string> chatParticipants = [UserId, recipientId];
-                var userConnectionIds = await _userService.GetUserConnectionIdsAsync(chatParticipants);
-
-                foreach (var user in userConnectionIds)
-                {
-                    foreach (var connectionId in user)
-                    {
-                        await Groups.AddToGroupAsync(connectionId, chatId);
-                    }
-                }
 
                 await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
 
@@ -362,6 +343,5 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
-
     }
 }
