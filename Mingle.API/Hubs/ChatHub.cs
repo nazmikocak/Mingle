@@ -145,7 +145,7 @@ namespace Mingle.API.Hubs
 
                     for (int i = 0; i < participants.Count; i++)
                     {
-                        var profileToSend = participants[i] == UserId ? senderProfile : recipientProfile;
+                        var profileToSend = participants[i] == UserId ? recipientProfile : senderProfile;
                         foreach (var connectionId in userConnectionIds[i])
                         {
                             await Clients.Client(connectionId).SendAsync("ReceiveRecipientProfile", new Dictionary<string, object>
@@ -157,7 +157,7 @@ namespace Mingle.API.Hubs
                 }
                 else
                 {
-                    var groupParticipants = await _groupService.GetGroupParticipantsAsync(UserId, chat.Values.First().Participants.First());
+                    var groupParticipants = await _groupService.GetGroupParticipantsAsync(UserId, recipientId);
                     var userConnectionIds = await _userService.GetUserConnectionIdsAsync(groupParticipants);
 
                     var groupTasks = userConnectionIds.SelectMany(user =>
@@ -253,20 +253,20 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendMessage(string chatId, SendMessage dto)
+        public async Task SendMessage(string chatType, string chatId, SendMessage dto)
         {
             try
             {
-                var (message, chatParticipants) = await _messageService.SendMessageAsync(UserId, chatId, "Individual", dto);
+                var (message, chatParticipants) = await _messageService.SendMessageAsync(UserId, chatId, chatType, dto);
 
                 var messageVM = new Dictionary<string, Dictionary<string, Message>>
                 {
                     { chatId, message }
                 };
 
-                var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, "Individual", chatId, message.Keys.First(), message.Values.First());
+                var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.Keys.First(), message.Values.First());
 
-                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { "Individual", messageVM } });
+                await Clients.Group(chatId).SendAsync("ReceiveGetMessages", new Dictionary<string, Dictionary<string, Dictionary<string, Message>>> { { chatType, messageVM } });
 
                 await saveMessageTask;
             }

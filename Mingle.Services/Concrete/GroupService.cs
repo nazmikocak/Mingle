@@ -82,15 +82,15 @@ namespace Mingle.Services.Concrete
             var users = await _userRepository.GetAllUsersAsync();
 
             var participants = users
-                .Where(user => groupParticipants.ContainsKey(user.Key))
+                .Where(user => group.Participants.ContainsKey(user.Key))
                 .ToDictionary(
                     x => x.Key,
                     x => new ParticipantProfile
                     {
                         DisplayName = x.Object.DisplayName,
                         ProfilePhoto = x.Object.ProfilePhoto,
-                        Role = groupParticipants[x.Key],
-                        ConnectionSettings = x.Object.ConnectionSettings
+                        Role = group.Participants[x.Key],
+                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate,
                     }
                 );
 
@@ -159,7 +159,7 @@ namespace Mingle.Services.Concrete
             var newGroup = new Group
             {
                 Name = dto.Name,
-                Description = dto.Description,
+                Description = dto.Description!,
                 Photo = photoUrl,
                 Participants = groupParticipants
                     .ToDictionary(
@@ -183,7 +183,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = x.Object.DisplayName,
                         ProfilePhoto = x.Object.ProfilePhoto,
                         Role = groupParticipants[x.Key],
-                        ConnectionSettings = x.Object.ConnectionSettings
+                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate,
                     }
                 );
 
@@ -192,7 +192,7 @@ namespace Mingle.Services.Concrete
             var groupProfile = new GroupProfile
             {
                 Name = newGroup.Name,
-                Description = newGroup.Description,
+                Description = newGroup.Description!,
                 PhotoUrl = newGroup.Photo,
                 Participants = participants,
                 CreatedDate = newGroup.CreatedDate
@@ -227,7 +227,7 @@ namespace Mingle.Services.Concrete
                     DisplayName = user.DisplayName,
                     ProfilePhoto = user.ProfilePhoto,
                     Role = group.Participants[participantId],
-                    ConnectionSettings = user.ConnectionSettings
+                    LastConnectionDate = user.ConnectionSettings.LastConnectionDate,
                 };
 
                 groupUsers.Add(participantId, participant);
@@ -272,7 +272,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = user.Object.DisplayName,
                         ProfilePhoto = user.Object.ProfilePhoto,
                         Role = participant.Value,
-                        ConnectionSettings = user.Object.ConnectionSettings
+                        LastConnectionDate = user.Object.ConnectionSettings.LastConnectionDate,
                     };
 
                     groupUsers.Add(participant.Key, participantProfile);
@@ -296,7 +296,7 @@ namespace Mingle.Services.Concrete
         {
             FieldValidator.ValidateRequiredFields((groupId, "groupId"));
 
-            var groupParticipants = await _groupRepository.GetGroupParticipantsByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
+            var groupParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
             if (!groupParticipants.Contains(userId))
             {
@@ -338,7 +338,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = x.Object.DisplayName,
                         ProfilePhoto = x.Object.ProfilePhoto,
                         Role = group.Participants[x.Key],
-                        ConnectionSettings = x.Object.ConnectionSettings
+                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate
                     }
                 );
 

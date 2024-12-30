@@ -39,7 +39,7 @@ namespace Mingle.API.Controllers
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {
-                    await _notificationHubContext.Clients.Group(participant).SendAsync("ReceiveGroupProfiles", group);
+                    await _notificationHubContext.Clients.Group(participant).SendAsync("ReceiveNewGroupProfiles", group);
                 }
 
                 return Ok(new { message = "Grup oluşturuldu." });
@@ -103,6 +103,8 @@ namespace Mingle.API.Controllers
             try
             {
                 var group = await _groupService.LeaveGroupAsync(UserId, groupId);
+
+                // Kullanıcı ChatHUb daki gruplardan da çıkarılmalı.
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {

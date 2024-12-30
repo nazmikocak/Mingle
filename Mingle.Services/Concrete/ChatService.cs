@@ -117,7 +117,7 @@ namespace Mingle.Services.Concrete
                 );
 
             var userGroupChats = groupChats
-                .Where(chat => userGroupIds.Contains(chat.Key))
+                .Where(chat => userGroupIds.Contains(chat.Object.Participants.First()))
                 .ToDictionary(chat => chat.Key, chat => chat.Object);
 
             var userChatIds = userIndividualChats.Keys.Concat(userGroupChats.Keys).ToList();

@@ -37,9 +37,11 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<List<string>> GetGroupParticipantsByIdAsync(string groupId)
+        public async Task<List<string>> GetGroupParticipantsIdsAsync(string groupId)
         {
-            return await _databaseClient.Child("Groups").Child(groupId).Child("Participants").OnceSingleAsync<List<string>>();
+            var groupParticipants = await _databaseClient.Child("Groups").Child(groupId).Child("Participants").OnceAsync<object>();
+
+            return groupParticipants.Select(x => x.Key).ToList();
         }
 
 

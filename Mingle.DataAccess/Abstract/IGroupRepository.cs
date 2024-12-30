@@ -12,7 +12,7 @@ namespace Mingle.DataAccess.Abstract
 
         Task<Group> GetGroupByIdAsync(string groupId);
 
-        Task<List<string>> GetGroupParticipantsByIdAsync(string groupId);
+        Task<List<string>> GetGroupParticipantsIdsAsync(string groupId);
 
         Task UpdateGroupParticipantsAsync(string groupId, Dictionary<string, GroupParticipant> groupParticipants);
     }
