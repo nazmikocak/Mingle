@@ -42,10 +42,14 @@ namespace Mingle.Services.Concrete
 
             var chatParticipants = await participantsTask ?? throw new NotFoundException("Sohbet bulunamadı.");
 
-            if (!chatParticipants.Contains(userId))
+            if (chatType.Equals("Individual"))
             {
-                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
             }
+
 
             string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent!;
 

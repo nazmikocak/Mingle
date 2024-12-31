@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Mingle.Entities.Models;
+using Mingle.Services.Abstract;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -7,6 +9,9 @@ namespace Mingle.API.Hubs
     [Authorize]
     public sealed class NotificationHub : Hub
     {
+        private readonly IUserService _userService;
+
+
         private string UserId
         {
             get
@@ -20,18 +25,26 @@ namespace Mingle.API.Hubs
         }
 
 
+        public NotificationHub(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+
         public override async Task OnConnectedAsync()
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, UserId);
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
 
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
             await base.OnConnectedAsync();
         }
 
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, UserId);
+            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
 
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
             await base.OnDisconnectedAsync(exception);
         }
     }

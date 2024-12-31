@@ -39,7 +39,7 @@ namespace Mingle.API.Controllers
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {
-                    await _notificationHubContext.Clients.Group(participant).SendAsync("ReceiveNewGroupProfiles", group);
+                    await _notificationHubContext.Clients.User(participant).SendAsync("ReceiveNewGroupProfiles", group);
                 }
 
                 return Ok(new { message = "Grup oluşturuldu." });
@@ -74,7 +74,7 @@ namespace Mingle.API.Controllers
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {
-                    await _notificationHubContext.Clients.Group(participant).SendAsync("ReceiveGroupProfiles", group);
+                    await _notificationHubContext.Clients.User(participant).SendAsync("ReceiveGroupProfiles", group);
                 }
 
                 return Ok(new { message = "Grup bilgileri güncellendi." });
@@ -108,7 +108,7 @@ namespace Mingle.API.Controllers
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {
-                    await _notificationHubContext.Clients.Group(participant).SendAsync("ReceiveGroupProfiles", group);
+                    await _notificationHubContext.Clients.User(participant).SendAsync("ReceiveGroupProfiles", group);
                 }
 
                 return Ok(new { message = "Gruptan çıkıldı." });

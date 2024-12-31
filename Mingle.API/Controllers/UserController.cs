@@ -13,13 +13,13 @@ namespace Mingle.API.Controllers
     [ApiController]
     public sealed class UserController : BaseController
     {
-        private readonly IHubContext<ChatHub> _chatHubContext;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
         private readonly IUserService _userService;
 
 
-        public UserController(IHubContext<ChatHub> hubContext, IUserService userService)
+        public UserController(IHubContext<NotificationHub> notificationHubContext, IUserService userService)
         {
-            _chatHubContext = hubContext;
+            _notificationHubContext = notificationHubContext;
             _userService = userService;
         }
 
@@ -80,7 +80,7 @@ namespace Mingle.API.Controllers
             try
             {
                 var profilePhoto = await _userService.RemoveProfilePhotoAsync(UserId);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", profilePhoto } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", profilePhoto } } } });
 
                 return Ok(new { message = "Profil fotoğrafı kaldırıldı.", profilePhoto });
             }
@@ -107,7 +107,7 @@ namespace Mingle.API.Controllers
             try
             {
                 var profilePhoto = await _userService.UpdateProfilePhotoAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
 
                 return Ok(new { message = "Profil fotoğrafı güncellendi.", profilePhoto });
             }
@@ -138,7 +138,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateDisplayNameAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.DisplayName } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.DisplayName } } } });
 
                 return Ok(new { message = "Kullanıcı adı güncellendi." });
             }
@@ -165,7 +165,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdatePhoneNumberAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.PhoneNumber } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.PhoneNumber } } } });
 
                 return Ok(new { message = "Telefon numrası güncellendi." });
             }
@@ -192,7 +192,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateBiographyAsync(UserId, dto);
-                await _chatHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.Biography } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.Biography } } } });
 
                 return Ok(new { message = "Biyografi güncellendi." });
             }

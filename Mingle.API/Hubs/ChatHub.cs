@@ -79,7 +79,6 @@ namespace Mingle.API.Hubs
                     Clients.Caller.SendAsync("ReceiveInitialChats", chats),
                     Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
                     Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
-                    Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> {{UserId, userCS}})
                 };
 
                 await Task.WhenAll(sendTasks);
@@ -104,7 +103,6 @@ namespace Mingle.API.Hubs
                 userCS.LastConnectionDate = DateTime.UtcNow;
 
                 var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
-                var notifyClientsTask = Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
 
                 var (_, _, userChatIds, _) = await _chatService.GetAllChatsAsync(UserId);
 
@@ -113,7 +111,7 @@ namespace Mingle.API.Hubs
                     await Groups.AddToGroupAsync(connectionId, chatId);
                 }
 
-                await Task.WhenAll(saveSettingsTask, notifyClientsTask);
+                await saveSettingsTask;
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -146,13 +144,12 @@ namespace Mingle.API.Hubs
                     for (int i = 0; i < participants.Count; i++)
                     {
                         var profileToSend = participants[i] == UserId ? recipientProfile : senderProfile;
-                        foreach (var connectionId in userConnectionIds[i])
-                        {
-                            await Clients.Client(connectionId).SendAsync("ReceiveRecipientProfile", new Dictionary<string, object>
+
+                        await Clients.User(participants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
                             {
                                 { profileToSend == recipientProfile ? recipientId : UserId, profileToSend }
-                            });
-                        }
+                            }
+                        );
                     }
                 }
                 else
