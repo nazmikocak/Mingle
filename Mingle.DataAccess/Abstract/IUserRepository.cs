@@ -11,8 +11,6 @@ namespace Mingle.DataAccess.Abstract
 
         Task<User> GetUserByIdAsync(string userId);
 
-        Task<ConnectionSettings> GetUserConnectionSettingsByIdAsync(string userId);
-
         Task UpdateUserFieldAsync(string userId, string fieldName, object newValue);
 
         Task UpdateSettingsAsync(string userId, string settingsName, string fieldName, object newValue);

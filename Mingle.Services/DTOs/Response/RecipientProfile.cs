@@ -12,6 +12,6 @@ namespace Mingle.Services.DTOs.Response
 
         public required string ProfilePhoto { get; init; }
 
-        public required ConnectionSettings ConnectionSettings { get; set; }
+        public DateTime LastConnectionDate { get; set; }
     }
 }

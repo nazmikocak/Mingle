@@ -32,9 +32,5 @@ namespace Mingle.Services.Abstract
         Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds);
 
         Task UpdateLastConnectionDateAsync(string userId, object lastConnectionDate);
-
-        Task<ConnectionSettings> GetConnectionSettingsAsync(string userId);
-
-        Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto);
     }
 }

@@ -147,23 +147,5 @@ namespace Mingle.Services.Concrete
         {
             await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", lastConnectionDate);
         }
-
-
-        public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
-        {
-            return await _userRepository.GetUserConnectionSettingsByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bağlantı ayarları alınamadı.");
-        }
-
-
-        public async Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto)
-        {
-            var fieldData = new Dictionary<string, object>
-            {
-                { "LastConnectionDate", dto.LastConnectionDate! },
-                { "ConnectionIds", dto.ConnectionIds }
-            };
-
-            await _userRepository.UpdateUserFieldAsync(userId, "ConnectionSettings", fieldData);
-        }
     }
 }

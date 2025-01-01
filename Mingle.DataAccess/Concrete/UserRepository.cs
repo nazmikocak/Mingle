@@ -35,12 +35,6 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<ConnectionSettings> GetUserConnectionSettingsByIdAsync(string userId)
-        {
-            return await _databaseClient.Child("Users").Child(userId).Child("ConnectionSettings").OnceSingleAsync<ConnectionSettings>();
-        }
-
-
         public async Task UpdateUserFieldAsync(string userId, string fieldName, object newValue)
         {
             var fieldData = new Dictionary<string, object>
