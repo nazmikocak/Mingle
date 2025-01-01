@@ -52,8 +52,15 @@ namespace Mingle.Services.Concrete
             else if (chatType.Equals("Group"))
             {
                 chatParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(chatParticipants.First()) ?? throw new NotFoundException("Grup bulunamadı.");
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
             }
-
+            else
+            {
+                throw new BadRequestException("chatType geçersiz.");
+            }
 
             string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent!;
 
@@ -96,11 +103,32 @@ namespace Mingle.Services.Concrete
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId);
 
-            if (!chat.Participants.Contains(userId))
+            var chatParticipants = chat.Participants;
+
+
+            if (chatType.Equals("Individual"))
             {
-                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
             }
-            else if (!chat.Messages.ContainsKey(messageId))
+            else if (chatType.Equals("Group"))
+            {
+                chatParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(chatParticipants.First()) ?? throw new NotFoundException("Grup bulunamadı.");
+
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
+            }
+            else
+            {
+                throw new BadRequestException("chatType geçersiz.");
+            }
+
+
+            if (!chat.Messages.ContainsKey(messageId))
             {
                 throw new NotFoundException("Mesaj bulunamadı.");
             }
@@ -143,9 +171,27 @@ namespace Mingle.Services.Concrete
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı!");
 
-            if (!chat.Participants.Contains(userId))
+            var chatParticipants = chat.Participants;
+
+            if (chatType.Equals("Individual"))
             {
-                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
+            }
+            else if (chatType.Equals("Group"))
+            {
+                chatParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(chatParticipants.First()) ?? throw new NotFoundException("Grup bulunamadı.");
+
+                if (!chatParticipants.Contains(userId))
+                {
+                    throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
+                }
+            }
+            else
+            {
+                throw new BadRequestException("chatType geçersiz.");
             }
 
             Message message;
@@ -180,7 +226,7 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            return (messageVM, chat.Participants);
+            return (messageVM, chatParticipants);
         }
     }
 }

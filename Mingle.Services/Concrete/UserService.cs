@@ -143,6 +143,12 @@ namespace Mingle.Services.Concrete
         }
 
 
+        public async Task UpdateLastConnectionDateAsync(string userId, DateTime lastConnectionDate)
+        {
+            await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", lastConnectionDate);
+        }
+
+
         public async Task<ConnectionSettings> GetConnectionSettingsAsync(string userId)
         {
             return await _userRepository.GetUserConnectionSettingsByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bağlantı ayarları alınamadı.");

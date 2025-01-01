@@ -12,10 +12,7 @@ namespace Mingle.Services.Mapping
             CreateMap<SignUp, User>()
                 .ForMember(dest => dest.Biography, opt => opt.MapFrom(src => "Merhaba, ben Mingle kullanıyorum."))
                 .ForMember(dest => dest.ProfilePhoto, opt => opt.MapFrom(src => "https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1734185072/DefaultUserProfilePhoto.png"))
-                .ForMember(dest => dest.ConnectionSettings, opt => opt.MapFrom(src => new ConnectionSettings
-                {
-                    LastConnectionDate = DateTime.UtcNow
-                }))
+                .ForMember(dest => dest.LastConnectionDate, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UserSettings, opt => opt.MapFrom(src => new UserSettings()));
 

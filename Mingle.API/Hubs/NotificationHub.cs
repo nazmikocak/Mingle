@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using System.Security.Claims;
 
@@ -33,24 +32,20 @@ namespace Mingle.API.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            DateTime? lastConnectionDate = null;
+            await _userService.UpdateLastConnectionDateAsync(UserId, (DateTime)lastConnectionDate!);
 
-            var userCsVM = new Dictionary<string, ConnectionSettings> { { UserId, userCS } };
-
-            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, ConnectionSettings>> { { UserId, userCsVM } });
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", (DateTime)lastConnectionDate } } } });
             await base.OnConnectedAsync();
         }
 
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+            DateTime lastConnectionDate = DateTime.UtcNow;
+            await _userService.UpdateLastConnectionDateAsync(UserId, lastConnectionDate);
 
-            userCS.LastConnectionDate = DateTime.UtcNow;
-
-            var userCsVM = new Dictionary<string, ConnectionSettings> { { UserId, userCS } };
-
-            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } } });
             await base.OnDisconnectedAsync(exception);
         }
     }

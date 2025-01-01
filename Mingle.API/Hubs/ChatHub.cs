@@ -46,39 +46,24 @@ namespace Mingle.API.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var connectionId = Context.ConnectionId;
-
-            var userCSTask = _userService.GetConnectionSettingsAsync(UserId);
             var chatsTask = _chatService.GetAllChatsAsync(UserId);
 
-            var userCS = await userCSTask;
+            var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
 
-            if (!userCS.ConnectionIds.Contains(connectionId))
+            var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
+            var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
+
+            var recipientProfiles = await recipientProfilesTask;
+            var groupProfiles = await groupProfilesTask;
+
+            var sendTasks = new[]
             {
-                userCS.ConnectionIds.Add(connectionId);
-                userCS.LastConnectionDate = null;
-
-                var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
-
-                var (chats, chatsRecipientIds, userGroupIds, userChatIds) = await chatsTask;
-
-                var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
-                var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
-
-                var recipientProfiles = await recipientProfilesTask;
-                var groupProfiles = await groupProfilesTask;
-
-                var sendTasks = new[]
-                {
                     Clients.Caller.SendAsync("ReceiveInitialChats", chats),
                     Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
                     Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
                 };
 
-                await Task.WhenAll(sendTasks);
-
-                await saveSettingsTask;
-            }
+            await Task.WhenAll(sendTasks);
 
             await base.OnConnectedAsync();
         }
@@ -86,21 +71,6 @@ namespace Mingle.API.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var connectionId = Context.ConnectionId;
-
-            var userCS = await _userService.GetConnectionSettingsAsync(UserId);
-
-            if (userCS.ConnectionIds.Remove(connectionId))
-            {
-                userCS.LastConnectionDate = DateTime.UtcNow;
-
-                var saveSettingsTask = _userService.SaveConnectionSettingsAsync(UserId, userCS);
-
-                var (_, _, userChatIds, _) = await _chatService.GetAllChatsAsync(UserId);
-
-                await saveSettingsTask;
-            }
-
             await base.OnDisconnectedAsync(exception);
         }
 

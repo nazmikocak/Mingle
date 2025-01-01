@@ -94,7 +94,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = participant.Object.DisplayName,
                         ProfilePhoto = participant.Object.ProfilePhoto,
                         Role = group.Participants[participant.Key],
-                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate,
+                        LastConnectionDate = participant.Object.LastConnectionDate,
                     }
                 );
 
@@ -185,7 +185,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = participant.Object.DisplayName,
                         ProfilePhoto = participant.Object.ProfilePhoto,
                         Role = groupParticipants[participant.Key],
-                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate,
+                        LastConnectionDate = participant.Object.LastConnectionDate,
                     }
                 );
 
@@ -222,7 +222,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = user.Object.DisplayName,
                         ProfilePhoto = user.Object.ProfilePhoto,
                         Role = participant.Value,
-                        LastConnectionDate = user.Object.ConnectionSettings.LastConnectionDate,
+                        LastConnectionDate = user.Object.LastConnectionDate,
                     };
 
                     groupUsers.Add(participant.Key, participantProfile);
@@ -288,7 +288,7 @@ namespace Mingle.Services.Concrete
                         DisplayName = participant.Object.DisplayName,
                         ProfilePhoto = participant.Object.ProfilePhoto,
                         Role = group.Participants[participant.Key],
-                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate
+                        LastConnectionDate = participant.Object.LastConnectionDate
                     }
                 );
 

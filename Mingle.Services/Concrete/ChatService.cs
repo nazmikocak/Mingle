@@ -99,7 +99,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>, List<string>)> GetAllChatsAsync(string userId)
+        public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetAllChatsAsync(string userId)
         {
             var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
             var groupChatsTask = _chatRepository.GetChatsAsync("Group");
@@ -149,8 +149,6 @@ namespace Mingle.Services.Concrete
                     }
                 );
 
-            var userChatIds = userIndividualChats.Keys.Concat(userGroupChats.Keys).ToList();
-
             var chatsRecipientIds = userIndividualChats
                 .Select(chat => chat.Value.Participants.FirstOrDefault(participant => !participant.Equals(userId))!)
                 .ToList();
@@ -161,8 +159,7 @@ namespace Mingle.Services.Concrete
                 { "Group", userGroupChats }
             },
             chatsRecipientIds,
-            userGroupIds,
-            userChatIds
+            userGroupIds
             );
         }
 

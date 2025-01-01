@@ -12,7 +12,7 @@
 
         public required Uri ProfilePhoto { get; set; }
 
-        public ConnectionSettings ConnectionSettings { get; set; } = new ConnectionSettings();
+        public DateTime? LastConnectionDate { get; set; }
 
         public required DateTime BirthDate { get; set; }
 

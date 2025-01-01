@@ -1,7 +1,6 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Enums;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Response;
@@ -35,16 +34,6 @@ namespace Mingle.API.Hubs
             _userService = userService;
             _callService = callService;
         }
-
-
-
-        public override async Task OnConnectedAsync()
-        {
-
-
-            await base.OnConnectedAsync();
-        }
-
 
 
         public async Task SendSignal(string chatId, object signalData)
