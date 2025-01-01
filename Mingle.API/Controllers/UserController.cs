@@ -55,11 +55,11 @@ namespace Mingle.API.Controllers
 
         // GET: UserProfile
         [HttpGet]
-        public async Task<IActionResult> UserProfile()
+        public async Task<IActionResult> UserInfo()
         {
             try
             {
-                return Ok(await _userService.GetUserProfileAsync(UserId));
+                return Ok(await _userService.GetUserInfoAsync(UserId));
             }
             catch (FirebaseException ex)
             {
@@ -80,7 +80,7 @@ namespace Mingle.API.Controllers
             try
             {
                 var profilePhoto = await _userService.RemoveProfilePhotoAsync(UserId);
-                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", profilePhoto } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "profilePhoto", profilePhoto } } } });
 
                 return Ok(new { message = "Profil fotoğrafı kaldırıldı.", profilePhoto });
             }
@@ -138,7 +138,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateDisplayNameAsync(UserId, dto);
-                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.DisplayName } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "displayName", dto.DisplayName } } } });
 
                 return Ok(new { message = "Kullanıcı adı güncellendi." });
             }
@@ -165,7 +165,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdatePhoneNumberAsync(UserId, dto);
-                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.PhoneNumber } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "phoneNumber", dto.PhoneNumber } } } });
 
                 return Ok(new { message = "Telefon numrası güncellendi." });
             }
@@ -192,7 +192,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _userService.UpdateBiographyAsync(UserId, dto);
-                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "DisplayName", dto.Biography } } } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "biography", dto.Biography } } } });
 
                 return Ok(new { message = "Biyografi güncellendi." });
             }

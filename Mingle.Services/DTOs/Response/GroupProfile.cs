@@ -1,7 +1,4 @@
-﻿using Mingle.Entities.Enums;
-using Mingle.Entities.Models;
-
-namespace Mingle.Services.DTOs.Response
+﻿namespace Mingle.Services.DTOs.Response
 {
     public sealed record GroupProfile
     {
@@ -14,17 +11,5 @@ namespace Mingle.Services.DTOs.Response
         public required Dictionary<string, ParticipantProfile> Participants { get; init; }
 
         public required DateTime CreatedDate { get; init; }
-    }
-
-
-    public sealed record ParticipantProfile
-    {
-        public required string DisplayName { get; init; }
-
-        public required GroupParticipant Role { get; init; }
-
-        public required Uri ProfilePhoto { get; init; }
-
-        public DateTime? LastConnectionDate { get; set; }
     }
 }

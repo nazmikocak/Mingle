@@ -2,8 +2,8 @@
 {
     public enum CallStatus
     {
-        Outgoing,
-        Incoming,
+        Pending,
+        Accepted,
         Declined,
         Missed
     }

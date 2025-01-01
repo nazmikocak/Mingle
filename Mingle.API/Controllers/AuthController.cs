@@ -1,5 +1,4 @@
 ﻿using Firebase.Auth;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
@@ -17,6 +16,7 @@ namespace Mingle.API.Controllers
         {
             _authService = authService;
         }
+
 
         // POST: SignUp
         [HttpPost]

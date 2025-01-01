@@ -43,26 +43,26 @@ namespace Mingle.Services.Concrete
                 .ToDictionary(
                     user => user.Key,
                     user => _mapper.Map<FoundUsers>(user.Object)
-                );
+                )
+                ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
-
-            if (users == null || users.Count == 0)
-            {
-                throw new NotFoundException("Kullanıcı bulunamadı.");
-            }
-            else
-            {
-                return users;
-            }
+            return users;
         }
 
 
-        public async Task<UserProfile> GetUserProfileAsync(string userId)
+        public async Task<UserInfo> GetUserInfoAsync(string userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
+            var user = await _userRepository.GetUserByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bulunamadı");
 
-            var userProfile = _mapper.Map<UserProfile>(user);
-            return userProfile;
+            return _mapper.Map<UserInfo>(user);
+        }
+
+
+        public async Task<CallerUser> GetUserProfileAsync(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bulunamadı");
+
+            return _mapper.Map<CallerUser>(user);
         }
 
 
@@ -127,16 +127,6 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<RecipientProfile> GetRecipientProfileByIdAsync(string recipientId)
-        {
-            var user = await _userRepository.GetUserByIdAsync(recipientId) ?? throw new NotFoundException("Kullanıcı bulunamadı.");
-
-            var recipientProfile = _mapper.Map<RecipientProfile>(user);
-
-            return recipientProfile;
-        }
-
-
         public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds)
         {
             var users = await _userRepository.GetAllUsersAsync();
@@ -146,23 +136,10 @@ namespace Mingle.Services.Concrete
                 .ToDictionary(
                     user => user.Key,
                     user => _mapper.Map<RecipientProfile>(user.Object)
-                );
+                )
+                ?? throw new NotFoundException("Kullanıcı bulunamadı.");
 
             return recipientProfiles;
-        }
-
-
-        public async Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds)
-        {
-            var users = await _userRepository.GetAllUsersAsync();
-
-            var connectionIds = users
-                .Where(user => userIds.Contains(user.Key))
-                .Select(user => user.Object.ConnectionSettings.ConnectionIds.Where(x => x != null).ToList()
-                .Where(x => x != null).ToList())
-                .ToList();
-
-            return connectionIds;
         }
 
 

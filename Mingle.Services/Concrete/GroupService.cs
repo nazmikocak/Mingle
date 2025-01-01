@@ -1,4 +1,5 @@
-﻿using Mingle.DataAccess.Abstract;
+﻿using AutoMapper;
+using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
@@ -16,14 +17,17 @@ namespace Mingle.Services.Concrete
         private readonly IGroupRepository _groupRepository;
         private readonly ICloudRepository _cloudRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
 
-        public GroupService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IUserRepository userRepository)
+        public GroupService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IUserRepository userRepository, IMapper mapper)
         {
             _groupRepository = groupRepository;
             _cloudRepository = cloudRepository;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
+
 
         public async Task<List<string>> GetUserGroupsIdsAsync(string userId)
         {
@@ -84,26 +88,17 @@ namespace Mingle.Services.Concrete
             var participants = users
                 .Where(user => group.Participants.ContainsKey(user.Key))
                 .ToDictionary(
-                    x => x.Key,
-                    x => new ParticipantProfile
+                    participant => participant.Key,
+                    participant => new ParticipantProfile
                     {
-                        DisplayName = x.Object.DisplayName,
-                        ProfilePhoto = x.Object.ProfilePhoto,
-                        Role = group.Participants[x.Key],
-                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate,
+                        DisplayName = participant.Object.DisplayName,
+                        ProfilePhoto = participant.Object.ProfilePhoto,
+                        Role = group.Participants[participant.Key],
+                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate,
                     }
                 );
 
-            var participantIds = participants.Keys.ToList();
-
-            var groupProfile = new GroupProfile
-            {
-                Name = group.Name,
-                Description = group.Description,
-                PhotoUrl = group.Photo,
-                Participants = participants,
-                CreatedDate = group.CreatedDate
-            };
+            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
@@ -177,78 +172,19 @@ namespace Mingle.Services.Concrete
             var participants = users
                 .Where(user => groupParticipants.ContainsKey(user.Key))
                 .ToDictionary(
-                    x => x.Key,
-                    x => new ParticipantProfile
+                    participant => participant.Key,
+                    participant => new ParticipantProfile
                     {
-                        DisplayName = x.Object.DisplayName,
-                        ProfilePhoto = x.Object.ProfilePhoto,
-                        Role = groupParticipants[x.Key],
-                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate,
+                        DisplayName = participant.Object.DisplayName,
+                        ProfilePhoto = participant.Object.ProfilePhoto,
+                        Role = groupParticipants[participant.Key],
+                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate,
                     }
                 );
 
-            var participantIds = participants.Keys.ToList();
-
-            var groupProfile = new GroupProfile
-            {
-                Name = newGroup.Name,
-                Description = newGroup.Description!,
-                PhotoUrl = newGroup.Photo,
-                Participants = participants,
-                CreatedDate = newGroup.CreatedDate
-            };
+            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
-        }
-
-
-
-
-
-        public async Task<Dictionary<string, GroupProfile>> GetGroupProfileByIdAsync(string userId, string groupId)
-        {
-            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
-
-            var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
-
-            if (!group.Participants.ContainsKey(userId))
-            {
-                throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
-            }
-
-            Dictionary<string, ParticipantProfile> groupUsers = [];
-
-            foreach (var participantId in group.Participants.Keys)
-            {
-                var user = await _userRepository.GetUserByIdAsync(participantId);
-
-                var participant = new ParticipantProfile
-                {
-                    DisplayName = user.DisplayName,
-                    ProfilePhoto = user.ProfilePhoto,
-                    Role = group.Participants[participantId],
-                    LastConnectionDate = user.ConnectionSettings.LastConnectionDate,
-                };
-
-                groupUsers.Add(participantId, participant);
-            }
-
-            var groupProfile = new Dictionary<string, GroupProfile>
-            {
-                {
-                    groupId,
-                    new GroupProfile
-                    {
-                        Name = group.Name,
-                        Description = group.Description,
-                        PhotoUrl = group.Photo,
-                        Participants = groupUsers,
-                        CreatedDate = group.CreatedDate,
-                    }
-                }
-            };
-
-            return groupProfile;
         }
 
 
@@ -332,26 +268,17 @@ namespace Mingle.Services.Concrete
             var participants = users
                 .Where(user => group.Participants.ContainsKey(user.Key))
                 .ToDictionary(
-                    x => x.Key,
-                    x => new ParticipantProfile
+                    participant => participant.Key,
+                    participant => new ParticipantProfile
                     {
-                        DisplayName = x.Object.DisplayName,
-                        ProfilePhoto = x.Object.ProfilePhoto,
-                        Role = group.Participants[x.Key],
-                        LastConnectionDate = x.Object.ConnectionSettings.LastConnectionDate
+                        DisplayName = participant.Object.DisplayName,
+                        ProfilePhoto = participant.Object.ProfilePhoto,
+                        Role = group.Participants[participant.Key],
+                        LastConnectionDate = participant.Object.ConnectionSettings.LastConnectionDate
                     }
                 );
 
-            var participantIds = participants.Keys.ToList();
-
-            var groupProfile = new GroupProfile
-            {
-                Name = group.Name,
-                Description = group.Description,
-                PhotoUrl = group.Photo,
-                Participants = participants,
-                CreatedDate = group.CreatedDate
-            };
+            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }

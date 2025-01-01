@@ -2,7 +2,7 @@
 
 namespace Mingle.Services.DTOs.Response
 {
-    public sealed record UserProfile
+    public sealed record UserInfo
     {
         public required string DisplayName { get; init; }
 

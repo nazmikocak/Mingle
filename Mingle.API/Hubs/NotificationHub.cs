@@ -35,7 +35,9 @@ namespace Mingle.API.Hubs
         {
             var userCS = await _userService.GetConnectionSettingsAsync(UserId);
 
-            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
+            var userCsVM = new Dictionary<string, ConnectionSettings> { { UserId, userCS } };
+
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, ConnectionSettings>> { { UserId, userCsVM } });
             await base.OnConnectedAsync();
         }
 
@@ -43,6 +45,10 @@ namespace Mingle.API.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userCS = await _userService.GetConnectionSettingsAsync(UserId);
+
+            userCS.LastConnectionDate = DateTime.UtcNow;
+
+            var userCsVM = new Dictionary<string, ConnectionSettings> { { UserId, userCS } };
 
             await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, ConnectionSettings> { { UserId, userCS } });
             await base.OnDisconnectedAsync(exception);

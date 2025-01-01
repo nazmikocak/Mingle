@@ -9,7 +9,9 @@ namespace Mingle.Services.Abstract
     {
         Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, SearchedUsers dto);
 
-        Task<UserProfile> GetUserProfileAsync(string userId);
+        Task<UserInfo> GetUserInfoAsync(string userId);
+
+        Task<CallerUser> GetUserProfileAsync(string userId);
 
         Task<Uri> RemoveProfilePhotoAsync(string userId);
 
@@ -27,14 +29,10 @@ namespace Mingle.Services.Abstract
 
         Task ChangeChatBackgroundAsync(string userId, ChangeChatBackground dto);
 
-        Task<RecipientProfile> GetRecipientProfileByIdAsync(string recipientId);
-
         Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds);
 
         Task<ConnectionSettings> GetConnectionSettingsAsync(string userId);
 
         Task SaveConnectionSettingsAsync(string userId, ConnectionSettings dto);
-
-        Task<List<List<string>>> GetUserConnectionIdsAsync(List<string> userIds);
     }
 }

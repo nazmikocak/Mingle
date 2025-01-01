@@ -22,7 +22,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Message>, List<string>)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
+        public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
             if (!(string.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
             {
@@ -50,10 +50,7 @@ namespace Mingle.Services.Concrete
                 }
             }
 
-
             string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent!;
-
-            var recipientId = chatParticipants.SingleOrDefault(participant => !participant.Equals(userId))!;
 
             string messageId = Guid.NewGuid().ToString();
             var message = new Message
@@ -69,7 +66,22 @@ namespace Mingle.Services.Concrete
                 }
             };
 
-            return (new Dictionary<string, Message> { { messageId, message } }, chatParticipants);
+            var messageVM = new Dictionary<string, Dictionary<string, Dictionary<string, Message>>>
+            {
+                {
+                    chatType, new Dictionary<string, Dictionary<string, Message>>
+                    {
+                        {
+                            chatId, new Dictionary<string, Message>
+                            {
+                                { messageId, message }
+                            }
+                        }
+                    }
+                }
+            };
+
+            return (messageVM, chatParticipants);
         }
 
 
@@ -120,7 +132,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Message>, List<string>)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
+        public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
@@ -148,7 +160,22 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("fieldName geçersiz.");
             }
 
-            return (new Dictionary<string, Message> { { messageId, message } }, chat.Participants);
+            var messageVM = new Dictionary<string, Dictionary<string, Dictionary<string, Message>>>
+            {
+                {
+                    chatType, new Dictionary<string, Dictionary<string, Message>>
+                    {
+                        {
+                            chatId, new Dictionary<string, Message>
+                            {
+                                { messageId, message }
+                            }
+                        }
+                    }
+                }
+            };
+
+            return (messageVM, chat.Participants);
         }
     }
 }

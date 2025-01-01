@@ -62,17 +62,35 @@ namespace Mingle.Services.Concrete
             }
             else if (chatType.Equals("Group"))
             {
-                string? chatId = Guid.NewGuid().ToString();
+                var group = await _groupRepository.GetGroupByIdAsync(recipientId) ?? throw new NotFoundException("Grup bulunamadı.");
 
-                var chat = new Chat
+                var chatsSnapshot = await _chatRepository.GetChatsAsync(chatType);
+
+                var oldChat = chatsSnapshot
+                    .Where(chat =>
+                        chat.Object.Participants.Contains(recipientId)
+                    )
+                    .ToDictionary(
+                        chat => chat.Key,
+                        chat => chat.Object
+                    );
+
+                if (oldChat.Count.Equals(0))
                 {
-                    Participants = [recipientId],
-                    CreatedDate = DateTime.UtcNow,
-                };
+                    string chatId = Guid.NewGuid().ToString();
 
-                await _chatRepository.CreateChatAsync(chatType, chatId, chat);
+                    var newchat = new Chat
+                    {
+                        Participants = [recipientId],
+                        CreatedDate = DateTime.UtcNow,
+                    };
 
-                return new Dictionary<string, Chat> { { chatId, chat } };
+                    await _chatRepository.CreateChatAsync(chatType, chatId, newchat);
+
+                    return new Dictionary<string, Chat> { { chatId, newchat } };
+                }
+
+                return oldChat;
             }
             else
             {
@@ -118,7 +136,18 @@ namespace Mingle.Services.Concrete
 
             var userGroupChats = groupChats
                 .Where(chat => userGroupIds.Contains(chat.Object.Participants.First()))
-                .ToDictionary(chat => chat.Key, chat => chat.Object);
+                .ToDictionary(chat =>
+                    chat.Key,
+                    chat => new Chat
+                    {
+                        Participants = chat.Object.Participants,
+                        ArchivedFor = chat.Object.ArchivedFor,
+                        CreatedDate = chat.Object.CreatedDate,
+                        Messages = chat.Object.Messages
+                            .OrderBy(x => x.Value.Status.Sent.Values.First())
+                            .ToDictionary(x => x.Key, x => x.Value)
+                    }
+                );
 
             var userChatIds = userIndividualChats.Keys.Concat(userGroupChats.Keys).ToList();
 
@@ -138,7 +167,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, Chat>> ClearChatAsync(string userId, string chatType, string chatId)
+        public async Task<Dictionary<string, Dictionary<string, Chat>>> ClearChatAsync(string userId, string chatType, string chatId)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
@@ -163,7 +192,11 @@ namespace Mingle.Services.Concrete
 
                 chat.Messages.Clear();
 
-                return new Dictionary<string, Chat> { { chatId, chat } };
+
+                return new Dictionary<string, Dictionary<string, Chat>>
+                {
+                    {chatType, new Dictionary<string, Chat> { { chatId, chat } }}
+                };
             }
             else
             {
@@ -172,7 +205,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task ArchiveIndividualChatAsync(string userId, string chatId)
+        public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> ArchiveIndividualChatAsync(string userId, string chatId)
         {
             FieldValidator.ValidateRequiredFields((chatId, chatId));
 
@@ -189,6 +222,11 @@ namespace Mingle.Services.Concrete
                 archivedFor.Add(userId, DateTime.UtcNow);
 
                 await _chatRepository.UpdateChatArchivedForAsync("Individual", chatId, archivedFor);
+
+                return new Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>
+                {
+                    {"Individual", new Dictionary<string, Dictionary<string, DateTime>> { { chatId, archivedFor } } }
+                };
             }
             else
             {
@@ -197,7 +235,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task UnarchiveIndividualChatAsync(string userId, string chatId)
+        public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> UnarchiveIndividualChatAsync(string userId, string chatId)
         {
             FieldValidator.ValidateRequiredFields((chatId, "chatId"));
 
@@ -214,6 +252,11 @@ namespace Mingle.Services.Concrete
                 archivedFor.Remove(userId);
 
                 await _chatRepository.UpdateChatArchivedForAsync("Individual", chatId, archivedFor);
+
+                return new Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>
+                {
+                    {"Individual", new Dictionary<string, Dictionary<string, DateTime>> { { chatId, archivedFor } } }
+                };
             }
             else
             {
