@@ -33,9 +33,9 @@ namespace Mingle.API.Hubs
         public override async Task OnConnectedAsync()
         {
             DateTime? lastConnectionDate = null;
-            await _userService.UpdateLastConnectionDateAsync(UserId, (DateTime)lastConnectionDate!);
+            await _userService.UpdateLastConnectionDateAsync(UserId, lastConnectionDate!);
 
-            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", (DateTime)lastConnectionDate } } } });
+            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "lastConnectionDate", lastConnectionDate } } } });
             await base.OnConnectedAsync();
         }
 

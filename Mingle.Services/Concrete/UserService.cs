@@ -143,7 +143,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task UpdateLastConnectionDateAsync(string userId, DateTime lastConnectionDate)
+        public async Task UpdateLastConnectionDateAsync(string userId, object lastConnectionDate)
         {
             await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", lastConnectionDate);
         }
