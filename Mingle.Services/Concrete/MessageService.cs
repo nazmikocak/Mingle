@@ -10,13 +10,15 @@ namespace Mingle.Services.Concrete
     public sealed class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly ICloudRepository _cloudRepository;
         private readonly IChatRepository _chatRepository;
 
 
-        public MessageService(IMessageRepository messageRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
+        public MessageService(IMessageRepository messageRepository, IGroupRepository groupRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
         {
             _messageRepository = messageRepository;
+            _groupRepository = groupRepository;
             _cloudRepository = cloudRepository;
             _chatRepository = chatRepository;
         }
@@ -29,8 +31,6 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("TextContent veya FileContent gereklidir.");
             }
 
-            var participantsTask = _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId);
-
             Task<string>? fileUrlTask = null;
 
             if (dto.FileContent != null)
@@ -40,7 +40,7 @@ namespace Mingle.Services.Concrete
                     .ContinueWith(task => task.Result.ToString());
             }
 
-            var chatParticipants = await participantsTask ?? throw new NotFoundException("Sohbet bulunamadı.");
+            var chatParticipants = await _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
             if (chatType.Equals("Individual"))
             {
@@ -49,6 +49,11 @@ namespace Mingle.Services.Concrete
                     throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
                 }
             }
+            else if (chatType.Equals("Group"))
+            {
+                chatParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(chatParticipants.First()) ?? throw new NotFoundException("Grup bulunamadı.");
+            }
+
 
             string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent!;
 
