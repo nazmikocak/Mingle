@@ -53,7 +53,7 @@ namespace Mingle.API.Controllers
 
 
 
-        // GET: UserProfile
+        // GET: UserInfo
         [HttpGet]
         public async Task<IActionResult> UserInfo()
         {

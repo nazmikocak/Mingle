@@ -182,7 +182,7 @@ namespace Mingle.Services.Concrete
                     }
                 );
 
-            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
+            var groupProfile = _mapper.Map<GroupProfile>(newGroup, opt => opt.Items["Participants"] = participants);
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }

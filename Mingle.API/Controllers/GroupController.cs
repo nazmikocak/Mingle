@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
-using Mingle.Services.Concrete;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 
