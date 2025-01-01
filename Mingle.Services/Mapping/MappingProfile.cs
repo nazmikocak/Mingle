@@ -19,18 +19,6 @@ namespace Mingle.Services.Mapping
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UserSettings, opt => opt.MapFrom(src => new UserSettings()));
 
-            CreateMap<Group, GroupProfile>()
-                .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Photo))
-                .ForMember(dest => dest.Participants, opt => opt.Ignore())
-                .AfterMap((src, dest, ctx) =>
-                {
-                    if (ctx.Items.TryGetValue("Participants", out var participants) &&
-                        participants is Dictionary<string, ParticipantProfile> participantDict)
-                    {
-                        dest = dest with { Participants = participantDict };
-                    }
-                });
-
             CreateMap<User, UserInfo>();
 
             CreateMap<User, FoundUsers>();

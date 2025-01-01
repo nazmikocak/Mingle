@@ -98,7 +98,14 @@ namespace Mingle.Services.Concrete
                     }
                 );
 
-            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
+            var groupProfile = new GroupProfile
+            {
+                Name = group.Name,
+                Description = group.Description!,
+                PhotoUrl = group.Photo,
+                Participants = participants,
+                CreatedDate = group.CreatedDate
+            };
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
@@ -182,7 +189,14 @@ namespace Mingle.Services.Concrete
                     }
                 );
 
-            var groupProfile = _mapper.Map<GroupProfile>(newGroup, opt => opt.Items["Participants"] = participants);
+            var groupProfile = new GroupProfile
+            {
+                Name = newGroup.Name,
+                Description = newGroup.Description!,
+                PhotoUrl = newGroup.Photo,
+                Participants = participants,
+                CreatedDate = newGroup.CreatedDate
+            };
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
@@ -278,7 +292,14 @@ namespace Mingle.Services.Concrete
                     }
                 );
 
-            var groupProfile = _mapper.Map<GroupProfile>(group, opt => opt.Items["Participants"] = participants);
+            var groupProfile = new GroupProfile
+            {
+                Name = group.Name,
+                Description = group.Description!,
+                PhotoUrl = group.Photo,
+                Participants = participants,
+                CreatedDate = group.CreatedDate
+            };
 
             return new Dictionary<string, GroupProfile> { { groupId, groupProfile } };
         }
