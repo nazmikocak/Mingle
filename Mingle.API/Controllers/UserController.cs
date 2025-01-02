@@ -98,7 +98,7 @@ namespace Mingle.API.Controllers
 
         // PATCH: ProfilePhoto
         [HttpPatch]
-        public async Task<IActionResult> ProfilePhoto([FromForm] UpdateProfilePhoto dto)
+        public async Task<IActionResult> ProfilePhoto([FromBody] UpdateProfilePhoto dto)
         {
             if (!ModelState.IsValid)
             {

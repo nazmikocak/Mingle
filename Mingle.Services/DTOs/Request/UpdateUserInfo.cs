@@ -1,18 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Mingle.Entities.Enums;
-using System;
-using System.Collections.Generic;
+﻿using Mingle.Entities.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mingle.Services.DTOs.Request
 {
     public sealed record UpdateProfilePhoto
     {
         [Required(ErrorMessage = "Lütfen bir fotoğraf yükleyiniz.")]
-        public byte[] ProfilePhoto { get; init; }
+        public string ProfilePhoto { get; init; }
     }
 
 

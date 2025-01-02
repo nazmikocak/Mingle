@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Mingle.DataAccess.Abstract;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
@@ -77,7 +76,9 @@ namespace Mingle.Services.Concrete
 
         public async Task<Uri> UpdateProfilePhotoAsync(string userId, UpdateProfilePhoto dto)
         {
-            var photo = new MemoryStream(dto.ProfilePhoto);
+            var photoBytes = Convert.FromBase64String(dto.ProfilePhoto);
+
+            var photo = new MemoryStream(photoBytes);
             FileValidationHelper.ValidateProfilePhoto(photo);
 
             var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", photo);

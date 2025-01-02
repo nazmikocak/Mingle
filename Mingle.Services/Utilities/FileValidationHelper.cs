@@ -25,11 +25,11 @@ namespace Mingle.Services.Utilities
 
         public static void ValidateProfilePhoto(MemoryStream file)
         {
-            int maxFileSize = 5 * 1024 * 1024;
+            int maxFileSize = 2 * 1024 * 1024;
 
             if (file.Length > maxFileSize)
             {
-                throw new BadRequestException($"Dosya boyutu en fazla 5 MB olmalıdır.");
+                throw new BadRequestException($"Dosya boyutu en fazla 2 MB olmalıdır.");
             }
         }
     }

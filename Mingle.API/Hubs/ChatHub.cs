@@ -5,7 +5,6 @@ using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -230,7 +229,7 @@ namespace Mingle.API.Hubs
             {
                 var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
-                var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.First().Value.First().Value.First().Key, message.First().Value.First().Value.First().Value);
+                var saveMessageTask = _messageRepository.UpdateMessageStatusAsync(chatType, chatId, message.First().Value.First().Value.First().Key, "Delivered", message.First().Value.First().Value.First().Value);
 
                 foreach (var participant in chatParticipants)
                 {
@@ -260,7 +259,7 @@ namespace Mingle.API.Hubs
             {
                 var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Read");
 
-                var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.First().Value.First().Value.First().Key, message.First().Value.First().Value.First().Value);
+                var saveMessageTask = _messageRepository.UpdateMessageStatusAsync(chatType, chatId, message.First().Value.First().Value.First().Key, "Read", message.First().Value.First().Value.First().Value.Status.Read);
 
                 foreach (var participant in chatParticipants)
                 {
