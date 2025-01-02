@@ -1,4 +1,5 @@
 ﻿using Mingle.DataAccess.Abstract;
+using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
@@ -26,20 +27,6 @@ namespace Mingle.Services.Concrete
 
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
-            if (!(string.IsNullOrEmpty(dto.TextContent) ^ dto.FileContent == null))
-            {
-                throw new BadRequestException("TextContent veya FileContent gereklidir.");
-            }
-
-            Task<string>? fileUrlTask = null;
-
-            if (dto.FileContent != null)
-            {
-                var photo = new MemoryStream(dto.FileContent);
-                fileUrlTask = _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo)
-                    .ContinueWith(task => task.Result.ToString());
-            }
-
             var chatParticipants = await _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
             if (chatType.Equals("Individual"))
@@ -62,7 +49,25 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("chatType geçersiz.");
             }
 
-            string messageContent = dto.FileContent != null ? await fileUrlTask! : dto.TextContent!;
+            string messageContent;
+
+            if (dto.ContentType.Equals(MessageContent.Image))
+            {
+                var photoBytes = Convert.FromBase64String(dto.Content);
+
+                var photo = new MemoryStream(photoBytes);
+                FileValidationHelper.ValidateProfilePhoto(photo);
+
+                var photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo);
+
+                messageContent = photoUrl.ToString();
+            }
+            else
+            {
+                messageContent = dto.Content;
+            }
+
+
 
             string messageId = Guid.NewGuid().ToString();
             var message = new Message
@@ -196,7 +201,7 @@ namespace Mingle.Services.Concrete
 
             Message message;
 
-            if (fieldName.Equals("Deliver"))
+            if (fieldName.Equals("Delivered"))
             {
                 message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
                 message.Status.Delivered.Add(userId, DateTime.UtcNow);

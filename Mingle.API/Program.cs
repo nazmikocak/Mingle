@@ -10,7 +10,6 @@ using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Mapping;
-using System.Reactive;
 using System.Text;
 
 
@@ -19,7 +18,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(
+    options =>
+    {
+        options.MaximumReceiveMessageSize = 2097152;
+    }
+);
 
 
 builder.Services.AddCors(options =>
