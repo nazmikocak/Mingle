@@ -1,6 +1,6 @@
 ﻿namespace Mingle.Services.DTOs.Response
 {
-    public class CallerUser
+    public sealed record CallerUser
     {
         public required string DisplayName { get; init; }
 

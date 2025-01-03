@@ -2,7 +2,7 @@
 
 namespace Mingle.Entities.Models
 {
-    public class Call
+    public sealed class Call
     {
         public required List<string> Participants { get; set; }
 

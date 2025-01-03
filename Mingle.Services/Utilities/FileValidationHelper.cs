@@ -3,7 +3,7 @@ using Mingle.Services.Exceptions;
 
 namespace Mingle.Services.Utilities
 {
-    internal class FileValidationHelper
+    internal static class FileValidationHelper
     {
         //public static void ValidatePhoto(IFormFile file, int maxFileSizeInMb, string[] allowedExtensions)
         //{

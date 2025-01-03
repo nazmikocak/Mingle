@@ -59,7 +59,7 @@ namespace Mingle.API.Hubs
             {
                     Clients.Caller.SendAsync("ReceiveInitialChats", chats),
                     Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                    Clients.Caller.SendAsync("ReceiveInitialRecipientProfiles", recipientProfiles),
+                    Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
                 };
 
             await Task.WhenAll(sendTasks);
@@ -229,7 +229,7 @@ namespace Mingle.API.Hubs
             {
                 var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
-                var saveMessageTask = _messageRepository.UpdateMessageStatusAsync(chatType, chatId, message.First().Value.First().Value.First().Key, "Delivered", message.First().Value.First().Value.First().Value);
+                var saveMessageTask = _messageRepository.UpdateMessageStatusAsync(chatType, chatId, message.First().Value.First().Value.First().Key, "Delivered", message.First().Value.First().Value.First().Value.Status.Delivered);
 
                 foreach (var participant in chatParticipants)
                 {

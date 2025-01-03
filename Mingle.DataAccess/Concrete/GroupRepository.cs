@@ -8,7 +8,7 @@ using Mingle.Entities.Models;
 
 namespace Mingle.DataAccess.Concrete
 {
-    public class GroupRepository : IGroupRepository
+    public sealed class GroupRepository : IGroupRepository
     {
         private readonly FirebaseClient _databaseClient;
 

@@ -3,7 +3,6 @@ using Firebase.Database.Query;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 using Mingle.Entities.Models;
-using System.Diagnostics;
 
 namespace Mingle.DataAccess.Concrete
 {
@@ -18,15 +17,15 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task CreateChatAsync(string chatType, string chatId, Chat chat)
-        {
-            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).PutAsync(chat);
-        }
-
-
         public async Task<IReadOnlyCollection<FirebaseObject<Chat>>> GetChatsAsync(string chatType)
         {
             return await _databaseClient.Child("Chats").Child(chatType).OnceAsync<Chat>();
+        }
+
+
+        public async Task CreateChatAsync(string chatType, string chatId, Chat chat)
+        {
+            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).PutAsync(chat);
         }
 
 
@@ -48,7 +47,7 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task UpdateChatMessageAsync(string chatType, string chatId, Dictionary<string, Message> messages) 
+        public async Task UpdateChatMessageAsync(string chatType, string chatId, Dictionary<string, Message> messages)
         {
             await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").PutAsync(messages);
         }

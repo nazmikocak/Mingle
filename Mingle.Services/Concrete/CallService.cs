@@ -6,18 +6,14 @@ using Mingle.Services.Exceptions;
 
 namespace Mingle.Services.Concrete
 {
-    public class CallService : ICallService
+    public sealed class CallService : ICallService
     {
         private readonly ICallRepository _callRepository;
-        private readonly IChatRepository _chatRepository;
-        private readonly IUserRepository _userRepository;
 
 
-        public CallService(ICallRepository callRepository, IChatRepository chatRepository, IUserRepository userRepository)
+        public CallService(ICallRepository callRepository)
         {
             _callRepository = callRepository;
-            _chatRepository = chatRepository;
-            _userRepository = userRepository;
         }
 
 
@@ -65,6 +61,26 @@ namespace Mingle.Services.Concrete
             }
 
             return callParticipants;
+        }
+
+
+        public async Task<(Dictionary<string, Call>, List<string>)> GetCallLogs(string userId)
+        {
+            var calls = await _callRepository.GetCallsAsync();
+
+            var userCalls = calls
+                .Where(call => call.Object.Participants.Contains(userId))
+                .ToDictionary(call =>
+                    call.Key,
+                    call => call.Object
+                );
+
+            var callRecipientIds = userCalls
+                .SelectMany(call => call.Value.Participants)
+                .Where(participantId => !participantId.Equals(userId))
+                .ToList();
+
+            return (userCalls, callRecipientIds);
         }
     }
 }

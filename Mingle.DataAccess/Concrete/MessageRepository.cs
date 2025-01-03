@@ -3,7 +3,6 @@ using Firebase.Database.Query;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 using Mingle.Entities.Models;
-using System.Xml.Linq;
 
 namespace Mingle.DataAccess.Concrete
 {

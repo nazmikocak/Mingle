@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Mingle.Cors", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("https://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -84,6 +84,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICloudRepository, CloudRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<ICallRepository, CallRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
@@ -98,6 +99,7 @@ builder.Services.AddScoped<CloudinaryConfig>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ICallService, CallService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 
@@ -161,6 +163,9 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("ChatHub");
 app.MapHub<NotificationHub>("NotificationHub");
+app.MapHub<CallHub>("CHub");
+app.MapHub<CallHub>("CallHub");
+
 
 
 

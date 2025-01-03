@@ -6,7 +6,7 @@ using Mingle.Entities.Models;
 
 namespace Mingle.DataAccess.Concrete
 {
-    public class CallRepository : ICallRepository
+    public sealed class CallRepository : ICallRepository
     {
         private readonly FirebaseClient _databaseClient;
 
@@ -14,6 +14,12 @@ namespace Mingle.DataAccess.Concrete
         public CallRepository(FirebaseConfig firebaseConfig)
         {
             _databaseClient = firebaseConfig.DatabaseClient;
+        }
+
+
+        public async Task<IReadOnlyCollection<FirebaseObject<Call>>> GetCallsAsync()
+        {
+            return await _databaseClient.Child("Calls").OnceAsync<Call>();
         }
 
 

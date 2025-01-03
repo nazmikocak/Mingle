@@ -10,7 +10,7 @@ namespace Mingle.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class GroupController : BaseController
+    public sealed class GroupController : BaseController
     {
         private readonly IHubContext<NotificationHub> _notificationHubContext;
         private readonly IGroupService _groupService;

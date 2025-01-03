@@ -10,5 +10,7 @@ namespace Mingle.Services.Abstract
         Task<Dictionary<string, Call>> EndCallAsync(string userId, string callId, CallStatus callStatus);
 
         Task<List<string>> GetCallParticipantsAsync(string userId, string callId);
+
+        Task<(Dictionary<string, Call>, List<string>)> GetCallLogs(string userId);
     }
 }

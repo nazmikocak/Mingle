@@ -56,7 +56,7 @@ namespace Mingle.Services.Concrete
             {
                 messageContent = dto.Content;
             }
-            if (dto.ContentType.Equals(MessageContent.Image))
+            else if (dto.ContentType.Equals(MessageContent.Image))
             {
                 var photoBytes = Convert.FromBase64String(dto.Content);
 
@@ -76,7 +76,7 @@ namespace Mingle.Services.Concrete
                 var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", video);
                 messageContent = videoUrl.ToString();
             }
-            else
+            else if (dto.ContentType.Equals(MessageContent.File))
             {
                 var fileBytes = Convert.FromBase64String(dto.Content);
 
@@ -85,6 +85,10 @@ namespace Mingle.Services.Concrete
 
                 var fileUrl = await _cloudRepository.UploadFileAsync(messageId, $"Chats/{chatId}", "file_message", file);
                 messageContent = fileUrl.ToString();
+            }
+            else
+            {
+                throw new BadRequestException("contentType geçersiz.");
             }
 
 
