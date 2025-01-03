@@ -227,7 +227,7 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Deliver");
+                var (message, chatParticipants) = await _messageService.DeliverOrReadMessageAsync(UserId, chatType, chatId, messageId, "Delivered");
 
                 var saveMessageTask = _messageRepository.UpdateMessageStatusAsync(chatType, chatId, message.First().Value.First().Value.First().Key, "Delivered", message.First().Value.First().Value.First().Value);
 

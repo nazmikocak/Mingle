@@ -49,27 +49,46 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("chatType geçersiz.");
             }
 
+            string messageId = Guid.NewGuid().ToString();
             string messageContent;
 
+            if (dto.ContentType.Equals(MessageContent.Text))
+            {
+                messageContent = dto.Content;
+            }
             if (dto.ContentType.Equals(MessageContent.Image))
             {
                 var photoBytes = Convert.FromBase64String(dto.Content);
 
                 var photo = new MemoryStream(photoBytes);
-                FileValidationHelper.ValidateProfilePhoto(photo);
+                FileValidationHelper.ValidatePhoto(photo);
 
-                var photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Chats/{chatId}", "image_message", photo);
-
+                var photoUrl = await _cloudRepository.UploadPhotoAsync(messageId, $"Chats/{chatId}", "image_message", photo);
                 messageContent = photoUrl.ToString();
+            }
+            else if (dto.ContentType.Equals(MessageContent.Video))
+            {
+                var videoBytes = Convert.FromBase64String(dto.Content);
+
+                var video = new MemoryStream(videoBytes);
+                FileValidationHelper.ValidateVideo(video);
+
+                var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", video);
+                messageContent = videoUrl.ToString();
             }
             else
             {
-                messageContent = dto.Content;
+                var fileBytes = Convert.FromBase64String(dto.Content);
+
+                var file = new MemoryStream(fileBytes);
+                FileValidationHelper.ValidateFile(file);
+
+                var fileUrl = await _cloudRepository.UploadFileAsync(messageId, $"Chats/{chatId}", "file_message", file);
+                messageContent = fileUrl.ToString();
             }
 
 
 
-            string messageId = Guid.NewGuid().ToString();
             var message = new Message
             {
                 Content = messageContent,

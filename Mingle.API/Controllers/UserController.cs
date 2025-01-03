@@ -107,7 +107,7 @@ namespace Mingle.API.Controllers
             try
             {
                 var profilePhoto = await _userService.UpdateProfilePhotoAsync(UserId, dto);
-                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object> { { UserId, profilePhoto } });
+                await _notificationHubContext.Clients.All.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, object>> { { UserId, new Dictionary<string, object> { { "profilePhoto", profilePhoto } } } });
 
                 return Ok(new { message = "Profil fotoğrafı güncellendi.", profilePhoto });
             }

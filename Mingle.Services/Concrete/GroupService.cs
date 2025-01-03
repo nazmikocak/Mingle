@@ -53,7 +53,7 @@ namespace Mingle.Services.Concrete
             if (dto.Photo != null)
             {
                 var photo = new MemoryStream(dto.Photo);
-                FileValidationHelper.ValidateProfilePhoto(photo);
+                FileValidationHelper.ValidatePhoto(photo);
                 photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Group/{groupId}", "group_photo", photo);
             }
             else
@@ -143,7 +143,7 @@ namespace Mingle.Services.Concrete
             if (dto.Photo != null)
             {
                 var photo = new MemoryStream(dto.Photo);
-                FileValidationHelper.ValidateProfilePhoto(photo);
+                FileValidationHelper.ValidatePhoto(photo);
                 photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Group/{groupId}", "group_photo", photo);
             }
             else

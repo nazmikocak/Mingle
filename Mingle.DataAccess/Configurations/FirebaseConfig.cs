@@ -22,7 +22,8 @@ namespace Mingle.DataAccess.Configurations
                 AuthDomain = authDomain,
                 Providers = new FirebaseAuthProvider[]
                 {
-                    new EmailProvider()
+                    new EmailProvider(),
+                    new GoogleProvider()
                 }
             };
 

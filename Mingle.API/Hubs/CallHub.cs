@@ -36,11 +36,11 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendSignal(string chatId, object signalData)
+        public async Task SendSignal(string callId, object signalData)
         {
             try
             {
-                var participants = await _callService.GetCallParticipantsAsync(UserId, chatId);
+                var participants = await _callService.GetCallParticipantsAsync(UserId, callId);
 
                 for (int i = 0; i < participants.Count; i++)
                 {
@@ -65,25 +65,17 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task StartCall(string chatId, CallType callType)
+        public async Task StartCall(string recipientId, CallType callType)
         {
             try
             {
-                var participants = await _callService.StartCallAsync(UserId, chatId, callType);
+                var callId = await _callService.StartCallAsync(UserId, recipientId, callType);
 
-                var senderProfile = await _userService.GetUserProfileAsync(participants[0]);
-                var recipientProfile = await _userService.GetUserProfileAsync(participants[1]);
+                var senderProfile = await _userService.GetUserProfileAsync(UserId);
+                var recipientProfile = await _userService.GetUserProfileAsync(recipientId);
 
-                for (int i = 0; i < participants.Count; i++)
-                {
-                    var profileToSend = participants[i].Equals(UserId) ? recipientProfile : senderProfile;
-
-                    await Clients.User(participants[i]).SendAsync("ReceiveCall", new Dictionary<string, CallerUser>
-                    {
-                        { profileToSend.Equals(recipientProfile) ? participants[1] : UserId, profileToSend }
-                    }
-                    );
-                }
+                await Clients.User(UserId).SendAsync("ReceiveCall", callId, new Dictionary<string, CallerUser> { { recipientId, recipientProfile } });
+                await Clients.User(recipientId).SendAsync("ReceiveCall", callId, new Dictionary<string, CallerUser> { { UserId, senderProfile } });
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
@@ -104,7 +96,7 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var call = await _callService.EndCallAsync(callId, callStatus);
+                var call = await _callService.EndCallAsync(UserId, callId, callStatus);
 
                 foreach (var participant in call.Values.First().Participants)
                 {
