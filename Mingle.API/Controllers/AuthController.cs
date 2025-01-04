@@ -52,6 +52,7 @@ namespace Mingle.API.Controllers
         }
 
 
+
         // POST: SignIn
         [HttpPost]
         public async Task<IActionResult> SignIn([FromBody] SignIn dto)
@@ -92,12 +93,41 @@ namespace Mingle.API.Controllers
         {
             try
             {
-                // Client ten JWT silinecek.
                 return Ok(new { message = "Oturum kapatıldı." });
             }
             catch (FirebaseAuthHttpException ex)
             {
-                return StatusCode(500, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
+        // POST: Password
+        [HttpPost]
+        public async Task<IActionResult> Password([FromQuery] string email)
+        {
+            try
+            {
+                await _authService.ResetPasswordAsync(email);
+
+                return Ok(new { message = "Şifre sıfırlama bağlantısı gönderildi." });
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (FirebaseAuthHttpException ex)
+            {
+                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
     }

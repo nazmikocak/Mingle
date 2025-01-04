@@ -25,7 +25,7 @@ namespace Mingle.DataAccess.Concrete
 
         public async Task UpdateMessageDeletedForAsync(string chatType, string chatId, string messageId, Dictionary<string, DateTime> deletedFor)
         {
-            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).PatchAsync(new { DeletedFor = deletedFor });
+            await _databaseClient.Child("Chats").Child(chatType).Child(chatId).Child("Messages").Child(messageId).Child("DeletedFor").PutAsync(deletedFor);
         }
 
 

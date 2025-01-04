@@ -107,35 +107,6 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendSignal(string callId, object signalData)
-        {
-            try
-            {
-                var participants = await _callService.GetCallParticipantsAsync(UserId, callId);
-
-                for (int i = 0; i < participants.Count; i++)
-                {
-                    if (!participants[i].Equals(UserId))
-                    {
-                        await Clients.User(participants[i]).SendAsync("ReceiveSignal", signalData);
-                    }
-                }
-            }
-            catch (Exception ex) when (
-                ex is NotFoundException ||
-                ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
-            }
-        }
-
-
         public async Task SendIceCandidate(string callId, object iceCandidate)
         {
             try

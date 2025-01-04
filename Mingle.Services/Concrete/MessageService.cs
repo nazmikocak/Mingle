@@ -125,7 +125,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType)
+        public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType)
         {
             FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
@@ -155,41 +155,61 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("chatType geçersiz.");
             }
 
-
-            if (!chat.Messages.ContainsKey(messageId))
-            {
-                throw new NotFoundException("Mesaj bulunamadı.");
-            }
-
-            var deletedFor = chat.Messages.GetValueOrDefault(messageId)!.DeletedFor;
+            var message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
 
             if (deletionType.Equals(0))
             {
-                if (!deletedFor!.ContainsKey(userId))
+                if (message.DeletedFor!.Any())
                 {
-                    deletedFor.Add(userId, DateTime.UtcNow);
+                    if (message.DeletedFor!.ContainsKey(userId))
+                    {
+                        message.DeletedFor.Add(userId, DateTime.UtcNow);
+                        message.Content = "";
+                    }
+                    else
+                    {
+                        throw new BadRequestException("Mesaj kullancı için zaten silinmiş.");
+                    }
                 }
                 else
                 {
-                    throw new BadRequestException("Mesaj kullancı için zaten silinmiş.");
+                    message.DeletedFor!.Add(userId, DateTime.UtcNow);
+
                 }
             }
             else if (deletionType.Equals(1))
             {
-                foreach (var participant in chat.Participants)
+                foreach (var participant in chatParticipants)
                 {
-                    if (!deletedFor!.ContainsKey(participant))
+                    if (!message.DeletedFor!.ContainsKey(participant))
                     {
-                        deletedFor.Add(participant, DateTime.UtcNow);
+                        message.DeletedFor.Add(participant, DateTime.UtcNow);
                     }
                 }
+
+                message.Content = "<em>Bu mesaj silindi. </em>";
             }
             else
             {
                 throw new BadRequestException("deletionType geçersiz.");
             }
 
-            await _messageRepository.UpdateMessageDeletedForAsync(chatType, chatId, messageId, deletedFor!);
+            var messageVM = new Dictionary<string, Dictionary<string, Dictionary<string, Message>>>
+            {
+                {
+                    chatType, new Dictionary<string, Dictionary<string, Message>>
+                    {
+                        {
+                            chatId, new Dictionary<string, Message>
+                            {
+                                { messageId, message }
+                            }
+                        }
+                    }
+                }
+            };
+
+            return (messageVM, chatParticipants);
         }
 
 
@@ -222,16 +242,14 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException("chatType geçersiz.");
             }
 
-            Message message;
+            var message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
 
             if (fieldName.Equals("Delivered"))
             {
-                message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
                 message.Status.Delivered.Add(userId, DateTime.UtcNow);
             }
             else if (fieldName.Equals("Read"))
             {
-                message = chat.Messages.GetValueOrDefault(messageId) ?? throw new NotFoundException("Mesaj bulunamadı.");
                 message.Status.Read.Add(userId, DateTime.UtcNow);
             }
             else

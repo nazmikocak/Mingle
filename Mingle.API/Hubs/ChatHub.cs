@@ -281,5 +281,35 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
+
+        public async Task DeleteMessage(string chatType, string chatId, string messageId, byte deletionType)
+        {
+            try
+            {
+                var (message, chatParticipants) = await _messageService.DeleteMessageAsync(UserId, chatType, chatId, messageId, deletionType);
+
+                var saveMessageTask = _messageRepository.UpdateMessageDeletedForAsync(chatType, chatId, messageId, message.Values.First().Values.First().Values.First().DeletedFor!);
+
+                foreach (var participant in chatParticipants)
+                {
+                    await Clients.User(participant).SendAsync("ReceiveGetMessages", message);
+                }
+
+                await saveMessageTask;
+            }
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
     }
 }

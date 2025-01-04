@@ -4,6 +4,7 @@ using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
+using Mingle.Services.Utilities;
 
 namespace Mingle.Services.Concrete
 {
@@ -37,6 +38,14 @@ namespace Mingle.Services.Concrete
             var userCredential = await _authRepository.SignInUserAsync(dto.Email, dto.Password);
 
             return await Task.Run(() => _jwtManager.GenerateToken(userCredential.User.Uid));
+        }
+
+
+        public async Task ResetPasswordAsync(string email)
+        {
+            FieldValidator.ValidateRequiredFields((email, "email"));
+
+            await _authRepository.ResetEmailPasswordAsync(email);
         }
     }
 }

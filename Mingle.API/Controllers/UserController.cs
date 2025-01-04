@@ -17,6 +17,7 @@ namespace Mingle.API.Controllers
         private readonly IUserService _userService;
 
 
+
         public UserController(IHubContext<NotificationHub> notificationHubContext, IUserService userService)
         {
             _notificationHubContext = notificationHubContext;

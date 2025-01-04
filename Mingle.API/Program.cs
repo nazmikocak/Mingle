@@ -163,7 +163,6 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("ChatHub");
 app.MapHub<NotificationHub>("NotificationHub");
-app.MapHub<CallHub>("CHub");
 app.MapHub<CallHub>("CallHub");
 
 

@@ -68,8 +68,8 @@ namespace Mingle.Services.Concrete
         public async Task<Uri> RemoveProfilePhotoAsync(string userId)
         {
             var defaultPhoto = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1734185072/DefaultUserProfilePhoto.png");
-
             await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", defaultPhoto);
+
             return defaultPhoto;
         }
 
@@ -77,13 +77,12 @@ namespace Mingle.Services.Concrete
         public async Task<Uri> UpdateProfilePhotoAsync(string userId, UpdateProfilePhoto dto)
         {
             var photoBytes = Convert.FromBase64String(dto.ProfilePhoto);
-
             var photo = new MemoryStream(photoBytes);
             FileValidationHelper.ValidatePhoto(photo);
 
             var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", photo);
-
             await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", newPhotoUrl);
+
             return newPhotoUrl;
         }
 
@@ -130,6 +129,11 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds)
         {
+            if (recipientIds.Equals(null) || recipientIds.Count.Equals(0))
+            {
+                throw new BadRequestException("recipientIds boş olamaz.");
+            }
+
             var users = await _userRepository.GetAllUsersAsync();
 
             var recipientProfiles = users
@@ -144,7 +148,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task UpdateLastConnectionDateAsync(string userId, object lastConnectionDate)
+        public async Task UpdateLastConnectionDateAsync(string userId, DateTime lastConnectionDate)
         {
             await _userRepository.UpdateUserFieldAsync(userId, "LastConnectionDate", lastConnectionDate);
         }

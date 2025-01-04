@@ -7,5 +7,7 @@ namespace Mingle.Services.Abstract
         Task SignUpAsync(SignUp dto);
 
         Task<string> SignInAsync(SignIn dto);
+
+        Task ResetPasswordAsync(string email);
     }
 }

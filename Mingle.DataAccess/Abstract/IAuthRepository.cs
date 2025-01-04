@@ -10,5 +10,6 @@ namespace Mingle.DataAccess.Abstract
 
         Task ChangePasswordAsync(UserCredential userCredential, string newPasswordAgain);
 
+        Task ResetEmailPasswordAsync(string email);
     }
 }
