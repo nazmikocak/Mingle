@@ -118,8 +118,9 @@ namespace Mingle.Services.Concrete
 
             var userIndividualChats = individualChats
                 .Where(chat =>
-                    chat.Object.Participants.Contains(userId) &&
-                    chat.Object.Messages.Values.Any(message => !message.DeletedFor!.ContainsKey(userId))
+                    chat.Object.Participants.Contains(userId)
+                    &&
+                    chat.Object.Messages.Values.Where(message => !message.DeletedFor!.ContainsKey(userId)).Any()
                 )
                 .ToDictionary(
                     chat => chat.Key,
@@ -129,6 +130,7 @@ namespace Mingle.Services.Concrete
                         ArchivedFor = chat.Object.ArchivedFor,
                         CreatedDate = chat.Object.CreatedDate,
                         Messages = chat.Object.Messages
+                            .Where(message => !message.Value.DeletedFor!.ContainsKey(userId))
                             .OrderBy(x => x.Value.Status.Sent.Values.First())
                             .ToDictionary(x => x.Key, x => x.Value)
                     }
