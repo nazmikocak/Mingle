@@ -68,22 +68,25 @@ namespace Mingle.API.Hubs
             {
                 var callId = await _callService.StartCallAsync(UserId, recipientId, callType);
 
-                List<string> callParticipants = [UserId, callId];
+                List<string> callParticipants = [UserId, recipientId];
 
                 var recipientProfiles = await _userService.GetUserProfilesAsync(callParticipants);
 
-                for (int i = 0; i < callParticipants.Count; i++)
-                {
-                    var profileToSend = callParticipants[i].Equals(UserId) ? recipientProfiles[callParticipants[1]] : recipientProfiles[UserId];
+                await Clients.User(UserId).SendAsync("ReceiveOutgoingCall", new Dictionary<string, object>
+                    {
+                        { "callId", callId },
+                        { "callType", callType },
+                        { recipientProfiles.Keys.Last(), recipientProfiles.Values.Last() }
+                    }
+                );
 
-                    await Clients.User(callParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
-                        {
-                            { "callId", callId },
-                            { "callType", callType },
-                            { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }
-                        }
-                    );
-                }
+                await Clients.User(recipientId).SendAsync("ReceiveOutgoingCall", new Dictionary<string, object>
+                    {
+                        { "callId", callId },
+                        { "callType", callType },
+                        { recipientProfiles.Keys.First(), recipientProfiles.Values.First() }
+                    }
+                );
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
