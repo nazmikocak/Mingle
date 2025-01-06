@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
@@ -102,7 +101,7 @@ namespace Mingle.API.Hubs
 
 
 
-        public async Task EndCall(string callId, CallStatus callStatus, DateTime createdDate)
+        public async Task EndCall(string callId, CallStatus callStatus, DateTime? createdDate)
         {
             try
             {

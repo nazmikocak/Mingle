@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Mingle.DataAccess.Abstract;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
