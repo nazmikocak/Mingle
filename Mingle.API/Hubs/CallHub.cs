@@ -44,7 +44,7 @@ namespace Mingle.API.Hubs
 
             if (!calls.Count.Equals(0) || !callRecipientIds.Count.Equals(0))
             {
-                var recipientProfiles = await _userService.GetRecipientProfilesAsync(callRecipientIds);
+                var recipientProfiles = await _userService.GetUserProfilesAsync(callRecipientIds);
 
                 await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
                 await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
@@ -118,7 +118,7 @@ namespace Mingle.API.Hubs
                 {
                     var profileToSend = callParticipants[i].Equals(UserId) ? recipientProfiles[callParticipants[1]] : recipientProfiles[UserId];
 
-                    await Clients.User(callParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
+                    await Clients.User(callParticipants[i]).SendAsync("ReceiveEndCall", new Dictionary<string, object>
                         {
                             { "call", call },
                             { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }

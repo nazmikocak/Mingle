@@ -5,8 +5,6 @@ namespace Mingle.Services.Abstract
 {
     public interface IGroupService
     {
-        Task<List<string>> GetUserGroupsIdsAsync(string userId);
-
         Task<Dictionary<string, GroupProfile>> CreateGroupAsync(string userId, CreateGroup dto);
 
         Task<Dictionary<string, GroupProfile>> EditGroupAsync(string userId, string groupId, CreateGroup dto);

@@ -74,7 +74,7 @@ namespace Mingle.API.Controllers
             }
             try
             {
-                var group = await _groupService.CreateGroupAsync(UserId, dto);
+                var group = await _groupService.EditGroupAsync(UserId, groupId, dto);
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {

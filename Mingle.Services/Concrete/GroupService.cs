@@ -29,18 +29,6 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<List<string>> GetUserGroupsIdsAsync(string userId)
-        {
-            var groups = await _groupRepository.GetAllGroupAsync();
-
-            var userGroupIds = groups
-                .Where(group => group.Object.Participants.ContainsKey(userId))
-                .Select(group => group.Key)
-                .ToList();
-
-            return userGroupIds;
-        }
-
 
         public async Task<Dictionary<string, GroupProfile>> CreateGroupAsync(string userId, CreateGroup dto)
         {
@@ -52,9 +40,12 @@ namespace Mingle.Services.Concrete
 
             if (dto.Photo != null)
             {
-                var photo = new MemoryStream(dto.Photo);
+                var photoBytes = Convert.FromBase64String(dto.Photo);
+
+                var photo = new MemoryStream(photoBytes);
                 FileValidationHelper.ValidatePhoto(photo);
-                photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Group/{groupId}", "group_photo", photo);
+
+                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Group/{groupId}", "group_photo", photo);
             }
             else
             {
@@ -111,6 +102,7 @@ namespace Mingle.Services.Concrete
         }
 
 
+
         public async Task<Dictionary<string, GroupProfile>> EditGroupAsync(string userId, string groupId, CreateGroup dto)
         {
             FieldValidationHelper.ValidateRequiredFields((groupId, "groupId"));
@@ -142,9 +134,12 @@ namespace Mingle.Services.Concrete
 
             if (dto.Photo != null)
             {
-                var photo = new MemoryStream(dto.Photo);
+                var photoBytes = Convert.FromBase64String(dto.Photo);
+
+                var photo = new MemoryStream(photoBytes);
                 FileValidationHelper.ValidatePhoto(photo);
-                photoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Group/{groupId}", "group_photo", photo);
+
+                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Group/{groupId}", "group_photo", photo);
             }
             else
             {
@@ -202,6 +197,7 @@ namespace Mingle.Services.Concrete
         }
 
 
+
         public async Task<Dictionary<string, GroupProfile>> GetGroupProfilesAsync(List<string> userGroupIds)
         {
             var groups = await _groupRepository.GetAllGroupAsync();
@@ -242,6 +238,7 @@ namespace Mingle.Services.Concrete
         }
 
 
+
         public async Task<List<string>> GetGroupParticipantsAsync(string userId, string groupId)
         {
             FieldValidationHelper.ValidateRequiredFields((groupId, "groupId"));
@@ -255,6 +252,7 @@ namespace Mingle.Services.Concrete
 
             return groupParticipants;
         }
+
 
 
         public async Task<Dictionary<string, GroupProfile>> LeaveGroupAsync(string userId, string groupId)

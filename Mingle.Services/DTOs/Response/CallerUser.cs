@@ -5,5 +5,7 @@
         public required string DisplayName { get; init; }
 
         public required Uri ProfilePhoto { get; init; }
+
+        public required DateTime LastConnectionDate { get; set; }
     }
 }

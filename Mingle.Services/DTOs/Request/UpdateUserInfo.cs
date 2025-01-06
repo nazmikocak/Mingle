@@ -10,6 +10,7 @@ namespace Mingle.Services.DTOs.Request
     }
 
 
+
     public sealed record UpdateDisplayName
     {
         [Required(ErrorMessage = "Lütfen adınızı ve soyadınızı giriniz.")]
@@ -18,6 +19,7 @@ namespace Mingle.Services.DTOs.Request
         [RegularExpression(@"^[A-Za-zÇçĞğİıÖöŞşÜü]+(?: [A-Za-zÇçĞğİıÖöŞşÜü]+)*$", ErrorMessage = "Adınız ve soyadınız yalnızca harflerden oluşmalı ve kelimeler arasında en fazla bir boşluk olmalıdır.")]
         public string DisplayName { get; init; }
     }
+
 
 
     public sealed record UpdatePhoneNumber

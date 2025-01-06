@@ -20,6 +20,7 @@ namespace Mingle.API.Hubs
         private readonly IMessageRepository _messageRepository;
 
 
+
         private string UserId
         {
             get
@@ -33,6 +34,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public ChatHub(IChatService chatService, IUserService userService, IGroupService groupService, IMessageService messageService, IMessageRepository messageRepository)
         {
             _chatService = chatService;
@@ -41,6 +43,7 @@ namespace Mingle.API.Hubs
             _messageService = messageService;
             _messageRepository = messageRepository;
         }
+
 
 
         public override async Task OnConnectedAsync()
@@ -57,10 +60,10 @@ namespace Mingle.API.Hubs
 
             var sendTasks = new[]
             {
-                    Clients.Caller.SendAsync("ReceiveInitialChats", chats),
-                    Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                    Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
-                };
+                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
+                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
+            };
 
             await Task.WhenAll(sendTasks);
 
@@ -68,10 +71,12 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await base.OnDisconnectedAsync(exception);
         }
+
 
 
         public async Task CreateChat(string chatType, string recipientId)
