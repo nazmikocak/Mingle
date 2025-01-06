@@ -80,7 +80,7 @@ namespace Mingle.API.Hubs
                     }
                 );
 
-                await Clients.User(recipientId).SendAsync("ReceiveOutgoingCall", new Dictionary<string, object>
+                await Clients.User(recipientId).SendAsync("ReceiveIncomingCall", new Dictionary<string, object>
                     {
                         { "callId", callId },
                         { "callType", callType },
