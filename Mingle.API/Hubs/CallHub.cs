@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
@@ -68,11 +69,22 @@ namespace Mingle.API.Hubs
             {
                 var callId = await _callService.StartCallAsync(UserId, recipientId, callType);
 
-                var senderProfile = await _userService.GetUserProfileAsync(UserId);
-                var recipientProfile = await _userService.GetUserProfileAsync(recipientId);
+                List<string> callParticipants = [UserId, callId];
 
-                await Clients.User(UserId).SendAsync("ReceiveOutgoingCall", new Dictionary<string, object> { { "callId", callId }, { "callType", callType }, { recipientId, recipientProfile } });
-                await Clients.User(recipientId).SendAsync("ReceiveIncomingCall", new Dictionary<string, object> { { "callId", callId }, { "callType", callType }, { UserId, senderProfile } });
+                var recipientProfiles = await _userService.GetUserProfilesAsync(callParticipants);
+
+                for (int i = 0; i < callParticipants.Count; i++)
+                {
+                    var profileToSend = callParticipants[i].Equals(UserId) ? recipientProfiles[callParticipants[1]] : recipientProfiles[UserId];
+
+                    await Clients.User(callParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
+                        {
+                            { "callId", callId },
+                            { "callType", callType },
+                            { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }
+                        }
+                    );
+                }
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
@@ -98,7 +110,7 @@ namespace Mingle.API.Hubs
 
                 var callParticipants = call.Values.First().Participants;
 
-                var recipientProfiles = await _userService.GetRecipientProfilesAsync(callParticipants);
+                var recipientProfiles = await _userService.GetUserProfilesAsync(callParticipants);
 
                 for (int i = 0; i < callParticipants.Count; i++)
                 {
@@ -107,7 +119,7 @@ namespace Mingle.API.Hubs
                     await Clients.User(callParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
                         {
                             { "call", call },
-                            { "recipientProfiles", new Dictionary<string, object> { { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend } } }
+                            { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }
                         }
                     );
                 }

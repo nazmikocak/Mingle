@@ -11,7 +11,7 @@ namespace Mingle.Services.Abstract
 
         Task<UserInfo> GetUserInfoAsync(string userId);
 
-        Task<CallerUser> GetUserProfileAsync(string userId);
+        Task<Dictionary<string, CallerUser>> GetUserProfilesAsync(List<string> recipientIds);
 
         Task<Uri> RemoveProfilePhotoAsync(string userId);
 

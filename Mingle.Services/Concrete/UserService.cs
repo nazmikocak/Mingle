@@ -60,11 +60,24 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<CallerUser> GetUserProfileAsync(string userId)
+        public async Task<Dictionary<string, CallerUser>> GetUserProfilesAsync(List<string> recipientIds)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId) ?? throw new NotFoundException("Kullanıcı bulunamadı");
+            if (recipientIds.Equals(null) || recipientIds.Count.Equals(0))
+            {
+                throw new BadRequestException("recipientIds boş olamaz.");
+            }
 
-            return _mapper.Map<CallerUser>(user);
+            var users = await _userRepository.GetAllUsersAsync();
+
+            var recipientProfiles = users
+                .Where(user => recipientIds.Contains(user.Key))
+                .ToDictionary(
+                    user => user.Key,
+                    user => _mapper.Map<CallerUser>(user.Object)
+                )
+                ?? throw new NotFoundException("Kullanıcı bulunamadı.");
+
+            return recipientProfiles;
         }
 
 
