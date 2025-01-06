@@ -76,6 +76,16 @@ namespace Mingle.Services.Concrete
                 var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", video);
                 messageContent = videoUrl.ToString();
             }
+            else if (dto.ContentType.Equals(MessageContent.Audio))
+            {
+                var audioBytes = Convert.FromBase64String(dto.Content);
+
+                var audio = new MemoryStream(audioBytes);
+                FileValidationHelper.ValidateVideo(audio);
+
+                var audioUrl = await _cloudRepository.UploadAudioAsync(messageId, $"Chats/{chatId}", "audio_message", audio);
+                messageContent = audioUrl.ToString();
+            }
             else if (dto.ContentType.Equals(MessageContent.File))
             {
                 var fileBytes = Convert.FromBase64String(dto.Content);
@@ -127,7 +137,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType)
         {
-            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
+            FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId);
 
@@ -215,7 +225,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
-            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
+            FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı!");
 

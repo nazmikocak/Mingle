@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Firebase.Database;
+using LiteDB;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Services.Abstract;
+using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
@@ -47,6 +50,28 @@ namespace Mingle.API.Hubs
 
             await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } } });
             await base.OnDisconnectedAsync(exception);
+        }
+
+
+        public async Task SearchUsers(string query)
+        {
+            try
+            {
+                var users = await _userService.SearchUsersAsync(UserId, query);
+                await Clients.Caller.SendAsync("ReceiveSearchUsers", users);
+            }
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
         }
     }
 }

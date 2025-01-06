@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Response;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -14,6 +13,7 @@ namespace Mingle.API.Hubs
     {
         private readonly IUserService _userService;
         private readonly ICallService _callService;
+
 
 
         private string UserId
@@ -29,6 +29,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public CallHub(IUserService userService, ICallService callService)
         {
             _userService = userService;
@@ -36,22 +37,29 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public override async Task OnConnectedAsync()
         {
             var (calls, callRecipientIds) = await _callService.GetCallLogs(UserId);
-            var recipientProfiles = await _userService.GetRecipientProfilesAsync(callRecipientIds);
 
-            await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
-            await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
+            if (!calls.Count.Equals(0) || !callRecipientIds.Count.Equals(0))
+            {
+                var recipientProfiles = await _userService.GetRecipientProfilesAsync(callRecipientIds);
+
+                await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
+                await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
+            }
 
             await base.OnConnectedAsync();
         }
+
 
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await base.OnDisconnectedAsync(exception);
         }
+
 
 
         public async Task StartCall(string recipientId, CallType callType)
@@ -81,15 +89,27 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task EndCall(string callId, CallStatus callStatus)
+
+        public async Task EndCall(string callId, CallStatus callStatus, DateTime createdDate)
         {
             try
             {
-                var call = await _callService.EndCallAsync(UserId, callId, callStatus);
+                var call = await _callService.EndCallAsync(UserId, callId, callStatus, createdDate);
 
-                foreach (var participant in call.Values.First().Participants)
+                var callParticipants = call.Values.First().Participants;
+
+                var recipientProfiles = await _userService.GetRecipientProfilesAsync(callParticipants);
+
+                for (int i = 0; i < callParticipants.Count; i++)
                 {
-                    await Clients.User(participant).SendAsync("ReceiveEndCall", call);
+                    var profileToSend = callParticipants[i].Equals(UserId) ? recipientProfiles[callParticipants[1]] : recipientProfiles[UserId];
+
+                    await Clients.User(callParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
+                        {
+                            { "call", call },
+                            { "recipientProfiles", new Dictionary<string, object> { { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend } } }
+                        }
+                    );
                 }
             }
             catch (Exception ex) when (
@@ -107,7 +127,8 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendIceCandidate(string callId, object iceCandidate)
+
+        public async Task SendSdp(string callId, object sdp)
         {
             try
             {
@@ -117,7 +138,7 @@ namespace Mingle.API.Hubs
                 {
                     if (!participant.Equals(UserId))
                     {
-                        await Clients.User(participant).SendAsync("ReceiveIceCandidate", iceCandidate);
+                        await Clients.User(participant).SendAsync("ReceiveSdp", sdp);
                     }
                 }
             }
@@ -136,7 +157,8 @@ namespace Mingle.API.Hubs
         }
 
 
-        public async Task SendSdp(string callId, object sdp)
+
+        public async Task SendIceCandidate(string callId, object iceCandidate)
         {
             try
             {
@@ -146,7 +168,7 @@ namespace Mingle.API.Hubs
                 {
                     if (!participant.Equals(UserId))
                     {
-                        await Clients.User(participant).SendAsync("ReceiveSdp", sdp);
+                        await Clients.User(participant).SendAsync("ReceiveIceCandidate", iceCandidate);
                     }
                 }
             }

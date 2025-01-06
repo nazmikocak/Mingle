@@ -3,6 +3,7 @@ using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
+using Mingle.Services.Utilities;
 
 namespace Mingle.Services.Concrete
 {
@@ -19,6 +20,8 @@ namespace Mingle.Services.Concrete
 
         public async Task<string> StartCallAsync(string userId, string recipientId, CallType callType)
         {
+            FieldValidationHelper.ValidateRequiredFields((recipientId, "recipientId"), (callType.ToString(), "callType"));
+
             var callId = Guid.NewGuid().ToString();
 
             var call = new Call
@@ -35,8 +38,10 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, Call>> EndCallAsync(string userId, string callId, CallStatus callStatus)
+        public async Task<Dictionary<string, Call>> EndCallAsync(string userId, string callId, CallStatus callStatus, DateTime createdDate)
         {
+            FieldValidationHelper.ValidateRequiredFields((callId, "callId"), (callStatus.ToString(), "callStatus"), (createdDate.ToString(), "createdDate"));
+
             var call = await _callRepository.GetCallByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
 
             if (!call.Participants.Contains(userId))
@@ -45,7 +50,9 @@ namespace Mingle.Services.Concrete
             }
 
             call.Status = callStatus;
-            call.CallDuration = DateTime.UtcNow - call.CreatedDate;
+            call.CallDuration = DateTime.UtcNow - createdDate;
+
+            await _callRepository.CreateOrUpdateCallAsync(callId, call);
 
             return new Dictionary<string, Call> { { callId, call } };
         }

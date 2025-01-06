@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mingle.DataAccess.Abstract;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.DTOs.Response;
@@ -25,8 +26,10 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, SearchedUsers dto)
+        public async Task<Dictionary<string, FoundUsers>> SearchUsersAsync(string userId, string query)
         {
+            FieldValidationHelper.ValidateRequiredFields((query, "query"));
+
             var usersSnapshot = await _userRepository.GetAllUsersAsync();
 
             var users = usersSnapshot
@@ -34,9 +37,9 @@ namespace Mingle.Services.Concrete
                     !user.Key.Equals(userId)
                     &&
                     (
-                        user.Object.DisplayName.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
+                        user.Object.DisplayName.Contains(query, StringComparison.CurrentCultureIgnoreCase)
                         ||
-                        user.Object.Email.Contains(dto.Query, StringComparison.CurrentCultureIgnoreCase)
+                        user.Object.Email.Contains(query, StringComparison.CurrentCultureIgnoreCase)
                     )
                 )
                 .ToDictionary(

@@ -24,7 +24,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Chat>> CreateChatAsync(string userId, string chatType, string recipientId)
         {
-            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (recipientId, "recipientId"));
+            FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (recipientId, "recipientId"));
 
             if (chatType.Equals("Individual"))
             {
@@ -168,7 +168,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Dictionary<string, Chat>>> ClearChatAsync(string userId, string chatType, string chatId)
         {
-            FieldValidator.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
+            FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
 
             var chat = await _chatRepository.GetChatByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -206,7 +206,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> ArchiveIndividualChatAsync(string userId, string chatId)
         {
-            FieldValidator.ValidateRequiredFields((chatId, chatId));
+            FieldValidationHelper.ValidateRequiredFields((chatId, chatId));
 
             var chat = await _chatRepository.GetChatByIdAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 
@@ -236,7 +236,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> UnarchiveIndividualChatAsync(string userId, string chatId)
         {
-            FieldValidator.ValidateRequiredFields((chatId, "chatId"));
+            FieldValidationHelper.ValidateRequiredFields((chatId, "chatId"));
 
             var chat = await _chatRepository.GetChatByIdAsync("Individual", chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
 

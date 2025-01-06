@@ -28,15 +28,11 @@ namespace Mingle.API.Controllers
 
         // GET: Users
         [HttpGet]
-        public async Task<IActionResult> Users([FromQuery] SearchedUsers dto)
+        public async Task<IActionResult> Users([FromQuery] string query)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             try
             {
-                return Ok(await _userService.SearchUsersAsync(UserId, dto));
+                return Ok(await _userService.SearchUsersAsync(UserId, query));
             }
             catch (NotFoundException ex)
             {

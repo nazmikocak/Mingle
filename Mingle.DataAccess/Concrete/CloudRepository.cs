@@ -53,6 +53,24 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
+        public async Task<Uri> UploadAudioAsync(string publicId, string folder, string tags, MemoryStream audio)
+        {
+            var uploadParams = new VideoUploadParams
+            {
+                File = new FileDescription(publicId, audio),
+                PublicId = publicId,
+                Overwrite = false,
+                Folder = folder,
+                Tags = tags,
+                Format = "mp3",
+                UseFilenameAsDisplayName = true,
+            };
+
+            var uploadResult = await Task.Run(() => _cloudinary.Upload(uploadParams));
+            return uploadResult.SecureUrl;
+        }
+
+
         public async Task<Uri> UploadFileAsync(string publicId, string folder, string tags, MemoryStream file)
         {
             var uploadParams = new RawUploadParams

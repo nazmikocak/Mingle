@@ -113,7 +113,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, GroupProfile>> EditGroupAsync(string userId, string groupId, CreateGroup dto)
         {
-            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
+            FieldValidationHelper.ValidateRequiredFields((groupId, "groupId"));
 
             var groupParticipants = JsonSerializer.Deserialize<Dictionary<string, GroupParticipant>>(dto.Participants)
                                     ?? throw new BadRequestException("Grup katılımcıları hatalı.");
@@ -244,7 +244,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<List<string>> GetGroupParticipantsAsync(string userId, string groupId)
         {
-            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
+            FieldValidationHelper.ValidateRequiredFields((groupId, "groupId"));
 
             var groupParticipants = await _groupRepository.GetGroupParticipantsIdsAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
@@ -259,7 +259,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, GroupProfile>> LeaveGroupAsync(string userId, string groupId)
         {
-            FieldValidator.ValidateRequiredFields((groupId, "groupId"));
+            FieldValidationHelper.ValidateRequiredFields((groupId, "groupId"));
 
             var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 

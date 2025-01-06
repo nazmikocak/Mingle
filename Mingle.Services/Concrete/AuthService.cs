@@ -43,7 +43,7 @@ namespace Mingle.Services.Concrete
 
         public async Task ResetPasswordAsync(string email)
         {
-            FieldValidator.ValidateRequiredFields((email, "email"));
+            FieldValidationHelper.ValidateEmailFormat(email);
 
             await _authRepository.ResetEmailPasswordAsync(email);
         }
