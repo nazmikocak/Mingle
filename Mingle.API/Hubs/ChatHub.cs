@@ -6,7 +6,10 @@ using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
+using Mingle.Services.Utilities;
+using Newtonsoft.Json;
 using System.Security.Claims;
+using System.Text;
 
 namespace Mingle.API.Hubs
 {
@@ -102,7 +105,7 @@ namespace Mingle.API.Hubs
 
                         await Clients.User(chatParticipants[i]).SendAsync("ReceiveRecipientProfiles", new Dictionary<string, object>
                             {
-                                { profileToSend.Equals(recipientProfiles[chatParticipants[1]]) ? recipientId : UserId, profileToSend }
+                                { profileToSend.Equals(recipientProfiles[recipientId]) ? recipientId : UserId, profileToSend }
                             }
                         );
                     }
@@ -132,6 +135,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public async Task ClearChat(string chatType, string chatId)
         {
             try
@@ -152,6 +156,7 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
 
 
         public async Task ArchiveChat(string chatId)
@@ -176,6 +181,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public async Task UnarchiveChat(string chatId)
         {
             try
@@ -198,10 +204,14 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public async Task SendMessage(string chatType, string chatId, SendMessage dto)
         {
             try
             {
+                var calculator = new PackageSizeCalculationHelper();
+                calculator.CalculateMessageSizeAndPacketEstimate(dto);
+
                 var (message, chatParticipants) = await _messageService.SendMessageAsync(UserId, chatId, chatType, dto);
 
                 var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.First().Value.First().Value.First().Key, message.First().Value.First().Value.First().Value);
@@ -226,6 +236,7 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
 
 
         public async Task DeliverMessage(string chatType, string chatId, string messageId)
@@ -258,6 +269,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         public async Task ReadMessage(string chatType, string chatId, string messageId)
         {
             try
@@ -286,6 +298,7 @@ namespace Mingle.API.Hubs
                 await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
             }
         }
+
 
 
         public async Task DeleteMessage(string chatType, string chatId, string messageId, byte deletionType)

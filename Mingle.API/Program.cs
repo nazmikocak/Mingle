@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR(
     options =>
     {
-        options.MaximumReceiveMessageSize = 2097152;
+        options.MaximumReceiveMessageSize = 2097152; // 2 MB
     }
 );
 
