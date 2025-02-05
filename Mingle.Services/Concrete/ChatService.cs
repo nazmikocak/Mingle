@@ -1,4 +1,5 @@
 ﻿using Mingle.DataAccess.Abstract;
+using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
@@ -111,17 +112,8 @@ namespace Mingle.Services.Concrete
             var groupChats = await groupChatsTask;
             var groups = await groupsTask;
 
-            var userGroupIds = new List<string>(
-                groups.Where(group => group.Object.Participants.ContainsKey(userId))
-                      .Select(group => group.Key)
-            );
-
             var userIndividualChats = individualChats
-                .Where(chat =>
-                    chat.Object.Participants.Contains(userId)
-                    &&
-                    chat.Object.Messages.Values.Where(message => !message.DeletedFor!.ContainsKey(userId)).Any()
-                )
+                .Where(chat => chat.Object.Participants.Contains(userId))
                 .ToDictionary(
                     chat => chat.Key,
                     chat => new Chat
@@ -135,6 +127,11 @@ namespace Mingle.Services.Concrete
                             .ToDictionary(x => x.Key, x => x.Value)
                     }
                 );
+
+            var userGroupIds = groups
+                .Where(group => group.Object.Participants.ContainsKey(userId) && group.Object.Participants[userId] != GroupParticipant.Former)
+                .Select(group => group.Key)
+                .ToList();
 
             var userGroupChats = groupChats
                 .Where(chat => userGroupIds.Contains(chat.Object.Participants.First()))

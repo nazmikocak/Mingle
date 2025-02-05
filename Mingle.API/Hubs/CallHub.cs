@@ -142,17 +142,46 @@ namespace Mingle.API.Hubs
 
 
 
+        public async Task DeleteCall(string callId)
+        {
+            try
+            {
+                await _callService.DeleteCallAsync(UserId, callId);
+
+                await Clients.User(UserId).SendAsync("ReceiveDeleteCall", callId);
+            }
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
         public async Task SendSdp(string callId, object sdp)
         {
             try
             {
-                var participants = await _callService.GetCallParticipantsAsync(UserId, callId);
+                var call = await _callService.GetCallAsync(UserId, callId);
 
-                foreach (var participant in participants)
+                foreach (var participant in call.Participants)
                 {
                     if (!participant.Equals(UserId))
                     {
-                        await Clients.User(participant).SendAsync("ReceiveSdp", sdp);
+                        await Clients.User(participant).SendAsync("ReceiveSdp", new Dictionary<string, object>
+                            {
+                                {"sdp", sdp },
+                                {"callType", call.Type }
+                            }
+                        );
                     }
                 }
             }
@@ -176,9 +205,9 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var participants = await _callService.GetCallParticipantsAsync(UserId, callId);
+                var call = await _callService.GetCallAsync(UserId, callId);
 
-                foreach (var participant in participants)
+                foreach (var participant in call.Participants)
                 {
                     if (!participant.Equals(UserId))
                     {

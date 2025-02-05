@@ -53,9 +53,9 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: SignIn
+        // POST: SignInEmail
         [HttpPost]
-        public async Task<IActionResult> SignIn([FromBody] SignIn dto)
+        public async Task<IActionResult> SignInEmail([FromBody] SignIn dto)
         {
             if (!ModelState.IsValid)
             {
@@ -63,7 +63,7 @@ namespace Mingle.API.Controllers
             }
             try
             {
-                return Ok(new { token = await _authService.SignInAsync(dto) });
+                return Ok(new { token = await _authService.SignInEmailAsync(dto) });
             }
             catch (FirebaseAuthHttpException ex)
             {
@@ -71,6 +71,58 @@ namespace Mingle.API.Controllers
                 {
                     return Unauthorized(new { message = "E-posta ya da şifre hatalı." });
                 }
+                return ex.Reason switch
+                {
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                };
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
+        // POST: SignInGoogle
+        [HttpPost]
+        public async Task<IActionResult> SignInGoogle([FromBody] string accessToken)
+        {
+            try
+            {
+                return Ok(new { token = await _authService.SignInGoogleAsync(accessToken) });
+            }
+            catch (FirebaseAuthHttpException ex)
+            {
+                return ex.Reason switch
+                {
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                };
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+            }
+        }
+
+
+
+        // POST: SignInFacebook
+        [HttpPost]
+        public async Task<IActionResult> SignInFacebook([FromBody] string accessToken)
+        {
+            try
+            {
+                return Ok(new { token = await _authService.SignInFacebookAsync(accessToken) });
+            }
+            catch (FirebaseAuthHttpException ex)
+            {
                 return ex.Reason switch
                 {
                     AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
@@ -109,7 +161,7 @@ namespace Mingle.API.Controllers
 
         // POST: Password
         [HttpPost]
-        public async Task<IActionResult> Password([FromQuery] string email)
+        public async Task<IActionResult> Password([FromBody] string email)
         {
             try
             {

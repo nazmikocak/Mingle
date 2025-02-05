@@ -12,6 +12,8 @@ namespace Mingle.Entities.Models
 
         public TimeSpan? CallDuration { get; set; }
 
+        public Dictionary<string, DateTime>? DeletedFor { get; set; } = [];
+
         public required DateTime CreatedDate { get; set; }
     }
 }

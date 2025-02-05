@@ -33,11 +33,34 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<string> SignInAsync(SignIn dto)
+        public async Task<string> SignInEmailAsync(SignIn dto)
         {
-            var userCredential = await _authRepository.SignInUserAsync(dto.Email, dto.Password);
+            var userCredential = await _authRepository.SignInWithEmailAsync(dto.Email, dto.Password);
 
             return await Task.Run(() => _jwtManager.GenerateToken(userCredential.User.Uid));
+        }
+
+
+        public async Task<string> SignInGoogleAsync(string accessToken)
+        {
+            FieldValidationHelper.ValidateRequiredFields((accessToken, "accessToken"));
+
+            var userCredential = await _authRepository.SignInWithGoogleAsync(accessToken);
+            var user = _mapper.Map<User>(userCredential);
+
+            await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
+
+            return _jwtManager.GenerateToken(userCredential.User.Uid);
+        }
+
+        public async Task<string> SignInFacebookAsync(string accessToken)
+        {
+            var userCredential = await _authRepository.SignInWithFacebookAsync(accessToken);
+            var user = _mapper.Map<User>(userCredential);
+
+            await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
+
+            return _jwtManager.GenerateToken(userCredential.User.Uid);
         }
 
 

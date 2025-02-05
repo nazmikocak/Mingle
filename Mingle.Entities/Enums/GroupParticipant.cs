@@ -3,6 +3,7 @@
     public enum GroupParticipant
     {
         Admin = 0,
-        Member = 1
+        Member = 1,
+        Former = 2
     }
 }

@@ -169,35 +169,17 @@ namespace Mingle.Services.Concrete
 
             if (deletionType.Equals(0))
             {
-                if (message.DeletedFor!.Any())
-                {
-                    if (message.DeletedFor!.ContainsKey(userId))
-                    {
-                        message.DeletedFor.Add(userId, DateTime.UtcNow);
-                        message.Content = "";
-                    }
-                    else
-                    {
-                        throw new BadRequestException("Mesaj kullancı için zaten silinmiş.");
-                    }
-                }
-                else
-                {
-                    message.DeletedFor!.Add(userId, DateTime.UtcNow);
-
-                }
+                message.DeletedFor.Add(userId, DateTime.UtcNow);
+                message.Content = "";
             }
             else if (deletionType.Equals(1))
             {
                 foreach (var participant in chatParticipants)
                 {
-                    if (!message.DeletedFor!.ContainsKey(participant))
-                    {
-                        message.DeletedFor.Add(participant, DateTime.UtcNow);
-                    }
+                    message.DeletedFor.Add(participant, DateTime.UtcNow);
                 }
 
-                message.Content = "<em>Bu mesaj silindi. </em>";
+                message.Content = "Bu mesaj silindi.";
             }
             else
             {

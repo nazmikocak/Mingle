@@ -6,7 +6,11 @@ namespace Mingle.Services.Abstract
     {
         Task SignUpAsync(SignUp dto);
 
-        Task<string> SignInAsync(SignIn dto);
+        Task<string> SignInEmailAsync(SignIn dto);
+
+        Task<string> SignInGoogleAsync(string accessToken);
+
+        Task<string> SignInFacebookAsync(string accessToken);
 
         Task ResetPasswordAsync(string email);
     }

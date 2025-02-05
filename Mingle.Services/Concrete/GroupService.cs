@@ -125,6 +125,14 @@ namespace Mingle.Services.Concrete
                 }
             }
 
+            foreach (var participant in group.Participants.Keys)
+            {
+                if (!groupParticipants.ContainsKey(participant))
+                {
+                    throw new BadRequestException("Grup katılımcıları gruptan çıkarılamaz. Rolü değiştirilebilir.");
+                }
+            }
+
             foreach (var participant in groupParticipants.Keys)
             {
                 var user = await _userRepository.GetUserByIdAsync(participant) ?? throw new BadRequestException("Bazı kullanıcılar geçersiz.");
@@ -205,7 +213,7 @@ namespace Mingle.Services.Concrete
 
             Dictionary<string, GroupProfile> groupProfile = [];
 
-            foreach (var group in groups)
+            foreach (var group in groups.Where(group => userGroupIds.Contains(group.Key)))
             {
                 Dictionary<string, ParticipantProfile> groupUsers = [];
 
@@ -261,12 +269,12 @@ namespace Mingle.Services.Concrete
 
             var group = await _groupRepository.GetGroupByIdAsync(groupId) ?? throw new NotFoundException("Grup bulunamadı.");
 
-            if (!group.Participants.ContainsKey(userId))
+            if (!group.Participants.ContainsKey(userId) || group.Participants[userId].Equals(GroupParticipant.Former))
             {
                 throw new ForbiddenException("Sohbet üzerinde yetkiniz yok.");
             }
 
-            group.Participants.Remove(userId);
+            group.Participants[userId] = GroupParticipant.Former;
 
             if (!group.Participants.Count.Equals(0) && !group.Participants.ContainsValue(GroupParticipant.Admin))
             {

@@ -41,7 +41,10 @@ namespace Mingle.DataAccess.Concrete
         {
             var groupParticipants = await _databaseClient.Child("Groups").Child(groupId).Child("Participants").OnceAsync<object>();
 
-            return groupParticipants.Select(x => x.Key).ToList();
+            return groupParticipants
+                .Where(x => !x.Object.Equals(GroupParticipant.Former))
+                .Select(x => x.Key)
+                .ToList();
         }
 
 

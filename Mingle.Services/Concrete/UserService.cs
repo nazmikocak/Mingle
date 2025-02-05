@@ -124,7 +124,7 @@ namespace Mingle.Services.Concrete
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
 
-            var userCredential = await _authRepository.SignInUserAsync(user.Email, dto.CurrentPassword);
+            var userCredential = await _authRepository.SignInWithEmailAsync(user.Email, dto.CurrentPassword);
 
             await _authRepository.ChangePasswordAsync(userCredential, dto.NewPasswordAgain);
         }

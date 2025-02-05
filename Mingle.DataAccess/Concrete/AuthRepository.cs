@@ -21,9 +21,25 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<UserCredential> SignInUserAsync(string email, string password)
+        public async Task<UserCredential> SignInWithEmailAsync(string email, string password)
         {
             return await _authClient.SignInWithEmailAndPasswordAsync(email, password);
+        }
+
+
+        public async Task<UserCredential> SignInWithGoogleAsync(string accessToken)
+        {
+            var credential = GoogleProvider.GetCredential(accessToken);
+
+            return await _authClient.SignInWithCredentialAsync(credential);
+        }
+
+
+        public async Task<UserCredential> SignInWithFacebookAsync(string accessToken)
+        {
+            var credential = FacebookProvider.GetCredential(accessToken);
+
+            return await _authClient.SignInWithCredentialAsync(credential);
         }
 
 

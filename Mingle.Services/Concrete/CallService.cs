@@ -58,6 +58,23 @@ namespace Mingle.Services.Concrete
         }
 
 
+        public async Task DeleteCallAsync(string userId, string callId)
+        {
+            FieldValidationHelper.ValidateRequiredFields((callId, "callId"));
+
+            var call = await _callRepository.GetCallByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
+
+            if (!call.Participants.Contains(userId))
+            {
+                throw new ForbiddenException("Çağrı üzerinde yetkiniz yok.");
+            }
+
+            call.DeletedFor.Add(userId, DateTime.UtcNow);
+
+            await _callRepository.CreateOrUpdateCallAsync(callId, call);
+        }
+
+
         public async Task<List<string>> GetCallParticipantsAsync(string userId, string callId)
         {
             var callParticipants = await _callRepository.GetCallParticipantsByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
@@ -77,8 +94,8 @@ namespace Mingle.Services.Concrete
 
             var userCalls = calls
                 .Where(call => call.Object.Participants.Contains(userId))
-                .ToDictionary(call =>
-                    call.Key,
+                .ToDictionary(
+                    call => call.Key,
                     call => call.Object
                 );
 
@@ -88,6 +105,14 @@ namespace Mingle.Services.Concrete
                 .ToList();
 
             return (userCalls, callRecipientIds);
+        }
+
+
+        public async Task<Call> GetCallAsync(string userId, string callId)
+        {
+            var call = await _callRepository.GetCallByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
+
+            return call;
         }
     }
 }

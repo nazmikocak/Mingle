@@ -10,7 +10,7 @@ namespace Mingle.Services.Utilities
             string serializedMessage = JsonConvert.SerializeObject(dto);
 
             int messageSizeInBytes = Encoding.UTF8.GetByteCount(serializedMessage);
-            Console.WriteLine($"Mesaj Boyutu: {messageSizeInBytes} byte");
+            Console.WriteLine($"\nMesaj Boyutu: {messageSizeInBytes} byte");
 
             int mss = 1460;
             int tcpHeaderSize = 20;

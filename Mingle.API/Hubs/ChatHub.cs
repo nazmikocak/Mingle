@@ -7,9 +7,7 @@ using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
-using Newtonsoft.Json;
 using System.Security.Claims;
-using System.Text;
 
 namespace Mingle.API.Hubs
 {
@@ -186,8 +184,8 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var archivedFor = await _chatService.ArchiveIndividualChatAsync(UserId, chatId);
-                await Clients.User(UserId).SendAsync("ReceiveArchiveChat", archivedFor);
+                var archivedFor = await _chatService.UnarchiveIndividualChatAsync(UserId, chatId);
+                await Clients.User(UserId).SendAsync("ReceiveUnarchiveChat", archivedFor);
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
