@@ -238,11 +238,17 @@ namespace Mingle.Services.Concrete
 
             if (fieldName.Equals("Delivered"))
             {
-                message.Status.Delivered.Add(userId, DateTime.UtcNow);
+                if (!message.Status.Delivered.ContainsKey(userId))
+                {
+                    message.Status.Delivered.Add(userId, DateTime.UtcNow);
+                }
             }
             else if (fieldName.Equals("Read"))
             {
-                message.Status.Read.Add(userId, DateTime.UtcNow);
+                if (!message.Status.Read.ContainsKey(userId))
+                {
+                    message.Status.Read.Add(userId, DateTime.UtcNow);
+                }
             }
             else
             {

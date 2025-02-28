@@ -93,7 +93,12 @@ namespace Mingle.Services.Concrete
             var calls = await _callRepository.GetCallsAsync();
 
             var userCalls = calls
-                .Where(call => call.Object.Participants.Contains(userId))
+                .Where(call =>
+                    call.Object.Participants.Contains(userId)
+                    &&
+                    !call.Object.DeletedFor!.ContainsKey(userId)
+                )
+                .OrderBy(call => call.Object.CreatedDate)
                 .ToDictionary(
                     call => call.Key,
                     call => call.Object

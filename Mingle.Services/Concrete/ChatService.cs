@@ -116,20 +116,23 @@ namespace Mingle.Services.Concrete
                 .Where(chat => chat.Object.Participants.Contains(userId))
                 .ToDictionary(
                     chat => chat.Key,
-                    chat => new Chat
+                    chat =>
                     {
-                        Participants = chat.Object.Participants,
-                        ArchivedFor = chat.Object.ArchivedFor,
-                        CreatedDate = chat.Object.CreatedDate,
-                        Messages = chat.Object.Messages
+                        chat.Object.Messages = chat.Object.Messages
                             .Where(message => !message.Value.DeletedFor!.ContainsKey(userId))
-                            .OrderBy(x => x.Value.Status.Sent.Values.First())
-                            .ToDictionary(x => x.Key, x => x.Value)
+                            .OrderBy(message => message.Value.Status.Sent.Values.First())
+                            .ToDictionary(message => message.Key, message => message.Value);
+
+                        return chat.Object;
                     }
                 );
 
             var userGroupIds = groups
-                .Where(group => group.Object.Participants.ContainsKey(userId) && group.Object.Participants[userId] != GroupParticipant.Former)
+                .Where(group =>
+                    group.Object.Participants.ContainsKey(userId)
+                    &&
+                    group.Object.Participants[userId] != GroupParticipant.Former
+                )
                 .Select(group => group.Key)
                 .ToList();
 
@@ -137,14 +140,14 @@ namespace Mingle.Services.Concrete
                 .Where(chat => userGroupIds.Contains(chat.Object.Participants.First()))
                 .ToDictionary(chat =>
                     chat.Key,
-                    chat => new Chat
+                    chat =>
                     {
-                        Participants = chat.Object.Participants,
-                        ArchivedFor = chat.Object.ArchivedFor,
-                        CreatedDate = chat.Object.CreatedDate,
-                        Messages = chat.Object.Messages
-                            .OrderBy(x => x.Value.Status.Sent.Values.First())
-                            .ToDictionary(x => x.Key, x => x.Value)
+                        chat.Object.Messages = chat.Object.Messages
+                            .Where(message => !message.Value.DeletedFor!.ContainsKey(userId))
+                            .OrderBy(message => message.Value.Status.Sent.Values.First())
+                            .ToDictionary(message => message.Key, message => message.Value);
+
+                        return chat.Object;
                     }
                 );
 

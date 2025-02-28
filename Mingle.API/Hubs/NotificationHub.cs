@@ -58,7 +58,12 @@ namespace Mingle.API.Hubs
             try
             {
                 var users = await _userService.SearchUsersAsync(UserId, query);
-                await Clients.Caller.SendAsync("ReceiveSearchUsers", users);
+                await Clients.Caller.SendAsync("ReceiveSearchUsers", new Dictionary<string, object>
+                    {
+                        {"query", query },
+                        {"data", users }
+                    }
+                );
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||

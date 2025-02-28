@@ -89,8 +89,10 @@ builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 
+// Configurations
 builder.Services.AddScoped<FirebaseConfig>();
 builder.Services.AddScoped<CloudinaryConfig>();
+builder.Services.AddScoped<GeminiConfig>();
 
 
 
@@ -102,6 +104,7 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<ICallService, CallService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IGenerativeAiService, GenerativeAiService>();
 
 
 
@@ -113,7 +116,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 
-// 
+// Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -132,7 +135,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
     };
 });
-
 
 
 
@@ -161,6 +163,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
+// Hubs
 app.MapHub<ChatHub>("ChatHub");
 app.MapHub<NotificationHub>("NotificationHub");
 app.MapHub<CallHub>("CallHub");
