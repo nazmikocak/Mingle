@@ -21,7 +21,7 @@ namespace Mingle.API.Controllers
 
         // POST: GeminiText
         [HttpPost]
-        public async Task<IActionResult> GeminiText(TextRequest request)
+        public async Task<IActionResult> GeminiText(AiRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -39,9 +39,9 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: GeminiImage
+        // POST: FluxImage
         [HttpPost]
-        public async Task<IActionResult> GeminiImage(ImageRequest request)
+        public async Task<IActionResult> FluxIamge(AiRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -49,7 +49,7 @@ namespace Mingle.API.Controllers
             }
             try
             {
-                return Ok(new { images = await _generativeAiService.GeminiGenerateImagesAsync(request) });
+                return Ok(new { responseImage = await _generativeAiService.FluxGenerateImageAsync(request) });
             }
             catch (Exception ex)
             {

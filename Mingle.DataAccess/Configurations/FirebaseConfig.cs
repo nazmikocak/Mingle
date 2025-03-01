@@ -12,13 +12,13 @@ namespace Mingle.DataAccess.Configurations
 
         public FirebaseConfig(IConfiguration configuration)
         {
-            var firebaseApiKey = configuration["FirebaseSettings:ApiKey"];
+            var apiKey = configuration["FirebaseSettings:ApiKey"];
             var authDomain = configuration["FirebaseSettings:AuthDomain"];
             var databaseUrl = configuration["FirebaseSettings:DatabaseUrl"];
 
             var config = new FirebaseAuthConfig
             {
-                ApiKey = firebaseApiKey,
+                ApiKey = apiKey,
                 AuthDomain = authDomain,
                 Providers = new FirebaseAuthProvider[]
                 {

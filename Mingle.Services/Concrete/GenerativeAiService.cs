@@ -2,26 +2,27 @@
 using Mingle.Services.Abstract;
 using Mingle.Services.DTOs.Request;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace Mingle.Services.Concrete
 {
     public sealed class GenerativeAiService : IGenerativeAiService
     {
-        private readonly string _imageGenerationUrl;
-        private readonly string _textGenerationUrl;
+        private readonly HuggingFaceConfig _huggingFaceConfig;
+        private readonly string _textGeneration;
         private readonly HttpClient _httpClient;
 
 
-        public GenerativeAiService(GeminiConfig geminiConfig)
+        public GenerativeAiService(GeminiConfig geminiConfig, HuggingFaceConfig huggingFaceConfig)
         {
-            _imageGenerationUrl = geminiConfig.ImageGenerationUrl;
-            _textGenerationUrl = geminiConfig.TextGenerationUrl;
+            _textGeneration = geminiConfig.TextGeneration;
+            _huggingFaceConfig = huggingFaceConfig;
             _httpClient = new HttpClient();
         }
 
 
-        public async Task<string> GeminiGenerateTextAsync(TextRequest request)
+        public async Task<string> GeminiGenerateTextAsync(AiRequest request)
         {
             var contentRequest = new
             {
@@ -43,7 +44,7 @@ namespace Mingle.Services.Concrete
             string jsonRequest = JsonConvert.SerializeObject(contentRequest);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.PostAsync(_textGenerationUrl, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(_textGeneration, content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -57,36 +58,29 @@ namespace Mingle.Services.Concrete
             return responseText;
         }
 
-        public async Task<List<string>> GeminiGenerateImagesAsync(ImageRequest request)
+
+        public async Task<string> FluxGenerateImageAsync(AiRequest request)
         {
             var contentRequest = new
             {
-                prompt = request.Prompt,
-                number_of_images = request.NumberOfImages,
-                aspect_ratio = request.AspectRatio
+                inputs = request.Prompt
             };
 
             string jsonRequest = JsonConvert.SerializeObject(contentRequest);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.PostAsync(_imageGenerationUrl, content);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _huggingFaceConfig.ApiKey);
+
+            HttpResponseMessage response = await _httpClient.PostAsync(_huggingFaceConfig.ImageUrl, content);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Gemini API ile görüntü oluştururken hata oluştu.");
+                throw new Exception("Hugging Face Flux API ile resim oluşturulurken hata.");
             }
 
-            string jsonResponse = await response.Content.ReadAsStringAsync();
-            var geminiResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
-            //
+            byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
 
-            List<string> imageUrls = new();
-            foreach (var image in geminiResponse?.generated_images)
-            {
-                imageUrls.Add(image.image_url.ToString());
-            }
-
-            return imageUrls;
+            return Convert.ToBase64String(imageBytes);
         }
     }
 }

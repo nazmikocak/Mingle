@@ -4,8 +4,8 @@ namespace Mingle.Services.Abstract
 {
     public interface IGenerativeAiService
     {
-        Task<string> GeminiGenerateTextAsync(TextRequest request);
+        Task<string> GeminiGenerateTextAsync(AiRequest request);
 
-        Task<List<string>> GeminiGenerateImagesAsync(ImageRequest request);
+        Task<string> FluxGenerateImageAsync(AiRequest request);
     }
 }

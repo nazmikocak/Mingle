@@ -93,6 +93,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<FirebaseConfig>();
 builder.Services.AddScoped<CloudinaryConfig>();
 builder.Services.AddScoped<GeminiConfig>();
+builder.Services.AddScoped<HuggingFaceConfig>();
 
 
 
