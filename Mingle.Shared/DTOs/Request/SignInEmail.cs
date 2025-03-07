@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mingle.Services.DTOs.Request
+namespace Mingle.Shared.DTOs.Request
 {
-    public sealed record SignIn
+    public sealed record SignInEmail
     {
         [Required(ErrorMessage = "Lütfen e-posta adresinizi giriniz.")]
         [EmailAddress(ErrorMessage = "Lütfen geçerli bir e-posta adresi giriniz.")]

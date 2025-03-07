@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 
 namespace Mingle.API.Controllers
@@ -26,30 +26,6 @@ namespace Mingle.API.Controllers
 
 
 
-        // GET: Users
-        [HttpGet]
-        public async Task<IActionResult> Users([FromQuery] string query)
-        {
-            try
-            {
-                return Ok(await _userService.SearchUsersAsync(UserId, query));
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (FirebaseException ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
-            }
-        }
-
-
-
         // GET: UserInfo
         [HttpGet]
         public async Task<IActionResult> UserInfo()
@@ -60,11 +36,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -83,11 +59,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -114,11 +90,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -141,11 +117,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -168,11 +144,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu.", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu.", errorDetails = ex.Message });
             }
         }
 
@@ -195,11 +171,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -222,23 +198,23 @@ namespace Mingle.API.Controllers
             {
                 if (ex.Message.Contains("INVALID_LOGIN_CREDENTIALS"))
                 {
-                    return Unauthorized(new { message = "Mevcut şifreniz hatalı." });
+                    return Unauthorized(new { message = "Mevcut şifreniz hatalı.", errorDetails = ex.Message });
                 }
                 return ex.Reason switch
                 {
-                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
-                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
-                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
-                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz.", errorDetails = ex.Message }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil.", errorDetails = ex.Message }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır.", errorDetails = ex.Message }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message })
                 };
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -259,11 +235,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -284,11 +260,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

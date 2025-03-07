@@ -1,6 +1,6 @@
 ﻿using Mingle.Entities.Models;
 
-namespace Mingle.Services.DTOs.Response
+namespace Mingle.Shared.DTOs.Response
 {
     public sealed record UserInfo
     {

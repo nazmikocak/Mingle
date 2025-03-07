@@ -13,7 +13,7 @@ namespace Mingle.Services.Abstract
 
         Task<List<string>> GetCallParticipantsAsync(string userId, string callId);
 
-        Task<(Dictionary<string, Call>, List<string>)> GetCallLogs(string userId);
+        Task<(Dictionary<string, Dictionary<string, Call>>, List<string>)> GetCallLogs(string userId);
 
         Task<Call> GetCallAsync(string userId, string callId);
     }

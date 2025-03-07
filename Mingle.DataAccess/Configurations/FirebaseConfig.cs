@@ -23,7 +23,7 @@ namespace Mingle.DataAccess.Configurations
                 Providers = new FirebaseAuthProvider[]
                 {
                     new EmailProvider(),
-                    new GoogleProvider(),
+                    new GoogleProvider().AddScopes("email", "profile", "openid"),
                     new FacebookProvider(),
                 }
             };

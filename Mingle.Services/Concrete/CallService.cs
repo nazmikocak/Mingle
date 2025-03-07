@@ -88,7 +88,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<(Dictionary<string, Call>, List<string>)> GetCallLogs(string userId)
+        public async Task<(Dictionary<string, Dictionary<string, Call>>, List<string>)> GetCallLogs(string userId)
         {
             var calls = await _callRepository.GetCallsAsync();
 
@@ -109,7 +109,14 @@ namespace Mingle.Services.Concrete
                 .Where(participantId => !participantId.Equals(userId))
                 .ToList();
 
-            return (userCalls, callRecipientIds);
+
+
+            return (new Dictionary<string, Dictionary<string, Call>>
+            {
+                { "Call", userCalls },
+            },
+            callRecipientIds
+            );
         }
 
 

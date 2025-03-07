@@ -98,7 +98,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -136,7 +136,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -160,7 +160,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -195,7 +195,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -225,7 +225,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

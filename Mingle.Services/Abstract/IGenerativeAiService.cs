@@ -1,4 +1,4 @@
-﻿using Mingle.Services.DTOs.Request;
+﻿using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.Services.Abstract
 {

@@ -3,8 +3,9 @@ using Mingle.Core.Abstract;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.Services.Concrete
 {
@@ -12,13 +13,16 @@ namespace Mingle.Services.Concrete
     {
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IAuthManager _authManager;
         private readonly IJwtManager _jwtManager;
         private readonly IMapper _mapper;
 
-        public AuthService(IAuthRepository authRepository, IUserRepository userRepository, IJwtManager jwtManager, IMapper mapper)
+
+        public AuthService(IAuthRepository authRepository, IUserRepository userRepository, IAuthManager authManager, IJwtManager jwtManager, IMapper mapper)
         {
             _authRepository = authRepository;
             _userRepository = userRepository;
+            _authManager = authManager;
             _jwtManager = jwtManager;
             _mapper = mapper;
         }
@@ -33,7 +37,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<string> SignInEmailAsync(SignIn dto)
+        public async Task<string> SignInEmailAsync(SignInEmail dto)
         {
             var userCredential = await _authRepository.SignInWithEmailAsync(dto.Email, dto.Password);
 
@@ -41,18 +45,26 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<string> SignInGoogleAsync(string accessToken)
+        public async Task<string> SignInGoogleAsync(SignInGoogle dto)
         {
-            FieldValidationHelper.ValidateRequiredFields((accessToken, "accessToken"));
+            var (isValid, errorMessage) = await Task.Run(() => _authManager.ValidateGoogle(dto));
 
-            var userCredential = await _authRepository.SignInWithGoogleAsync(accessToken);
-            var user = _mapper.Map<User>(userCredential);
+            if (!isValid)
+            {
+                throw new BadRequestException(errorMessage);
+            }
+            else
+            {
+                throw new Exception("Test Gayet Başarılı");
+            }
 
-            await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
+            var user = _mapper.Map<User>(dto.User.ProviderData);
+            await _userRepository.CreateUserAsync(dto.User.Uid, user);
 
-            return _jwtManager.GenerateToken(userCredential.User.Uid);
+            return await Task.Run(() => _jwtManager.GenerateToken(dto.User.Uid));
         }
 
+        
         public async Task<string> SignInFacebookAsync(string accessToken)
         {
             var userCredential = await _authRepository.SignInWithFacebookAsync(accessToken);
@@ -68,7 +80,17 @@ namespace Mingle.Services.Concrete
         {
             FieldValidationHelper.ValidateEmailFormat(email);
 
-            await _authRepository.ResetEmailPasswordAsync(email);
+            var usersSnapshot = await _userRepository.GetAllUsersAsync();
+            var user = usersSnapshot.Where(user => user.Object.Email.Equals(email));
+
+            if (user.Any())
+            {
+                await _authRepository.ResetEmailPasswordAsync(email);
+            }
+            else
+            {
+                throw new NotFoundException("Kullanıcı bulunamadı.");
+            }
         }
     }
 }

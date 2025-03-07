@@ -1,8 +1,5 @@
-﻿using Firebase.Database;
-using Mingle.Entities.Models;
-using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
-
+﻿using Mingle.Shared.DTOs.Request;
+using Mingle.Shared.DTOs.Response;
 namespace Mingle.Services.Abstract
 {
     public interface IUserService

@@ -7,20 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="DTOs\Request\SignIn.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Mingle.Core\Mingle.Core.csproj" />
     <ProjectReference Include="..\Mingle.DataAccess\Mingle.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DTOs\Shared\" />
   </ItemGroup>
 
 </Project>

@@ -3,8 +3,8 @@ using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
+using Mingle.Shared.DTOs.Request;
+using Mingle.Shared.DTOs.Response;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
 using System.Text.Json;
@@ -45,7 +45,7 @@ namespace Mingle.Services.Concrete
                 var photo = new MemoryStream(photoBytes);
                 FileValidationHelper.ValidatePhoto(photo);
 
-                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Group/{groupId}", "group_photo", photo);
+                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Groups/{groupId}", "group_photo", photo);
             }
             else
             {
@@ -147,7 +147,7 @@ namespace Mingle.Services.Concrete
                 var photo = new MemoryStream(photoBytes);
                 FileValidationHelper.ValidatePhoto(photo);
 
-                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Group/{groupId}", "group_photo", photo);
+                photoUrl = await _cloudRepository.UploadPhotoAsync(groupId, $"Groups/{groupId}", "group_photo", photo);
             }
             else
             {

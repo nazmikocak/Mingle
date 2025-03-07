@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.Entities", "Mingle.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.Core", "Mingle.Core\Mingle.Core.csproj", "{824A3715-7E77-4269-845D-6504D9D956CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mingle.Shared", "Mingle.Shared\Mingle.Shared.csproj", "{88F12DF8-4B0C-45E9-9A28-625A55A49566}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,8 +41,15 @@ Global
 		{824A3715-7E77-4269-845D-6504D9D956CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{824A3715-7E77-4269-845D-6504D9D956CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{824A3715-7E77-4269-845D-6504D9D956CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88F12DF8-4B0C-45E9-9A28-625A55A49566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88F12DF8-4B0C-45E9-9A28-625A55A49566}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88F12DF8-4B0C-45E9-9A28-625A55A49566}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88F12DF8-4B0C-45E9-9A28-625A55A49566}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A34473E7-6614-4C23-B201-61E8A5AFA8D6}
 	EndGlobalSection
 EndGlobal

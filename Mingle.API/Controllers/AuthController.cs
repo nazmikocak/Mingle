@@ -1,7 +1,7 @@
 ﻿using Firebase.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 
 namespace Mingle.API.Controllers
@@ -29,7 +29,7 @@ namespace Mingle.API.Controllers
             try
             {
                 await _authService.SignUpAsync(dto);
-                return Ok(new { Message = "Kullanıcı başarıyla kaydedildi." });
+                return Ok(new { message = "Kullanıcı başarıyla kaydedildi." });
             }
             catch (BadRequestException ex)
             {
@@ -39,15 +39,15 @@ namespace Mingle.API.Controllers
             {
                 return ex.Reason switch
                 {
-                    AuthErrorReason.EmailExists => Conflict(new { message = "Bu e-posta adresi zaten kullanılıyor." }),
-                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
-                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla kayıt denemesi yapıldı. Lütfen daha sonra tekrar deneyin." }),
-                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                    AuthErrorReason.EmailExists => Conflict(new { message = "Bu e-posta adresi zaten kullanılıyor.", errorDetails = ex.Message }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil.", errorDetails = ex.Message }),
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla kayıt denemesi yapıldı. Lütfen daha sonra tekrar deneyin.", errorDetails = ex.Message }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message })
                 };
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -55,7 +55,7 @@ namespace Mingle.API.Controllers
 
         // POST: SignInEmail
         [HttpPost]
-        public async Task<IActionResult> SignInEmail([FromBody] SignIn dto)
+        public async Task<IActionResult> SignInEmail([FromBody] SignInEmail dto)
         {
             if (!ModelState.IsValid)
             {
@@ -69,19 +69,19 @@ namespace Mingle.API.Controllers
             {
                 if (ex.Message.Contains("INVALID_LOGIN_CREDENTIALS"))
                 {
-                    return Unauthorized(new { message = "E-posta ya da şifre hatalı." });
+                    return Unauthorized(new { message = "E-posta ya da şifre hatalı.", errorDetails = ex.Message });
                 }
                 return ex.Reason switch
                 {
-                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
-                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
-                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
-                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz.", errorDetails = ex.Message }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil.", errorDetails = ex.Message }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır.", errorDetails = ex.Message }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message })
                 };
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -89,25 +89,33 @@ namespace Mingle.API.Controllers
 
         // POST: SignInGoogle
         [HttpPost]
-        public async Task<IActionResult> SignInGoogle([FromBody] string accessToken)
+        public async Task<IActionResult> SignInGoogle([FromBody] SignInGoogle dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
-                return Ok(new { token = await _authService.SignInGoogleAsync(accessToken) });
+                return Ok(new { token = await _authService.SignInGoogleAsync(dto) });
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (FirebaseAuthHttpException ex)
             {
                 return ex.Reason switch
                 {
-                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
-                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
-                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
-                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz.", errorDetails = ex.Message }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil.", errorDetails = ex.Message }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır.", errorDetails = ex.Message }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message })
                 };
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -125,15 +133,15 @@ namespace Mingle.API.Controllers
             {
                 return ex.Reason switch
                 {
-                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz." }),
-                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil." }),
-                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır." }),
-                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" })
+                    AuthErrorReason.TooManyAttemptsTryLater => StatusCode(StatusCodes.Status403Forbidden, new { message = "Çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyiniz.", errorDetails = ex.Message }),
+                    AuthErrorReason.OperationNotAllowed => StatusCode(StatusCodes.Status403Forbidden, new { message = "Bu işlem şu anda geçerli değil.", errorDetails = ex.Message }),
+                    AuthErrorReason.UserDisabled => StatusCode(StatusCodes.Status403Forbidden, new { message = "Hesabınız devre dışı bırakılmıştır.", errorDetails = ex.Message }),
+                    _ => StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message })
                 };
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -149,11 +157,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseAuthHttpException ex)
             {
-                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -166,20 +174,19 @@ namespace Mingle.API.Controllers
             try
             {
                 await _authService.ResetPasswordAsync(email);
-
                 return Ok(new { message = "Şifre sıfırlama bağlantısı gönderildi." });
             }
-            catch (BadRequestException ex)
+            catch (NotFoundException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
             catch (FirebaseAuthHttpException ex)
             {
-                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(500, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

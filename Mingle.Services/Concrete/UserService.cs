@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Mingle.DataAccess.Abstract;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
-using Mingle.Services.DTOs.Response;
+using Mingle.Shared.DTOs.Request;
+using Mingle.Shared.DTOs.Response;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
 
@@ -36,9 +36,9 @@ namespace Mingle.Services.Concrete
                     !user.Key.Equals(userId)
                     &&
                     (
-                        user.Object.DisplayName.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                        (user.Object.DisplayName?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
                         ||
-                        user.Object.Email.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                        (user.Object.Email?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false)
                     )
                 )
                 .ToDictionary(

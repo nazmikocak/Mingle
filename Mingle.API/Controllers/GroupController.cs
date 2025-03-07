@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 
 namespace Mingle.API.Controllers
@@ -54,11 +54,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -89,17 +89,16 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
 
 
-        // TODO: Yanıt şekli. Hub üzerinden iletilecek olan?
         // DELETE: LeaveGroup
         [HttpDelete("{groupId:guid}")]
         public async Task<IActionResult> LeaveGroup([FromRoute(Name = "groupId")] string groupId)
@@ -107,8 +106,6 @@ namespace Mingle.API.Controllers
             try
             {
                 var group = await _groupService.LeaveGroupAsync(UserId, groupId);
-
-                // Kullanıcı ChatHUb daki gruplardan da çıkarılmalı.
 
                 foreach (var participant in group.Values.First().Participants.Keys.ToList())
                 {
@@ -123,11 +120,11 @@ namespace Mingle.API.Controllers
             }
             catch (FirebaseException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Firebase ile ilgili bir hata oluştu!", errorDetails = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

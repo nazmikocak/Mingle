@@ -1,6 +1,6 @@
 ﻿using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;

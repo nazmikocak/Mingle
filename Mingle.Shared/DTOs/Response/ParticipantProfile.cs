@@ -1,6 +1,6 @@
 ﻿using Mingle.Entities.Enums;
 
-namespace Mingle.Services.DTOs.Response
+namespace Mingle.Shared.DTOs.Response
 {
     public sealed record ParticipantProfile
     {

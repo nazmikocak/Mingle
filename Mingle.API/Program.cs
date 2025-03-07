@@ -75,6 +75,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Core
 builder.Services.AddScoped<IJwtManager, JwtManager>();
+builder.Services.AddScoped<IAuthManager, AuthManager>();
 
 
 

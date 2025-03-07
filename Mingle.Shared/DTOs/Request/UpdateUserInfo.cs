@@ -1,7 +1,7 @@
 ﻿using Mingle.Entities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Mingle.Services.DTOs.Request
+namespace Mingle.Shared.DTOs.Request
 {
     public sealed record UpdateProfilePhoto
     {

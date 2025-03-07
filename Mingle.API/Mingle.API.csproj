@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Mingle.Core\Mingle.Core.csproj" />
     <ProjectReference Include="..\Mingle.Services\Mingle.Services.csproj" />
+    <ProjectReference Include="..\Mingle.Shared\Mingle.Shared.csproj" />
   </ItemGroup>
 
 </Project>

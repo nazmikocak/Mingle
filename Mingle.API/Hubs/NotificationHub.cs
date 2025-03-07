@@ -1,5 +1,4 @@
 ﻿using Firebase.Database;
-using LiteDB;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Services.Abstract;
@@ -75,7 +74,7 @@ namespace Mingle.API.Hubs
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

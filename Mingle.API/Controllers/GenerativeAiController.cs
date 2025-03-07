@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.API.Controllers
 {
@@ -33,7 +33,7 @@ namespace Mingle.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -41,7 +41,7 @@ namespace Mingle.API.Controllers
 
         // POST: FluxImage
         [HttpPost]
-        public async Task<IActionResult> FluxIamge(AiRequest request)
+        public async Task<IActionResult> FluxImage(AiRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -53,7 +53,7 @@ namespace Mingle.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu: {ex.Message}" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu.", errorDetails = ex.Message });
             }
         }
     }

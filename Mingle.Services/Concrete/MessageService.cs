@@ -2,7 +2,7 @@
 using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.DTOs.Request;
+using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
 
@@ -10,15 +10,13 @@ namespace Mingle.Services.Concrete
 {
     public sealed class MessageService : IMessageService
     {
-        private readonly IMessageRepository _messageRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly ICloudRepository _cloudRepository;
         private readonly IChatRepository _chatRepository;
 
 
-        public MessageService(IMessageRepository messageRepository, IGroupRepository groupRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
+        public MessageService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
         {
-            _messageRepository = messageRepository;
             _groupRepository = groupRepository;
             _cloudRepository = cloudRepository;
             _chatRepository = chatRepository;
@@ -169,14 +167,14 @@ namespace Mingle.Services.Concrete
 
             if (deletionType.Equals(0))
             {
-                message.DeletedFor.Add(userId, DateTime.UtcNow);
+                message.DeletedFor!.Add(userId, DateTime.UtcNow);
                 message.Content = "";
             }
             else if (deletionType.Equals(1))
             {
                 foreach (var participant in chatParticipants)
                 {
-                    message.DeletedFor.Add(participant, DateTime.UtcNow);
+                    message.DeletedFor!.Add(participant, DateTime.UtcNow);
                 }
 
                 message.Content = "Bu mesaj silindi.";
@@ -241,6 +239,11 @@ namespace Mingle.Services.Concrete
                 if (!message.Status.Delivered.ContainsKey(userId))
                 {
                     message.Status.Delivered.Add(userId, DateTime.UtcNow);
+                }
+
+                if (message.DeletedFor!.ContainsKey(userId))
+                {
+                    message.Content = "Bu mesaj silindi.";
                 }
             }
             else if (fieldName.Equals("Read"))

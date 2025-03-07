@@ -1,4 +1,4 @@
-﻿using Mingle.Services.DTOs.Request;
+﻿using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.Services.Abstract
 {
@@ -6,9 +6,9 @@ namespace Mingle.Services.Abstract
     {
         Task SignUpAsync(SignUp dto);
 
-        Task<string> SignInEmailAsync(SignIn dto);
+        Task<string> SignInEmailAsync(SignInEmail dto);
 
-        Task<string> SignInGoogleAsync(string accessToken);
+        Task<string> SignInGoogleAsync(SignInGoogle dto);
 
         Task<string> SignInFacebookAsync(string accessToken);
 

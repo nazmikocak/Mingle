@@ -1,4 +1,4 @@
-﻿namespace Mingle.Services.DTOs.Request
+﻿namespace Mingle.Shared.DTOs.Request
 {
     public class AiRequest
     {
