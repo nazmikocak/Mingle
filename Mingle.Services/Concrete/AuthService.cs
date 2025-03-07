@@ -53,10 +53,6 @@ namespace Mingle.Services.Concrete
             {
                 throw new BadRequestException(errorMessage);
             }
-            else
-            {
-                throw new Exception("Test Gayet Başarılı");
-            }
 
             var user = _mapper.Map<User>(dto.User.ProviderData);
             await _userRepository.CreateUserAsync(dto.User.Uid, user);
