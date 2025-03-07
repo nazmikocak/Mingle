@@ -54,10 +54,10 @@ namespace Mingle.Services.Concrete
                 throw new BadRequestException(errorMessage);
             }
 
-            var user = _mapper.Map<User>(dto.User.ProviderData[0]);
-            await _userRepository.CreateUserAsync(dto.User.Uid, user);
+            var user = _mapper.Map<User>(dto.ProviderData[0]);
+            await _userRepository.CreateUserAsync(dto.Uid, user);
 
-            return await Task.Run(() => _jwtManager.GenerateToken(dto.User.Uid));
+            return await Task.Run(() => _jwtManager.GenerateToken(dto.Uid));
         }
 
         

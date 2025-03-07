@@ -15,17 +15,17 @@ namespace Mingle.Core.Concrete
 
         public (bool IsValid, string ErrorMessage) ValidateGoogle(SignInGoogle dto)
         {
-            if (!dto.User.ApiKey.Equals(_apiKey))
+            if (!dto.ApiKey.Equals(_apiKey))
             {
                 return (false, "API anahtarı geçersiz.");
             }
 
-            if (!dto.ProviderId.Equals("google.com"))
-            {
-                return (false, "Geçersiz sağlayıcı. Google hesabı gereklidir.");
-            }
+            //if (!dto.ProviderId.Equals("google.com"))
+            //{
+            //    return (false, "Geçersiz sağlayıcı. Google hesabı gereklidir.");
+            //}
 
-            var expirationTime = dto.User.StsTokenManager.ExpirationTime;
+            var expirationTime = dto.StsTokenManager.ExpirationTime;
             var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             if (expirationTime < currentTime)
