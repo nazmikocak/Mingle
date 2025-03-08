@@ -88,6 +88,7 @@ namespace Mingle.Services.Concrete
         {
             var photoBytes = Convert.FromBase64String(dto.ProfilePhoto);
             var photo = new MemoryStream(photoBytes);
+
             FileValidationHelper.ValidatePhoto(photo);
 
             var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", photo);

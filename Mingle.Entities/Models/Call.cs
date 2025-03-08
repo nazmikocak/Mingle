@@ -2,6 +2,10 @@
 
 namespace Mingle.Entities.Models
 {
+    /// <summary>
+    /// Çağrı (Call) bilgilerini temsil eden sınıf.
+    /// Bir çağrıdaki katılımcılar, çağrı tipi, durumu, süresi gibi bilgileri içerir.
+    /// </summary>
     public sealed class Call
     {
         public required List<string> Participants { get; set; }

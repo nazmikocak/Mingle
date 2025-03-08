@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Kullanıcıların profil fotoğrafını güncellemesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record UpdateProfilePhoto
     {
         [Required(ErrorMessage = "Lütfen bir fotoğraf yükleyiniz.")]
@@ -11,6 +14,9 @@ namespace Mingle.Shared.DTOs.Request
 
 
 
+    /// <summary>
+    /// Kullanıcıların ad ve soyad bilgisini güncellemesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record UpdateDisplayName
     {
         [Required(ErrorMessage = "Lütfen adınızı ve soyadınızı giriniz.")]
@@ -22,14 +28,21 @@ namespace Mingle.Shared.DTOs.Request
 
 
 
+    /// <summary>
+    /// Kullanıcıların telefon numarasını güncellemesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record UpdatePhoneNumber
     {
         [Required(ErrorMessage = "Lütfen bir telefon numarası giriniz.")]
-        // Regex belirlenecek.
+        // Regex
         public string PhoneNumber { get; init; }
     }
 
 
+
+    /// <summary>
+    /// Kullanıcıların biyografi bilgisini güncellemesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record UpdateBiography
     {
         [Required(ErrorMessage = "Lütfen biyografinizi giriniz.")]
@@ -39,6 +52,10 @@ namespace Mingle.Shared.DTOs.Request
     }
 
 
+
+    /// <summary>
+    /// Kullanıcıların mevcut şifresini değiştirerek yeni bir şifre belirlemesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record ChangePassword
     {
         [Required(ErrorMessage = "Lütfen mevcut şifrenizi giriniz.")]
@@ -56,6 +73,10 @@ namespace Mingle.Shared.DTOs.Request
     }
 
 
+
+    /// <summary>
+    /// Kullanıcıların uygulama temasını değiştirmesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record ChangeTheme
     {
         [Required(ErrorMessage = "Lütfen bir tema seçiniz.")]
@@ -64,6 +85,10 @@ namespace Mingle.Shared.DTOs.Request
     }
 
 
+
+    /// <summary>
+    /// Kullanıcıların sohbet ekranının arka plan rengini değiştirmesi için kullanılan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record ChangeChatBackground
     {
         [Required(ErrorMessage = "Lütfen bir renk seçiniz.")]

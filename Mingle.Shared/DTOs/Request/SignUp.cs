@@ -2,6 +2,10 @@
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Kullanıcıların sisteme kayıt olması için kullanılan veri transfer nesnesi (DTO).
+    /// Ad, e-posta, şifre, doğum tarihi gibi bilgileri içerir.
+    /// </summary>
     public sealed record SignUp
     {
         [Required(ErrorMessage = "Lütfen adınızı ve soyadınızı giriniz.")]

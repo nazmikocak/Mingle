@@ -12,9 +12,9 @@ namespace Mingle.DataAccess.Concrete
         private readonly FirebaseClient _databaseClient;
 
 
-        public MessageRepository(IOptions<FirebaseConfig> firebaseConfig)
+        public MessageRepository(FirebaseConfig firebaseConfig)
         {
-            _databaseClient = firebaseConfig.Value.DatabaseClient;
+            _databaseClient = firebaseConfig.DatabaseClient;
         }
 
 

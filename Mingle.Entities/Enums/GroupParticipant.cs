@@ -1,9 +1,13 @@
 ﻿namespace Mingle.Entities.Enums
 {
+    /// <summary>
+    /// Grup katılımcısı rollerini temsil eden enum.
+    /// Bir grup içerisindeki kullanıcının rolünü belirtir (Yönetici, Üye, Eski Üye).
+    /// </summary>
     public enum GroupParticipant
     {
-        Admin = 0,
-        Member = 1,
-        Former = 2
+        Admin,
+        Member,
+        Former
     }
 }

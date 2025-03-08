@@ -15,10 +15,11 @@ namespace Mingle.Services.Concrete
         private readonly HttpClient _httpClient;
 
 
-        public GenerativeAiService(IOptions<GeminiConfig> geminiConfig, IOptions<HuggingFaceConfig> huggingFaceConfig)
+
+        public GenerativeAiService(GeminiConfig geminiConfig, HuggingFaceConfig huggingFaceConfig)
         {
-            _textGeneration = geminiConfig.Value.TextGeneration;
-            _huggingFaceConfig = huggingFaceConfig.Value;
+            _textGeneration = geminiConfig.TextGeneration;
+            _huggingFaceConfig = huggingFaceConfig;
             _httpClient = new HttpClient();
         }
 

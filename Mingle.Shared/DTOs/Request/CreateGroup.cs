@@ -2,6 +2,10 @@
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Yeni bir grup oluşturmak için kullanılan veri transfer nesnesi (DTO).
+    /// Grup ismi, açıklaması, fotoğraf bilgisi ve katılımcıları içerir.
+    /// </summary>
     public sealed record CreateGroup
     {
         [Required(ErrorMessage = "Lütfen bir grup adı giriniz.")]

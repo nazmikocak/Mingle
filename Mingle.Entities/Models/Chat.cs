@@ -1,5 +1,9 @@
 ﻿namespace Mingle.Entities.Models
 {
+    /// <summary>
+    /// Sohbet (Chat) bilgilerini temsil eden sınıf.
+    /// Bir sohbetin katılımcıları, mesajlar, arşiv durumu gibi bilgileri içerir.
+    /// </summary>
     public sealed class Chat
     {
         public required List<string> Participants { get; set; }

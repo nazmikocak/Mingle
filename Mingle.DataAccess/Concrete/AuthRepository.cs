@@ -9,9 +9,9 @@ namespace Mingle.DataAccess.Concrete
     {
         private readonly FirebaseAuthClient _authClient;
 
-        public AuthRepository(IOptions<FirebaseConfig> firebaseConfig)
+        public AuthRepository(FirebaseConfig firebaseConfig)
         {
-            _authClient = firebaseConfig.Value.AuthClient;
+            _authClient = firebaseConfig.AuthClient;
         }
 
 

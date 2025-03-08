@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
-using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.API.Controllers
 {
+    /// <summary>
+    /// Grup ile ilgili işlemleri gerçekleştiren API denetleyicisidir.
+    /// Kullanıcıların gruplar oluşturması, gruptan çıkması ve grup bilgilerini güncellemesi gibi işlemler yapılabilir.
+    /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]
     public sealed class GroupController : BaseController
@@ -17,6 +21,14 @@ namespace Mingle.API.Controllers
         private readonly IChatService _chatService;
 
 
+
+        /// <summary>
+        /// GroupController sınıfının yapıcı metodudur.
+        /// Gerekli servisleri alarak controller'ı başlatır.
+        /// </summary>
+        /// <param name="notificationHubContext">Bildirim hub'ı için <see cref="IHubContext{NotificationHub}"/> nesnesi.</param>
+        /// <param name="groupService">Grup işlemleri için <see cref="IGroupService"/> nesnesi.</param>
+        /// <param name="chatService">Sohbet işlemleri için <see cref="IChatService"/> nesnesi.</param>
         public GroupController(IHubContext<NotificationHub> notificationHubContext, IGroupService groupService, IChatService chatService)
         {
             _notificationHubContext = notificationHubContext;
@@ -25,7 +37,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // POST: CreateGroup
+
+        /// <summary>
+        /// Yeni bir grup oluşturur.
+        /// </summary>
+        /// <param name="dto">Grup oluşturma işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <returns>Yeni oluşturulan grubun bilgileri ile birlikte başarı durumu döner.</returns>
+        /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpPost]
         public async Task<IActionResult> CreateGroup([FromForm] CreateGroup dto)
         {
@@ -61,7 +81,16 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PUT: EditGroup
+
+        /// <summary>
+        /// Var olan bir grubun bilgilerini günceller.
+        /// </summary>
+        /// <param name="groupId">Düzenlenecek grubun kimliği.</param>
+        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <returns>Grup bilgileri başarıyla güncellendi mesajı döner.</returns>
+        /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpPut("{groupId:guid}")]
         public async Task<IActionResult> EditGroup([FromRoute(Name = "groupId")] string groupId, [FromForm] CreateGroup dto)
         {
@@ -95,7 +124,16 @@ namespace Mingle.API.Controllers
         }
 
 
-        // DELETE: LeaveGroup
+
+        /// <summary>
+        /// Var olan bir grubun bilgilerini günceller.
+        /// </summary>
+        /// <param name="groupId">Düzenlenecek grubun kimliği.</param>
+        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <returns>Grup bilgileri başarıyla güncellendi mesajı döner.</returns>
+        /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpDelete("{groupId:guid}")]
         public async Task<IActionResult> LeaveGroup([FromRoute(Name = "groupId")] string groupId)
         {

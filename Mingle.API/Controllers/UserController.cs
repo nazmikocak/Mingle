@@ -9,6 +9,10 @@ using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.API.Controllers
 {
+    /// <summary>
+    /// Kullanıcı ile ilgili işlemleri gerçekleştiren API denetleyicisi.
+    /// Kullanıcı bilgileri, profil fotoğrafı, adı, telefon numarası gibi veriler üzerinde güncellemeler yapılabilir.
+    /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]
     public sealed class UserController : BaseController
@@ -17,6 +21,13 @@ namespace Mingle.API.Controllers
         private readonly IUserService _userService;
 
 
+
+        /// <summary>
+        /// UserController sınıfının yapıcı metodudur.
+        /// Gerekli servisleri alarak controller'ı başlatır.
+        /// </summary>
+        /// <param name="notificationHubContext">Bildirim hub'ı için <see cref="IHubContext{NotificationHub}"/> nesnesi.</param>
+        /// <param name="userService">Kullanıcı işlemleri için <see cref="IUserService"/> nesnesi.</param>
         public UserController(IHubContext<NotificationHub> notificationHubContext, IUserService userService)
         {
             _notificationHubContext = notificationHubContext;
@@ -24,13 +35,25 @@ namespace Mingle.API.Controllers
         }
 
 
-        // GET: UserInfo
+
+        /// <summary>
+        /// Kullanıcı bilgilerini getirir.
+        /// Kullanıcının bilgileri, kullanıcı kimliği üzerinden alınır ve geri döndürülür.
+        /// </summary>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda kullanıcı bilgilerini içerir.</returns>
+        /// <exception cref="NotFoundException"> Eğer kullanıcı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="FirebaseException"> Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpGet]
         public async Task<IActionResult> UserInfo()
         {
             try
             {
                 return Ok(await _userService.GetUserInfoAsync(UserId));
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (FirebaseException ex)
             {
@@ -43,7 +66,14 @@ namespace Mingle.API.Controllers
         }
 
 
-        // DELETE: ProfilePhoto
+
+        /// <summary>
+        /// Kullanıcının profil fotoğrafını kaldırır.
+        /// Profil fotoğrafı kaldırıldığında, ilgili değişiklikler tüm istemcilere bildirilir.
+        /// </summary>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda profil fotoğrafının kaldırıldığını bildirir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpDelete]
         public async Task<IActionResult> ProfilePhoto()
         {
@@ -65,7 +95,16 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: ProfilePhoto
+
+        /// <summary>
+        /// Kullanıcının profil fotoğrafını günceller.
+        /// Yeni profil fotoğrafı başarıyla güncellenir ve değişiklikler tüm istemcilere bildirilir.
+        /// </summary>
+        /// <param name="dto">Profil fotoğrafı güncelleme bilgilerini içeren <see cref="UpdateProfilePhoto"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda yeni profil fotoğrafını içerir.</returns>
+        /// <exception cref="BadRequestException">Eğer gönderilen veri geçerli değilse fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> ProfilePhoto([FromBody] UpdateProfilePhoto dto)
         {
@@ -95,7 +134,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: DisplayName
+
+        /// <summary>
+        /// Kullanıcının adı (displayName) güncellenir.
+        /// Yeni kullanıcı adı başarılı şekilde güncellenir ve değişiklik tüm istemcilere bildirilir.
+        /// </summary>
+        /// <param name="dto">Kullanıcı adı güncelleme bilgilerini içeren <see cref="UpdateDisplayName"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda yeni kullanıcı adı bilgisi içerir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> DisplayName([FromBody] UpdateDisplayName dto)
         {
@@ -121,7 +168,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: PhoneNumber
+
+        /// <summary>
+        /// Kullanıcının telefon numarasını günceller.
+        /// Yeni telefon numarası başarılı şekilde güncellenir ve değişiklik tüm istemcilere bildirilir.
+        /// </summary>
+        /// <param name="dto">Telefon numarası güncelleme bilgilerini içeren <see cref="UpdatePhoneNumber"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda yeni telefon numarası bilgisi içerir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> PhoneNumber([FromBody] UpdatePhoneNumber dto)
         {
@@ -147,7 +202,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: Biography
+
+        /// <summary>
+        /// Kullanıcının biyografisini günceller.
+        /// Yeni biyografi başarıyla güncellenir ve değişiklik tüm istemcilere bildirilir.
+        /// </summary>
+        /// <param name="dto">Biyografi güncelleme bilgilerini içeren <see cref="UpdateBiography"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda yeni biyografi bilgisi içerir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> Biography([FromBody] UpdateBiography dto)
         {
@@ -173,7 +236,16 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: Password
+
+        /// <summary>
+        /// Kullanıcının şifresini değiştirir.
+        /// Yeni şifre başarıyla güncellenir.
+        /// </summary>
+        /// <param name="dto">Şifre değiştirme bilgilerini içeren <see cref="ChangePassword"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda işlem mesajını içerir.</returns>
+        /// <exception cref="FirebaseAuthHttpException">Hatalı giriş bilgisi, çok fazla deneme veya kullanıcı engellenmişse ilgili hata mesajları döndürülür.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> Password([FromBody] ChangePassword dto)
         {
@@ -211,7 +283,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: Theme
+
+        /// <summary>
+        /// Kullanıcının tema tercihini günceller.
+        /// Yeni tema başarıyla güncellenir.
+        /// </summary>
+        /// <param name="dto">Tema değiştirme bilgilerini içeren <see cref="ChangeTheme"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda işlem mesajını içerir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> Theme([FromBody] ChangeTheme dto)
         {
@@ -235,7 +315,15 @@ namespace Mingle.API.Controllers
         }
 
 
-        // PATCH: ChatBackground
+
+        /// <summary>
+        /// Kullanıcının sohbet arka planını günceller.
+        /// Yeni sohbet arka planı başarıyla güncellenir.
+        /// </summary>
+        /// <param name="dto">Sohbet arka planı değiştirme bilgilerini içeren <see cref="ChangeChatBackground"/> nesnesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döndürür, başarılı olduğunda işlem mesajını içerir.</returns>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpPatch]
         public async Task<IActionResult> ChatBackground([FromBody] ChangeChatBackground dto)
         {

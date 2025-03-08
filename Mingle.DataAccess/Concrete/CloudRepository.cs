@@ -11,9 +11,9 @@ namespace Mingle.DataAccess.Concrete
         private readonly Cloudinary _cloudinary;
 
 
-        public CloudRepository(IOptions<CloudinaryConfig> cloudinaryConfig)
+        public CloudRepository(CloudinaryConfig cloudinaryConfig)
         {
-            _cloudinary = cloudinaryConfig.Value.Cloudinary;
+            _cloudinary = cloudinaryConfig.Cloudinary;
         }
 
 

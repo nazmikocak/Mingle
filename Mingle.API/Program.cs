@@ -74,10 +74,10 @@ builder.Services.AddSingleton<IJwtManager, JwtManager>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<ICloudRepository, CloudRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ICallRepository, CallRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<ICloudRepository, CloudRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -94,10 +94,10 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 // Configurations
-builder.Services.Configure<FirebaseConfig>(builder.Configuration.GetSection("FirebaseConfig"));
-builder.Services.Configure<CloudinaryConfig>(builder.Configuration.GetSection("CloudinaryConfig"));
-builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("GeminiConfig"));
-builder.Services.Configure<HuggingFaceConfig>(builder.Configuration.GetSection("HuggingFaceConfig"));
+builder.Services.AddSingleton<FirebaseConfig>();
+builder.Services.AddSingleton<CloudinaryConfig>();
+builder.Services.AddSingleton<GeminiConfig>();
+builder.Services.AddSingleton<HuggingFaceConfig>();
 
 
 // Authentication

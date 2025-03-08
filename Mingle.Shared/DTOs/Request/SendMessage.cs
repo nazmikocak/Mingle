@@ -3,6 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Kullanıcıların mesaj göndermesi için kullanılan veri transfer nesnesi (DTO).
+    /// Mesaj içeriği ve içeriğin türünü içerir.
+    /// </summary>
     public sealed record SendMessage
     {
         [Required(ErrorMessage = "Lütfen bir içerik tipi seçiniz.")]

@@ -2,6 +2,9 @@
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Kullanıcıların e-posta ve şifre ile giriş yapmasını sağlayan veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record SignInEmail
     {
         [Required(ErrorMessage = "Lütfen e-posta adresinizi giriniz.")]
