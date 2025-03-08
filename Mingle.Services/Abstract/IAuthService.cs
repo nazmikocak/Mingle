@@ -8,9 +8,9 @@ namespace Mingle.Services.Abstract
 
         Task<string> SignInEmailAsync(SignInEmail dto);
 
-        Task<string> SignInGoogleAsync(SignInGoogle dto);
+        Task<string> SignInGoogleAsync(SignInProvider dto);
 
-        Task<string> SignInFacebookAsync(string accessToken);
+        Task<string> SignInFacebookAsync(SignInProvider dto);
 
         Task ResetPasswordAsync(string email);
     }

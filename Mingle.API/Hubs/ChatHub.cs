@@ -4,53 +4,76 @@ using Microsoft.AspNetCore.SignalR;
 using Mingle.DataAccess.Abstract;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
+using Mingle.Shared.DTOs.Request;
 using System.Security.Claims;
 
 namespace Mingle.API.Hubs
 {
+    /// <summary>
+    /// Gerçek zamanlı sohbet işlemlerini yöneten SignalR hub sınıfıdır.
+    /// Kullanıcı bağlantılarını, sohbet başlatma, mesaj gönderme, sohbetleri listeleme ve grup işlemleri gibi işlemleri yönetir.
+    /// </summary>
     [Authorize]
     public sealed class ChatHub : Hub
     {
+        private readonly IMessageRepository _messageRepository;
+        private readonly IMessageService _messageService;
+        private readonly IGroupService _groupService;
         private readonly IChatService _chatService;
         private readonly IUserService _userService;
-        private readonly IGroupService _groupService;
-        private readonly IMessageService _messageService;
-        private readonly IMessageRepository _messageRepository;
 
 
 
+        /// <summary>
+        /// Geçerli kullanıcının kimliğini (UserId) döndürür.
+        /// Kullanıcının kimliği, JWT içindeki <see cref="ClaimTypes.NameIdentifier"/> değerinden alınır.
+        /// </summary>
+        /// <returns>Geçerli kullanıcının benzersiz kimliği.</returns>
+        /// <exception cref="NullReferenceException">
+        /// Eğer kullanıcı kimliği bulunamazsa veya bir null değer ile karşılaşılırsa fırlatılır.
+        /// </exception>
         private string UserId
         {
             get
             {
-                var identity = Context.User!.Identity as ClaimsIdentity;
-                return identity!
-                    .Claims
-                    .FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)!
-                    .Value;
+                var identity = Context?.User?.Identity as ClaimsIdentity;
+                return identity?
+                    .FindFirst(ClaimTypes.NameIdentifier)?
+                    .Value!;
             }
         }
 
 
-
-        public ChatHub(IChatService chatService, IUserService userService, IGroupService groupService, IMessageService messageService, IMessageRepository messageRepository)
+        /// <summary>
+        /// <see cref="ChatHub"/> sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="messageRepository">Mesaj işlemleri için <see cref="IMessageRepository"/> bağımlılığı.</param>
+        /// <param name="messageService">Mesaj işlemleri için <see cref="IMessageService"/> bağımlılığı.</param>
+        /// <param name="groupService">Grup işlemleri için <see cref="IGroupService"/> bağımlılığı.</param>
+        /// <param name="chatService">Sohbet işlemleri için <see cref="IChatService"/> bağımlılığı.</param>
+        /// <param name="userService">Kullanıcı işlemleri için <see cref="IUserService"/> bağımlılığı.</param>
+        public ChatHub(IMessageRepository messageRepository, IMessageService messageService, IGroupService groupService, IChatService chatService, IUserService userService)
         {
+            _messageRepository = messageRepository;
+            _messageService = messageService;
+            _groupService = groupService;
             _chatService = chatService;
             _userService = userService;
-            _groupService = groupService;
-            _messageService = messageService;
-            _messageRepository = messageRepository;
         }
 
 
 
+        /// <summary>
+        /// Kullanıcı hub'a bağlandığında tetiklenen metod.
+        /// Kullanıcıya ait tüm sohbetler, grup profilleri ve alıcı profilleri çekilir ve istemciye iletilir.
+        /// </summary>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public override async Task OnConnectedAsync()
         {
             var chatsTask = _chatService.GetAllChatsAsync(UserId);
-
             var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
 
             var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
@@ -73,6 +96,11 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Kullanıcı hub'dan ayrıldığında tetiklenen metod.
+        /// </summary>
+        /// <param name="exception">Bağlantı sırasında oluşan hata (varsa).</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await base.OnDisconnectedAsync(exception);
@@ -80,6 +108,17 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Yeni bir sohbet başlatır ve katılımcılara sohbet bilgilerini iletir.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="recipientId">Sohbete katılacak alıcının kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task CreateChat(string chatType, string recipientId)
         {
             try
@@ -134,6 +173,17 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Belirli bir sohbetin içeriğini temizler.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="chatId">Temizlenecek sohbetin kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task ClearChat(string chatType, string chatId)
         {
             try
@@ -157,6 +207,16 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Belirli bir sohbeti arşivler.
+        /// </summary>
+        /// <param name="chatId">Arşivlenecek sohbetin kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task ArchiveChat(string chatId)
         {
             try
@@ -180,6 +240,16 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Belirli bir sohbeti arşivden çıkarır.
+        /// </summary>
+        /// <param name="chatId">Arşivden çıkarılacak sohbetin kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task UnarchiveChat(string chatId)
         {
             try
@@ -203,6 +273,18 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Kullanıcıdan gelen mesajı belirtilen sohbetin katılımcılarına gönderir.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="chatId">Mesajın gönderileceği sohbetin kimliği.</param>
+        /// <param name="dto">Gönderilen mesajı temsil eden DTO.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet veya mesaj verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task SendMessage(string chatType, string chatId, SendMessage dto)
         {
             try
@@ -236,7 +318,19 @@ namespace Mingle.API.Hubs
         }
 
 
-
+        
+        /// <summary>
+        /// Bir mesajın teslim edildiğini işaretler ve sohbet katılımcılarına bildirir.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="chatId">Mesajın teslim edileceği sohbetin kimliği.</param>
+        /// <param name="messageId">Teslim edilecek mesajın kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet veya mesaj verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task DeliverMessage(string chatType, string chatId, string messageId)
         {
             try
@@ -268,6 +362,18 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Bir mesajın okunduğunu işaretler ve sohbet katılımcılarına bildirir.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="chatId">Mesajın okunacağı sohbetin kimliği.</param>
+        /// <param name="messageId">Okunacak mesajın kimliği.</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet veya mesaj verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task ReadMessage(string chatType, string chatId, string messageId)
         {
             try
@@ -299,6 +405,19 @@ namespace Mingle.API.Hubs
 
 
 
+        /// <summary>
+        /// Belirtilen mesajı siler ve sohbet katılımcılarına bildirir.
+        /// </summary>
+        /// <param name="chatType">Sohbet tipi ("Individual" veya "Group").</param>
+        /// <param name="chatId">Silinecek mesajın bulunduğu sohbetin kimliği.</param>
+        /// <param name="messageId">Silinecek mesajın kimliği.</param>
+        /// <param name="deletionType">Silme türünü belirtir ("0" veya "1").</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        /// <exception cref="NotFoundException">Sohbet veya mesaj verisi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task DeleteMessage(string chatType, string chatId, string messageId, byte deletionType)
         {
             try

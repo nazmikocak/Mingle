@@ -1,8 +1,8 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Mingle.DataAccess.Abstract;
-using System.IO;
+using Mingle.DataAccess.Configurations;
 
 namespace Mingle.DataAccess.Concrete
 {
@@ -11,9 +11,9 @@ namespace Mingle.DataAccess.Concrete
         private readonly Cloudinary _cloudinary;
 
 
-        public CloudRepository(Configurations.CloudinaryConfig cloudinaryConfig)
+        public CloudRepository(IOptions<CloudinaryConfig> cloudinaryConfig)
         {
-            _cloudinary = cloudinaryConfig.Cloudinary;
+            _cloudinary = cloudinaryConfig.Value.Cloudinary;
         }
 
 

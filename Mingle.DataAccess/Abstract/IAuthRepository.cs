@@ -10,7 +10,7 @@ namespace Mingle.DataAccess.Abstract
 
         //Task<UserCredential> SignInWithGoogleAsync(string accessToken);
 
-        Task<UserCredential> SignInWithFacebookAsync(string accessToken);
+        //Task<UserCredential> SignInWithFacebookAsync(string accessToken);
 
         Task ChangePasswordAsync(UserCredential userCredential, string newPasswordAgain);
 

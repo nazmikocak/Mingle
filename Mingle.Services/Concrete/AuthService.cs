@@ -45,30 +45,61 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<string> SignInGoogleAsync(SignInGoogle dto)
+        public async Task<string> SignInGoogleAsync(SignInProvider dto)
         {
-            var (isValid, errorMessage) = await Task.Run(() => _authManager.ValidateGoogle(dto));
+            var (isValid, errorMessage) = await Task.Run(() => _authManager.ValidateGoogleProvider(dto));
 
             if (!isValid)
             {
                 throw new BadRequestException(errorMessage);
             }
 
-            var user = _mapper.Map<User>(dto.ProviderData[0]);
-            await _userRepository.CreateUserAsync(dto.Uid, user);
+            var user = await _userRepository.GetUserByIdAsync(dto.Uid);
+
+            if (user == null)
+            {
+                user = _mapper.Map<User>(dto.ProviderData[0]);
+                user.ProviderId = "google.com";
+                await _userRepository.CreateUserAsync(dto.Uid, user);
+            }
+            else
+            {
+                user.DisplayName = dto.ProviderData[0].DisplayName;
+                user.Email = dto.ProviderData[0].Email;
+                user.PhoneNumber = dto.ProviderData[0].PhoneNumber ?? string.Empty;
+                user.ProfilePhoto = new Uri(dto.ProviderData[0].PhotoURL);
+            }
 
             return await Task.Run(() => _jwtManager.GenerateToken(dto.Uid));
         }
 
-        
-        public async Task<string> SignInFacebookAsync(string accessToken)
+
+        public async Task<string> SignInFacebookAsync(SignInProvider dto)
         {
-            var userCredential = await _authRepository.SignInWithFacebookAsync(accessToken);
-            var user = _mapper.Map<User>(userCredential);
+            var (isValid, errorMessage) = await Task.Run(() => _authManager.ValidateFacebookProvider(dto));
 
-            await _userRepository.CreateUserAsync(userCredential.User.Uid, user);
+            if (!isValid)
+            {
+                throw new BadRequestException(errorMessage);
+            }
 
-            return _jwtManager.GenerateToken(userCredential.User.Uid);
+            var user = await _userRepository.GetUserByIdAsync(dto.Uid);
+
+            if (user == null)
+            {
+                user = _mapper.Map<User>(dto.ProviderData[0]);
+                user.ProviderId = "facebook.com";
+                await _userRepository.CreateUserAsync(dto.Uid, user);
+            }
+            else
+            {
+                user.DisplayName = dto.ProviderData[0].DisplayName;
+                user.Email = dto.ProviderData[0].Email;
+                user.PhoneNumber = dto.ProviderData[0].PhoneNumber ?? string.Empty;
+                user.ProfilePhoto = new Uri(dto.ProviderData[0].PhotoURL);
+            }
+
+            return await Task.Run(() => _jwtManager.GenerateToken(dto.Uid));
         }
 
 

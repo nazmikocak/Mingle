@@ -15,17 +15,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
-
 builder.Services.AddControllers();
-builder.Services.AddSignalR(
-    options =>
-    {
-        options.MaximumReceiveMessageSize = 2097152; // 2 MB
-    }
-);
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 2097152; // 2 MB
+});
 
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Mingle.Cors", policy =>
@@ -38,9 +37,7 @@ builder.Services.AddCors(options =>
 });
 
 
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -71,16 +68,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-
-
-// Core
-builder.Services.AddScoped<IJwtManager, JwtManager>();
+// Dependency Injection
 builder.Services.AddScoped<IAuthManager, AuthManager>();
+builder.Services.AddSingleton<IJwtManager, JwtManager>();
 
-
-
-
-// DataAccess
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICloudRepository, CloudRepository>();
@@ -89,17 +80,6 @@ builder.Services.AddScoped<ICallRepository, CallRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
-
-// Configurations
-builder.Services.AddScoped<FirebaseConfig>();
-builder.Services.AddScoped<CloudinaryConfig>();
-builder.Services.AddScoped<GeminiConfig>();
-builder.Services.AddScoped<HuggingFaceConfig>();
-
-
-
-
-// Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
@@ -109,13 +89,15 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IGenerativeAiService, GenerativeAiService>();
 
 
-
-
-
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
+// Configurations
+builder.Services.Configure<FirebaseConfig>(builder.Configuration.GetSection("FirebaseConfig"));
+builder.Services.Configure<CloudinaryConfig>(builder.Configuration.GetSection("CloudinaryConfig"));
+builder.Services.Configure<GeminiConfig>(builder.Configuration.GetSection("GeminiConfig"));
+builder.Services.Configure<HuggingFaceConfig>(builder.Configuration.GetSection("HuggingFaceConfig"));
 
 
 // Authentication
@@ -132,17 +114,14 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JwtSettings:Issuer"),
+        ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JwtSettings:Audience"),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JwtSettings:Secret")))
     };
 });
 
 
-
 var app = builder.Build();
-
-
 
 
 // Configure the HTTP request pipeline.
@@ -153,25 +132,17 @@ if (app.Environment.IsDevelopment())
 }
 
 
-
-
 app.UseHttpsRedirection();
-
 app.UseCors("Mingle.Cors");
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 
-// Hubs
+// SignalR Hubs
 app.MapHub<ChatHub>("ChatHub");
 app.MapHub<NotificationHub>("NotificationHub");
 app.MapHub<CallHub>("CallHub");
-
-
 
 
 app.Run();

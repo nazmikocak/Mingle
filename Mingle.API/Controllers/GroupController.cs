@@ -17,14 +17,12 @@ namespace Mingle.API.Controllers
         private readonly IChatService _chatService;
 
 
-
         public GroupController(IHubContext<NotificationHub> notificationHubContext, IGroupService groupService, IChatService chatService)
         {
             _notificationHubContext = notificationHubContext;
             _groupService = groupService;
             _chatService = chatService;
         }
-
 
 
         // POST: CreateGroup
@@ -63,7 +61,6 @@ namespace Mingle.API.Controllers
         }
 
 
-
         // PUT: EditGroup
         [HttpPut("{groupId:guid}")]
         public async Task<IActionResult> EditGroup([FromRoute(Name = "groupId")] string groupId, [FromForm] CreateGroup dto)
@@ -96,7 +93,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // DELETE: LeaveGroup

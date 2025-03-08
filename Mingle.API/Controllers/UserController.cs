@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.API.Hubs;
 using Mingle.Services.Abstract;
-using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.API.Controllers
 {
@@ -17,13 +17,11 @@ namespace Mingle.API.Controllers
         private readonly IUserService _userService;
 
 
-
         public UserController(IHubContext<NotificationHub> notificationHubContext, IUserService userService)
         {
             _notificationHubContext = notificationHubContext;
             _userService = userService;
         }
-
 
 
         // GET: UserInfo
@@ -43,7 +41,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // DELETE: ProfilePhoto
@@ -66,7 +63,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // PATCH: ProfilePhoto
@@ -99,7 +95,6 @@ namespace Mingle.API.Controllers
         }
 
 
-
         // PATCH: DisplayName
         [HttpPatch]
         public async Task<IActionResult> DisplayName([FromBody] UpdateDisplayName dto)
@@ -124,7 +119,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // PATCH: PhoneNumber
@@ -153,7 +147,6 @@ namespace Mingle.API.Controllers
         }
 
 
-
         // PATCH: Biography
         [HttpPatch]
         public async Task<IActionResult> Biography([FromBody] UpdateBiography dto)
@@ -178,7 +171,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // PATCH: Password
@@ -219,7 +211,6 @@ namespace Mingle.API.Controllers
         }
 
 
-
         // PATCH: Theme
         [HttpPatch]
         public async Task<IActionResult> Theme([FromBody] ChangeTheme dto)
@@ -242,7 +233,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // PATCH: ChatBackground

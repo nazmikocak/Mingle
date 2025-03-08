@@ -1,5 +1,6 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
+using Microsoft.Extensions.Options;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 using Mingle.Entities.Enums;
@@ -13,9 +14,9 @@ namespace Mingle.DataAccess.Concrete
         private readonly FirebaseClient _databaseClient;
 
 
-        public GroupRepository(FirebaseConfig firebaseConfig)
+        public GroupRepository(IOptions<FirebaseConfig> firebaseConfig)
         {
-            _databaseClient = firebaseConfig.DatabaseClient;
+            _databaseClient = firebaseConfig.Value.DatabaseClient;
         }
 
 

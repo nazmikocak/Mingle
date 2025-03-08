@@ -12,6 +12,8 @@
 
         public required Uri ProfilePhoto { get; set; }
 
+        public required string ProviderId { get; set; }
+
         public DateTime LastConnectionDate { get; set; }
 
         public required DateTime BirthDate { get; set; }

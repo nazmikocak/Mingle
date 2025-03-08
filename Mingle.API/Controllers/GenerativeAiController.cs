@@ -11,12 +11,10 @@ namespace Mingle.API.Controllers
         private readonly IGenerativeAiService _generativeAiService;
 
 
-
         public GenerativeAiController(IGenerativeAiService generativeAiService)
         {
             _generativeAiService = generativeAiService;
         }
-
 
 
         // POST: GeminiText
@@ -36,7 +34,6 @@ namespace Mingle.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
-
 
 
         // POST: FluxImage

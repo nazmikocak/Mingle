@@ -1,24 +1,43 @@
 ﻿using Firebase.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Mingle.Services.Abstract;
-using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.API.Controllers
 {
+    /// <summary>
+    /// Kullanıcı kimlik doğrulama işlemlerini yöneten API controller sınıfıdır.
+    /// Kullanıcı kaydı, oturum açma, sosyal medya ile giriş işlemlerini yönetir.
+    /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]
     public sealed class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
 
+
+
+        /// <summary>
+        /// <see cref="AuthController"/> sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="authService">Kullanıcı kimlik doğrulama işlemleri için <see cref="IAuthService"/> bağımlılığı.</param>
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
 
-        // POST: SignUp
+
+        /// <summary>
+        /// Kullanıcı kaydını gerçekleştirir.
+        /// Geçersiz girişler ve hata durumlarında uygun cevaplar döner.
+        /// </summary>
+        /// <param name="dto">Kayıt için gerekli olan kullanıcı bilgilerini içeren <see cref="SignUp"/> veri transfer objesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="BadRequestException">Geçersiz kayıt işlemi durumunda fırlatılır.</exception>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
         public async Task<IActionResult> SignUp([FromBody] SignUp dto)
         {
@@ -53,7 +72,14 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: SignInEmail
+        /// <summary>
+        /// E-posta ve şifre ile giriş işlemi gerçekleştirir.
+        /// Geçersiz kimlik bilgileri ve hata durumlarında uygun cevaplar döner.
+        /// </summary>
+        /// <param name="dto">Giriş için gerekli olan e-posta ve şifre bilgilerini içeren <see cref="SignInEmail"/> veri transfer objesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
         public async Task<IActionResult> SignInEmail([FromBody] SignInEmail dto)
         {
@@ -87,9 +113,17 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: SignInGoogle
+        /// <summary>
+        /// Google ile giriş işlemi gerçekleştirir.
+        /// Google girişinin geçersiz olması ve diğer hata durumlarında uygun cevaplar döner.
+        /// </summary>
+        /// <param name="dto">Google ile giriş için gerekli olan bilgileri içeren <see cref="SignInProvider"/> veri transfer objesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="BadRequestException">Geçersiz giriş işlemi durumunda fırlatılır.</exception>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
-        public async Task<IActionResult> SignInGoogle([FromBody] SignInGoogle dto)
+        public async Task<IActionResult> SignInProvider([FromBody] SignInProvider dto)
         {
             if (!ModelState.IsValid)
             {
@@ -121,13 +155,21 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: SignInFacebook
+        /// <summary>
+        /// Facebook ile giriş işlemi gerçekleştirir.
+        /// Facebook girişinin geçersiz olması ve diğer hata durumlarında uygun cevaplar döner.
+        /// </summary>
+        /// <param name="dto">Facebook ile giriş için gerekli olan bilgileri içeren <see cref="SignInProvider"/> veri transfer objesi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="BadRequestException">Geçersiz giriş işlemi durumunda fırlatılır.</exception>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
-        public async Task<IActionResult> SignInFacebook([FromBody] string accessToken)
+        public async Task<IActionResult> SignInFacebook([FromBody] SignInProvider dto)
         {
             try
             {
-                return Ok(new { token = await _authService.SignInFacebookAsync(accessToken) });
+                return Ok(new { token = await _authService.SignInFacebookAsync(dto) });
             }
             catch (FirebaseAuthHttpException ex)
             {
@@ -147,7 +189,13 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: SignOut
+        /// <summary>
+        /// Kullanıcıyı oturumdan çıkarır.
+        /// Firebase ile ilgili hata oluşması durumunda uygun cevap döner.
+        /// </summary>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
         public async Task<IActionResult> SignOut()
         {
@@ -167,7 +215,15 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: Password
+        /// <summary>
+        /// Şifre sıfırlama bağlantısı gönderir.
+        /// Geçersiz e-posta veya hata durumunda uygun cevaplar döner.
+        /// </summary>
+        /// <param name="email">Şifresi sıfırlanacak kullanıcının e-posta adresi.</param>
+        /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
+        /// <exception cref="NotFoundException">E-posta adresi bulunamazsa fırlatılır.</exception>
+        /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
         public async Task<IActionResult> Password([FromBody] string email)
         {

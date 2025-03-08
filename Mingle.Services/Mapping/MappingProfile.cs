@@ -27,6 +27,7 @@ namespace Mingle.Services.Mapping
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Biography, opt => opt.MapFrom(src => "Merhaba, ben Mingle kullanıyorum."))
                 .ForMember(dest => dest.ProfilePhoto, opt => opt.MapFrom(src => new Uri(src.PhotoURL)))
+                .ForMember(dest => dest.ProviderId, opt => opt.MapFrom(src => "email"))
                 .ForMember(dest => dest.LastConnectionDate, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => DateTime.MinValue))
                 .ForMember(dest => dest.UserSettings, opt => opt.MapFrom(src => new UserSettings()))

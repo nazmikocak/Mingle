@@ -1,5 +1,5 @@
 ﻿using Firebase.Auth;
-using Firebase.Auth.Providers;
+using Microsoft.Extensions.Options;
 using Mingle.DataAccess.Abstract;
 using Mingle.DataAccess.Configurations;
 
@@ -9,9 +9,9 @@ namespace Mingle.DataAccess.Concrete
     {
         private readonly FirebaseAuthClient _authClient;
 
-        public AuthRepository(FirebaseConfig firebaseConfig)
+        public AuthRepository(IOptions<FirebaseConfig> firebaseConfig)
         {
-            _authClient = firebaseConfig.AuthClient;
+            _authClient = firebaseConfig.Value.AuthClient;
         }
 
 
@@ -35,12 +35,12 @@ namespace Mingle.DataAccess.Concrete
         //}
 
 
-        public async Task<UserCredential> SignInWithFacebookAsync(string accessToken)
-        {
-            var credential = FacebookProvider.GetCredential(accessToken);
+        //public async Task<UserCredential> SignInWithFacebookAsync(string accessToken)
+        //{
+        //    var credential = FacebookProvider.GetCredential(accessToken);
 
-            return await _authClient.SignInWithCredentialAsync(credential);
-        }
+        //    return await _authClient.SignInWithCredentialAsync(credential);
+        //}
 
 
         public async Task ChangePasswordAsync(UserCredential userCredential, string newPasswordAgain)

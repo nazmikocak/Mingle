@@ -61,11 +61,6 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, CallerUser>> GetUserProfilesAsync(List<string> recipientIds)
         {
-            if (recipientIds.Equals(null) || recipientIds.Count.Equals(0))
-            {
-                throw new BadRequestException("recipientIds boş olamaz.");
-            }
-
             var users = await _userRepository.GetAllUsersAsync();
 
             var recipientProfiles = users
@@ -144,11 +139,6 @@ namespace Mingle.Services.Concrete
 
         public async Task<Dictionary<string, RecipientProfile>> GetRecipientProfilesAsync(List<string> recipientIds)
         {
-            //if (recipientIds.Equals(null) || recipientIds.Count.Equals(0))
-            //{
-            //    throw new BadRequestException("recipientIds boş olamaz.");
-            //}
-
             var users = await _userRepository.GetAllUsersAsync();
 
             var recipientProfiles = users

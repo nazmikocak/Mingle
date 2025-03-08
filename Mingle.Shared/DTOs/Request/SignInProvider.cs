@@ -1,6 +1,6 @@
 ﻿namespace Mingle.Shared.DTOs.Request
 {
-    public class SignInGoogle
+    public class SignInProvider
     {
         public required string Uid { get; init; }
         public required string Email { get; init; }

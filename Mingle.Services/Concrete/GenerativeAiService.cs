@@ -1,4 +1,5 @@
-﻿using Mingle.DataAccess.Configurations;
+﻿using Microsoft.Extensions.Options;
+using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
 using Mingle.Shared.DTOs.Request;
 using Newtonsoft.Json;
@@ -14,10 +15,10 @@ namespace Mingle.Services.Concrete
         private readonly HttpClient _httpClient;
 
 
-        public GenerativeAiService(GeminiConfig geminiConfig, HuggingFaceConfig huggingFaceConfig)
+        public GenerativeAiService(IOptions<GeminiConfig> geminiConfig, IOptions<HuggingFaceConfig> huggingFaceConfig)
         {
-            _textGeneration = geminiConfig.TextGeneration;
-            _huggingFaceConfig = huggingFaceConfig;
+            _textGeneration = geminiConfig.Value.TextGeneration;
+            _huggingFaceConfig = huggingFaceConfig.Value;
             _httpClient = new HttpClient();
         }
 
