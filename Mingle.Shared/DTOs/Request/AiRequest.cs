@@ -2,6 +2,9 @@
 
 namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Yapay zeka modeline gönderilecek isteği temsil eden veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record AiRequest
     {
         [Required(ErrorMessage = "AI modeli seçilmelidir.")]

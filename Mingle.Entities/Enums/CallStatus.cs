@@ -10,6 +10,7 @@
         Accepted,
         Declined,
         Canceled,
-        Missed
+        Missed,
+        Ongoing
     }
 }

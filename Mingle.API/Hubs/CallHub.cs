@@ -137,6 +137,39 @@ namespace Mingle.API.Hubs
 
 
         /// <summary>
+        /// Belirtilen çağrıyı kabul eder ve istemciye çağrının kabul edildiğine dair bildirim gönderir.
+        /// </summary>
+        /// <param name="callId">Kabul edilecek çağrının kimliği.</param>
+        /// <returns>Çağrı kabul edildiğinde istemciye geri bildirim gönderir.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz bir istek yapıldığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Yetkisiz erişim durumunda fırlatılır.</exception>
+        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
+        /// <exception cref="Exception">Beklenmeyen bir hata oluştuğunda fırlatılır.</exception>
+        public async Task AcceptCall(string callId) 
+        {
+            try
+            {
+                await _callService.AcceptCallAsync(UserId, callId);
+                await Clients.User(UserId).SendAsync("ReceiveAcceptCall", true);
+            }
+            catch (Exception ex) when (
+                ex is NotFoundException ||
+                ex is BadRequestException ||
+                ex is ForbiddenException ||
+                ex is FirebaseException)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+            }
+        }
+
+
+
+        /// <summary>
         /// Belirtilen çağrıyı sonlandırır ve tüm katılımcılara çağrının sona erdiğini bildirir.
         /// </summary>
         /// <param name="callId">Sonlandırılacak çağrının kimliği.</param>

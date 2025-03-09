@@ -9,8 +9,7 @@ namespace Mingle.Shared.DTOs.Request
     public sealed record CreateGroup
     {
         [Required(ErrorMessage = "Lütfen bir grup adı giriniz.")]
-        [MinLength(2, ErrorMessage = "Grup ismi en az 2 karakter uzunluğunda olmalıdır.")]
-        [MaxLength(50, ErrorMessage = "Grup ismi en fazla 50 karakter uzunluğunda olmalıdır.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Grup ismi en az 2, en fazla 50 karakter uzunluğunda olmalıdır.")]
         public string Name { get; init; }
 
 

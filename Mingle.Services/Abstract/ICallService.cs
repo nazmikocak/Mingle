@@ -7,6 +7,8 @@ namespace Mingle.Services.Abstract
     {
         Task<string> StartCallAsync(string userId, string recipientId, CallType callType);
 
+        Task AcceptCallAsync(string userId, string callId);
+
         Task<Dictionary<string, Call>> EndCallAsync(string userId, string callId, CallStatus callStatus, DateTime? createdDate);
 
         Task DeleteCallAsync(string userId, string callId);

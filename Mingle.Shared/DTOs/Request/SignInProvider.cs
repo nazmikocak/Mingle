@@ -1,5 +1,8 @@
 ﻿namespace Mingle.Shared.DTOs.Request
 {
+    /// <summary>
+    /// Harici kimlik sağlayıcıları (Google, Facebook vb.) ile giriş yapan kullanıcıların kimlik bilgilerini içeren veri transfer nesnesi (DTO).
+    /// </summary>
     public class SignInProvider
     {
         public required string Uid { get; init; }
@@ -15,6 +18,7 @@
         public required string ApiKey { get; init; }
         public required string AppName { get; init; }
     }
+
 
     public sealed record ProviderData
     {

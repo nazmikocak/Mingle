@@ -22,19 +22,50 @@ namespace Mingle.Services.Concrete
         {
             FieldValidationHelper.ValidateRequiredFields((recipientId, "recipientId"), (callType.ToString(), "callType"));
 
+            var callSnapshot = await _callRepository.GetCallsAsync();
+
+            var userActiveCalls = callSnapshot
+                .Where(call =>
+                    call.Object.Participants.Contains(userId)
+                    &&
+                    (call.Object.Status.Equals(CallStatus.Ongoing) || call.Object.Status.Equals(CallStatus.Pending))
+                );
+
             var callId = Guid.NewGuid().ToString();
 
             var call = new Call
             {
                 Participants = [userId, recipientId],
                 Type = callType,
-                Status = CallStatus.Pending,
+                Status = userActiveCalls.Any() ? CallStatus.Declined : CallStatus.Pending,
                 CreatedDate = DateTime.UtcNow
             };
 
             await _callRepository.CreateOrUpdateCallAsync(callId, call);
 
+            if (userActiveCalls.Any())
+            {
+                throw new BadRequestException("Kullanıcı meşgul!");
+            }
+
             return callId;
+        }
+
+
+        public async Task AcceptCallAsync(string userId, string callId) 
+        {
+            FieldValidationHelper.ValidateRequiredFields((callId, "callId"));
+
+            var call = await _callRepository.GetCallByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
+
+            if (!call.Participants.Contains(userId))
+            {
+                throw new ForbiddenException("Çağrı üzerinde yetkiniz yok.");
+            }
+
+            call.Status = CallStatus.Ongoing;
+
+            await _callRepository.CreateOrUpdateCallAsync(callId, call);
         }
 
 
@@ -90,9 +121,9 @@ namespace Mingle.Services.Concrete
 
         public async Task<(Dictionary<string, Dictionary<string, Call>>, List<string>)> GetCallLogs(string userId)
         {
-            var calls = await _callRepository.GetCallsAsync();
+            var callSnapshot = await _callRepository.GetCallsAsync();
 
-            var userCalls = calls
+            var userCalls = callSnapshot
                 .Where(call =>
                     call.Object.Participants.Contains(userId)
                     &&

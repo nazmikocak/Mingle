@@ -82,7 +82,6 @@ namespace Mingle.Services.Concrete
             }
 
 
-
             var message = new Message
             {
                 Content = messageContent,

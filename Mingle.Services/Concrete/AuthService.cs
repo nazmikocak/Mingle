@@ -60,6 +60,7 @@ namespace Mingle.Services.Concrete
             {
                 user = _mapper.Map<User>(dto.ProviderData[0]);
                 user.ProviderId = "google.com";
+
                 await _userRepository.CreateUserAsync(dto.Uid, user);
             }
 
@@ -82,6 +83,7 @@ namespace Mingle.Services.Concrete
             {
                 user = _mapper.Map<User>(dto.ProviderData[0]);
                 user.ProviderId = "facebook.com";
+
                 await _userRepository.CreateUserAsync(dto.Uid, user);
             }
 
