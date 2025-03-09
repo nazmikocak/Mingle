@@ -71,7 +71,7 @@ namespace Mingle.DataAccess.Concrete
         }
 
 
-        public async Task<Uri> UploadFileAsync(string publicId, string folder, string tags, MemoryStream file)
+        public async Task<(Uri, long)> UploadFileAsync(string publicId, string folder, string tags, MemoryStream file)
         {
             var uploadParams = new RawUploadParams
             {
@@ -84,7 +84,7 @@ namespace Mingle.DataAccess.Concrete
                 UseFilenameAsDisplayName = true,
             };
             var uploadResult = await Task.Run(() => _cloudinary.Upload(uploadParams));
-            return uploadResult.SecureUrl;
+            return (uploadResult.SecureUrl, uploadResult.Bytes);
         }
     }
 }

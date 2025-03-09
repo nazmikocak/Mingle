@@ -6,6 +6,6 @@ namespace Mingle.Services.Abstract
     {
         Task<string> GeminiGenerateTextAsync(AiRequest request);
 
-        Task<string> FluxGenerateImageAsync(AiRequest request);
+        Task<string> HfGenerateImageAsync(AiRequest request);
     }
 }

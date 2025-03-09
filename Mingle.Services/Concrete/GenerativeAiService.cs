@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
 using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
+using Mingle.Services.Exceptions;
 using Mingle.Shared.DTOs.Request;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -26,6 +28,11 @@ namespace Mingle.Services.Concrete
 
         public async Task<string> GeminiGenerateTextAsync(AiRequest request)
         {
+            if (!request.AiModel.Equals("Gemini-2.0-Flash"))
+            {
+                throw new BadRequestException("Geçersiz AI modeli!");
+            }
+
             var contentRequest = new
             {
                 contents = new[]
@@ -50,7 +57,7 @@ namespace Mingle.Services.Concrete
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Gemini API ile metin oluştururken hata oluştu.");
+                throw new Exception("Gemini API ile yanıt oluşturulamadı!");
             }
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
@@ -61,8 +68,16 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task<string> FluxGenerateImageAsync(AiRequest request)
+        public async Task<string> HfGenerateImageAsync(AiRequest request)
         {
+            string url = request.AiModel switch
+            {
+                "Flux" => _huggingFaceConfig.FluxImageUrl,
+                "Artples" => _huggingFaceConfig.ArtplesImageUrl,
+                "Compvis" => _huggingFaceConfig.CompvisImageUrl,
+                _ => throw new BadRequestException("Geçersiz AI modeli!"),
+            };
+
             var contentRequest = new
             {
                 inputs = request.Prompt
@@ -73,11 +88,11 @@ namespace Mingle.Services.Concrete
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _huggingFaceConfig.ApiKey);
 
-            HttpResponseMessage response = await _httpClient.PostAsync(_huggingFaceConfig.ImageUrl, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Hugging Face Flux API ile resim oluşturulurken hata.");
+                throw new Exception("Hugging Face API ile resim oluşturulamadı!");
             }
 
             byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();

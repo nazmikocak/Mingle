@@ -1,5 +1,8 @@
 ﻿namespace Mingle.Shared.DTOs.Response
 {
+    /// <summary>
+    /// Grup profilinin temel bilgilerini ve katılımcı listesini içeren veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record GroupProfile
     {
         public required string Name { get; init; }

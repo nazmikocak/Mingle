@@ -15,5 +15,7 @@ namespace Mingle.Shared.DTOs.Request
 
         [Required(ErrorMessage = "Lütfen bir mesaj giriniz.")]
         public string Content { get; init; }
+
+        public string? FileName { get; init; }
     }
 }

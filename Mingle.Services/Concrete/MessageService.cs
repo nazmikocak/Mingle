@@ -2,9 +2,9 @@
 using Mingle.Entities.Enums;
 using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Shared.DTOs.Request;
 using Mingle.Services.Exceptions;
 using Mingle.Services.Utilities;
+using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.Services.Concrete
 {
@@ -49,6 +49,7 @@ namespace Mingle.Services.Concrete
 
             string messageId = Guid.NewGuid().ToString();
             string messageContent;
+            long? fileSize = null;
 
             if (dto.ContentType.Equals(MessageContent.Text))
             {
@@ -56,43 +57,24 @@ namespace Mingle.Services.Concrete
             }
             else if (dto.ContentType.Equals(MessageContent.Image))
             {
-                var photoBytes = Convert.FromBase64String(dto.Content);
-
-                var photo = new MemoryStream(photoBytes);
-                FileValidationHelper.ValidatePhoto(photo);
-
-                var photoUrl = await _cloudRepository.UploadPhotoAsync(messageId, $"Chats/{chatId}", "image_message", photo);
+                var photoUrl = await _cloudRepository.UploadPhotoAsync(messageId, $"Chats/{chatId}", "image_message", FileValidationHelper.ValidatePhoto(dto.Content));
                 messageContent = photoUrl.ToString();
             }
             else if (dto.ContentType.Equals(MessageContent.Video))
             {
-                var videoBytes = Convert.FromBase64String(dto.Content);
-
-                var video = new MemoryStream(videoBytes);
-                FileValidationHelper.ValidateVideo(video);
-
-                var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", video);
+                var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", FileValidationHelper.ValidateVideo(dto.Content));
                 messageContent = videoUrl.ToString();
             }
             else if (dto.ContentType.Equals(MessageContent.Audio))
             {
-                var audioBytes = Convert.FromBase64String(dto.Content);
-
-                var audio = new MemoryStream(audioBytes);
-                FileValidationHelper.ValidateVideo(audio);
-
-                var audioUrl = await _cloudRepository.UploadAudioAsync(messageId, $"Chats/{chatId}", "audio_message", audio);
+                var audioUrl = await _cloudRepository.UploadAudioAsync(messageId, $"Chats/{chatId}", "audio_message", FileValidationHelper.ValidateVideo(dto.Content));
                 messageContent = audioUrl.ToString();
             }
             else if (dto.ContentType.Equals(MessageContent.File))
             {
-                var fileBytes = Convert.FromBase64String(dto.Content);
-
-                var file = new MemoryStream(fileBytes);
-                FileValidationHelper.ValidateFile(file);
-
-                var fileUrl = await _cloudRepository.UploadFileAsync(messageId, $"Chats/{chatId}", "file_message", file);
+                var (fileUrl, size) = await _cloudRepository.UploadFileAsync(messageId, $"Chats/{chatId}", "file_message", FileValidationHelper.ValidateFile(dto.Content));
                 messageContent = fileUrl.ToString();
+                fileSize = size;
             }
             else
             {
@@ -104,6 +86,8 @@ namespace Mingle.Services.Concrete
             var message = new Message
             {
                 Content = messageContent,
+                FileName = dto.FileName,
+                FileSize = fileSize,
                 Type = dto.ContentType,
                 Status = new MessageStatus
                 {

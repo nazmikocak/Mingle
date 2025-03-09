@@ -1,5 +1,8 @@
 ﻿namespace Mingle.Shared.DTOs.Response
 {
+    /// <summary>
+    /// Kullanıcının temel bilgilerini içeren veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record CallerUser
     {
         public required string DisplayName { get; init; }

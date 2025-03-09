@@ -1,8 +1,15 @@
-﻿namespace Mingle.Shared.DTOs.Request
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Mingle.Shared.DTOs.Request
 {
-    public class AiRequest
+    public sealed record AiRequest
     {
-        // TODO: DataAnnetions 
-        public string Prompt { get; set; }
+        [Required(ErrorMessage = "AI modeli seçilmelidir.")]
+        public string AiModel { get; init; }
+
+
+        [Required(ErrorMessage = "Lütfen bir propmt giriniz.")]
+        [StringLength(1000, MinimumLength = 2, ErrorMessage = "Prompt en az 2, en fazla 1000 karakter olmalıdır.")]
+        public string Prompt { get; init; }
     }
 }

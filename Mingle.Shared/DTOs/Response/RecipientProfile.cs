@@ -2,6 +2,9 @@
 
 namespace Mingle.Shared.DTOs.Response
 {
+    /// <summary>
+    /// Kullanıcıların alıcı olarak profil bilgilerini içeren veri transfer nesnesi (DTO).
+    /// </summary>
     public sealed record RecipientProfile
     {
         public required string DisplayName { get; init; }

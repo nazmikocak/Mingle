@@ -10,13 +10,13 @@ namespace Mingle.Services.Concrete
 {
     public sealed class UserService : IUserService
     {
+        private readonly ICloudRepository _cloudRepository;
         private readonly IUserRepository _userRepository;
         private readonly IAuthRepository _authRepository;
-        private readonly ICloudRepository _cloudRepository;
         private readonly IMapper _mapper;
 
 
-        public UserService(IUserRepository userRepository, IAuthRepository authRepository, ICloudRepository cloudRepository, IMapper mapper)
+        public UserService(ICloudRepository cloudRepository, IUserRepository userRepository, IAuthRepository authRepository, IMapper mapper)
         {
             _userRepository = userRepository;
             _authRepository = authRepository;
@@ -86,12 +86,7 @@ namespace Mingle.Services.Concrete
 
         public async Task<Uri> UpdateProfilePhotoAsync(string userId, UpdateProfilePhoto dto)
         {
-            var photoBytes = Convert.FromBase64String(dto.ProfilePhoto);
-            var photo = new MemoryStream(photoBytes);
-
-            FileValidationHelper.ValidatePhoto(photo);
-
-            var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", photo);
+            var newPhotoUrl = await _cloudRepository.UploadPhotoAsync(userId, $"Users", "profile_photo", FileValidationHelper.ValidatePhoto(dto.ProfilePhoto));
             await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", newPhotoUrl);
 
             return newPhotoUrl;

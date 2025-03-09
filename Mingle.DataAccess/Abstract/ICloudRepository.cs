@@ -8,6 +8,6 @@
 
         Task<Uri> UploadAudioAsync(string publicId, string folder, string tags, MemoryStream audio);
 
-        Task<Uri> UploadFileAsync(string publicId, string folder, string tags, MemoryStream file);
+        Task<(Uri, long)> UploadFileAsync(string publicId, string folder, string tags, MemoryStream file);
     }
 }

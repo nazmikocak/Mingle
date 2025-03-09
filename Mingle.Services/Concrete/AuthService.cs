@@ -62,13 +62,6 @@ namespace Mingle.Services.Concrete
                 user.ProviderId = "google.com";
                 await _userRepository.CreateUserAsync(dto.Uid, user);
             }
-            else
-            {
-                user.DisplayName = dto.ProviderData[0].DisplayName;
-                user.Email = dto.ProviderData[0].Email;
-                user.PhoneNumber = dto.ProviderData[0].PhoneNumber ?? string.Empty;
-                user.ProfilePhoto = new Uri(dto.ProviderData[0].PhotoURL);
-            }
 
             return await Task.Run(() => _jwtManager.GenerateToken(dto.Uid));
         }
@@ -90,13 +83,6 @@ namespace Mingle.Services.Concrete
                 user = _mapper.Map<User>(dto.ProviderData[0]);
                 user.ProviderId = "facebook.com";
                 await _userRepository.CreateUserAsync(dto.Uid, user);
-            }
-            else
-            {
-                user.DisplayName = dto.ProviderData[0].DisplayName;
-                user.Email = dto.ProviderData[0].Email;
-                user.PhoneNumber = dto.ProviderData[0].PhoneNumber ?? string.Empty;
-                user.ProfilePhoto = new Uri(dto.ProviderData[0].PhotoURL);
             }
 
             return await Task.Run(() => _jwtManager.GenerateToken(dto.Uid));

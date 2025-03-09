@@ -10,6 +10,10 @@ namespace Mingle.Entities.Models
     {
         public required string Content { get; set; }
 
+        public string? FileName { get; set; }
+
+        public long? FileSize { get; set; }
+
         public required MessageContent Type { get; set; }
 
         public required MessageStatus Status { get; set; }
