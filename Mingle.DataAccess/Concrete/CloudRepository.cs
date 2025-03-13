@@ -80,7 +80,6 @@ namespace Mingle.DataAccess.Concrete
                 Overwrite = false,
                 Folder = folder,
                 Tags = tags,
-                AllowedFormats = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "rar"],
                 UseFilenameAsDisplayName = true,
             };
             var uploadResult = await Task.Run(() => _cloudinary.Upload(uploadParams));

@@ -58,22 +58,22 @@ namespace Mingle.Services.Concrete
             else if (dto.ContentType.Equals(MessageContent.Image))
             {
                 var photoUrl = await _cloudRepository.UploadPhotoAsync(messageId, $"Chats/{chatId}", "image_message", FileValidationHelper.ValidatePhoto(dto.Content));
-                messageContent = photoUrl.ToString();
+                messageContent = photoUrl.ToString() ?? throw new Exception("Dosya yüklenemedi.");
             }
             else if (dto.ContentType.Equals(MessageContent.Video))
             {
                 var videoUrl = await _cloudRepository.UploadVideoAsync(messageId, $"Chats/{chatId}", "video_message", FileValidationHelper.ValidateVideo(dto.Content));
-                messageContent = videoUrl.ToString();
+                messageContent = videoUrl.ToString() ?? throw new Exception("Dosya yüklenemedi.");
             }
             else if (dto.ContentType.Equals(MessageContent.Audio))
             {
                 var audioUrl = await _cloudRepository.UploadAudioAsync(messageId, $"Chats/{chatId}", "audio_message", FileValidationHelper.ValidateVideo(dto.Content));
-                messageContent = audioUrl.ToString();
+                messageContent = audioUrl.ToString() ?? throw new Exception("Dosya yüklenemedi.");
             }
             else if (dto.ContentType.Equals(MessageContent.File))
             {
                 var (fileUrl, size) = await _cloudRepository.UploadFileAsync(messageId, $"Chats/{chatId}", "file_message", FileValidationHelper.ValidateFile(dto.Content));
-                messageContent = fileUrl.ToString();
+                messageContent = fileUrl.ToString() ?? throw new Exception("Dosya yüklenemedi.");
                 fileSize = size;
             }
             else
