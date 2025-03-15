@@ -26,7 +26,7 @@ namespace Mingle.Services.Concrete
 
             var userActiveCalls = callSnapshot
                 .Where(call =>
-                    call.Object.Participants.Contains(userId)
+                    (call.Object.Participants.Contains(recipientId) || call.Object.Participants.Contains(userId))
                     &&
                     (call.Object.Status.Equals(CallStatus.Ongoing) || call.Object.Status.Equals(CallStatus.Pending))
                 );
@@ -37,13 +37,13 @@ namespace Mingle.Services.Concrete
             {
                 Participants = [userId, recipientId],
                 Type = callType,
-                Status = userActiveCalls.Any() ? CallStatus.Declined : CallStatus.Pending,
+                Status = userActiveCalls.Count() != 0 ? CallStatus.Declined : CallStatus.Pending,
                 CreatedDate = DateTime.UtcNow
             };
 
             await _callRepository.CreateOrUpdateCallAsync(callId, call);
 
-            if (userActiveCalls.Any())
+            if (userActiveCalls.Count() != 0)
             {
                 throw new BadRequestException("Kullanıcı meşgul!");
             }
@@ -52,7 +52,7 @@ namespace Mingle.Services.Concrete
         }
 
 
-        public async Task AcceptCallAsync(string userId, string callId) 
+        public async Task AcceptCallAsync(string userId, string callId)
         {
             FieldValidationHelper.ValidateRequiredFields((callId, "callId"));
 
