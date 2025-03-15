@@ -94,7 +94,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Kullanıcı veya alıcı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcı çağrıyı başlatmak için yetkili değilse fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task StartCall(string recipientId, CallType callType)
         {
@@ -108,7 +107,7 @@ namespace Mingle.API.Hubs
                     {
                         { "callId", callId },
                         { "callType", callType },
-                        { recipientProfiles.Keys.Last(), recipientProfiles.Values.Last() }
+                        { recipientId, recipientProfiles[recipientId] }
                     }
                 );
 
@@ -116,21 +115,20 @@ namespace Mingle.API.Hubs
                     {
                         { "callId", callId },
                         { "callType", callType },
-                        { recipientProfiles.Keys.First(), recipientProfiles.Values.First() }
+                        { UserId, recipientProfiles[UserId] }
                     }
                 );
             }
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -144,9 +142,8 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz bir istek yapıldığında fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Yetkisiz erişim durumunda fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmeyen bir hata oluştuğunda fırlatılır.</exception>
-        public async Task AcceptCall(string callId) 
+        public async Task AcceptCall(string callId)
         {
             try
             {
@@ -156,14 +153,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -179,7 +175,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcının çağrıyı sonlandırma yetkisi yoksa fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task EndCall(string callId, CallStatus callStatus, DateTime? createdDate)
         {
@@ -204,14 +199,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -225,7 +219,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcının çağrıyı silme yetkisi yoksa fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task DeleteCall(string callId)
         {
@@ -237,14 +230,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -259,7 +251,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task SendSdp(string callId, object sdp)
         {
@@ -283,14 +274,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
 
@@ -305,7 +295,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz parametreler sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcının bu işlemi gerçekleştirme yetkisi yoksa fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task SendIceCandidate(string callId, object iceCandidate)
         {
@@ -324,14 +313,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

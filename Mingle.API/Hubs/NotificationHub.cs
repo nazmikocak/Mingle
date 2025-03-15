@@ -90,7 +90,6 @@ namespace Mingle.API.Hubs
         /// <exception cref="NotFoundException">Arama sonuçları bulunamazsa fırlatılır.</exception>
         /// <exception cref="BadRequestException">Geçersiz arama parametresi sağlanırsa fırlatılır.</exception>
         /// <exception cref="ForbiddenException">Kullanıcının arama yapmaya yetkisi yoksa fırlatılır.</exception>
-        /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public async Task SearchUsers(string query)
         {
@@ -107,14 +106,13 @@ namespace Mingle.API.Hubs
             catch (Exception ex) when (
                 ex is NotFoundException ||
                 ex is BadRequestException ||
-                ex is ForbiddenException ||
-                ex is FirebaseException)
+                ex is ForbiddenException)
             {
-                await Clients.Caller.SendAsync("Error", new { message = ex.Message });
+                await Clients.Caller.SendAsync("ValidationError", new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                await Clients.Caller.SendAsync("Error", new { message = $"Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
             }
         }
     }

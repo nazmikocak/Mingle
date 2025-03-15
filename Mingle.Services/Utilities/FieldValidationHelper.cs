@@ -16,6 +16,7 @@ namespace Mingle.Services.Utilities
             }
         }
 
+
         public static void ValidateEmailFormat(string email, string fieldName = "Email")
         {
             if (string.IsNullOrEmpty(email))

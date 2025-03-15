@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Mingle.Services.Exceptions;
+﻿using Mingle.Services.Exceptions;
 
 namespace Mingle.Services.Utilities
 {
