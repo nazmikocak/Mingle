@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSignalR(options =>
 {
-    options.MaximumReceiveMessageSize = 2097152; // 2 MB
+    options.MaximumReceiveMessageSize = 41943040; // 5 MB
 });
 
 
