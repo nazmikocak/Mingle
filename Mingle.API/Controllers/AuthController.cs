@@ -117,13 +117,13 @@ namespace Mingle.API.Controllers
         /// Google ile giriş işlemi gerçekleştirir.
         /// Google girişinin geçersiz olması ve diğer hata durumlarında uygun cevaplar döner.
         /// </summary>
-        /// <param name="dto">Google ile giriş için gerekli olan bilgileri içeren <see cref="SignInProvider"/> veri transfer objesi.</param>
+        /// <param name="dto">Google ile giriş için gerekli olan bilgileri içeren <see cref="SignInGoogle"/> veri transfer objesi.</param>
         /// <returns>Bir <see cref="IActionResult"/> döner.</returns>
         /// <exception cref="BadRequestException">Geçersiz giriş işlemi durumunda fırlatılır.</exception>
         /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
-        public async Task<IActionResult> SignInProvider([FromBody] SignInProvider dto)
+        public async Task<IActionResult> SignInGoogle([FromBody] SignInProvider dto)
         {
             if (!ModelState.IsValid)
             {

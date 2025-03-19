@@ -45,7 +45,7 @@ namespace Mingle.API.Controllers
         /// <exception cref="FirebaseException"> Firebase ile ilgili bir hata oluşursa fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata durumunda fırlatılır.</exception>
         [HttpGet]
-        public async Task<IActionResult> UserInfo()
+        public async Task<IActionResult> Info()
         {
             try
             {

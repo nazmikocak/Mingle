@@ -19,9 +19,9 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: GenerateText
+        // POST: Text
         [HttpPost]
-        public async Task<IActionResult> GenerateText(AiRequest request)
+        public async Task<IActionResult> Text(AiRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -39,9 +39,9 @@ namespace Mingle.API.Controllers
 
 
 
-        // POST: GenerateImage
+        // POST: Image
         [HttpPost]
-        public async Task<IActionResult> GenerateImage(AiRequest request)
+        public async Task<IActionResult> Image(AiRequest request)
         {
             if (!ModelState.IsValid)
             {

@@ -41,13 +41,13 @@ namespace Mingle.API.Controllers
         /// <summary>
         /// Yeni bir grup oluşturur.
         /// </summary>
-        /// <param name="dto">Grup oluşturma işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <param name="dto">Grup oluşturma işlemi için gerekli verileri içeren <see cref="Create"/> veri transfer nesnesi.</param>
         /// <returns>Yeni oluşturulan grubun bilgileri ile birlikte başarı durumu döner.</returns>
         /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
         /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpPost]
-        public async Task<IActionResult> CreateGroup([FromForm] CreateGroup dto)
+        public async Task<IActionResult> Create([FromForm] CreateGroup dto)
         {
             if (!ModelState.IsValid)
             {
@@ -86,13 +86,13 @@ namespace Mingle.API.Controllers
         /// Var olan bir grubun bilgilerini günceller.
         /// </summary>
         /// <param name="groupId">Düzenlenecek grubun kimliği.</param>
-        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="Create"/> veri transfer nesnesi.</param>
         /// <returns>Grup bilgileri başarıyla güncellendi mesajı döner.</returns>
         /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
         /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpPut("{groupId:guid}")]
-        public async Task<IActionResult> EditGroup([FromRoute(Name = "groupId")] string groupId, [FromForm] CreateGroup dto)
+        public async Task<IActionResult> Edit([FromRoute(Name = "groupId")] string groupId, [FromForm] CreateGroup dto)
         {
             if (!ModelState.IsValid)
             {
@@ -129,13 +129,13 @@ namespace Mingle.API.Controllers
         /// Var olan bir grubun bilgilerini günceller.
         /// </summary>
         /// <param name="groupId">Düzenlenecek grubun kimliği.</param>
-        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="CreateGroup"/> veri transfer nesnesi.</param>
+        /// <param name="dto">Grup düzenleme işlemi için gerekli verileri içeren <see cref="Create"/> veri transfer nesnesi.</param>
         /// <returns>Grup bilgileri başarıyla güncellendi mesajı döner.</returns>
         /// <exception cref="BadRequestException">Model geçerli değilse hata mesajı döner.</exception>
         /// <exception cref="FirebaseException">Firebase ile ilgili bir hata oluştuğunda hata mesajı döner.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluştuğunda hata mesajı döner.</exception>
         [HttpDelete("{groupId:guid}")]
-        public async Task<IActionResult> LeaveGroup([FromRoute(Name = "groupId")] string groupId)
+        public async Task<IActionResult> Leave([FromRoute(Name = "groupId")] string groupId)
         {
             try
             {
