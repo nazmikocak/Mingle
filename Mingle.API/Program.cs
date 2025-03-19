@@ -29,9 +29,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Mingle.Cors", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
