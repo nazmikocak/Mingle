@@ -124,11 +124,29 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 
-// Configure the HTTP request pipeline.
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
 
+        var errorFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (errorFeature != null)
+        {
+            var errorMessage = errorFeature.Error.Message;
+            var stackTrace = errorFeature.Error.StackTrace;
+
+            var errorResponse = new { error = errorMessage, details = stackTrace };
+            await context.Response.WriteAsJsonAsync(errorResponse);
+        }
+    });
+});
+
+
+// Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
-
 
 
 app.UseHttpsRedirection();
