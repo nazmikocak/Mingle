@@ -8,22 +8,22 @@ namespace Mingle.DataAccess.Configurations
     public class HuggingFaceConfig
     {
         /// <summary>Hugging Face API anahtarını içerir.</summary>
-        public string apiKey { get; }
+        public string ApiKey { get; }
 
 
 
         /// <summary>FLUX modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string fluxImage { get; }
+        public string FluxImage { get; }
 
 
 
         /// <summary>Artples modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string artplesImage { get; }
+        public string ArtplesImage { get; }
 
 
 
         /// <summary>CompVis modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string compvisImage { get; }
+        public string CompvisImage { get; }
 
 
 
@@ -38,10 +38,10 @@ namespace Mingle.DataAccess.Configurations
             var artplesImageUrl = configuration["HuggingFace:artplesImage"]!;
             var compvisImageUrl = configuration["HuggingFace:compvisImage"]!;
 
-            apiKey = apiKey;
-            fluxImage = fluxImageUrl;
-            artplesImage = artplesImageUrl;
-            compvisImage = compvisImageUrl;
+            ApiKey = apiKey;
+            FluxImage = fluxImageUrl;
+            ArtplesImage = artplesImageUrl;
+            CompvisImage = compvisImageUrl;
         }
     }
 }
