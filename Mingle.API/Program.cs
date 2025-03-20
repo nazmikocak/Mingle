@@ -25,8 +25,6 @@ else
     builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 }
 
-builder.Configuration.AddEnvironmentVariables();
-
 
 builder.Services.AddControllers();
 
