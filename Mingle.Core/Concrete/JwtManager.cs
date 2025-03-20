@@ -30,10 +30,10 @@ namespace Mingle.Core.Concrete
         /// <param name="configuration">JWT ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public JwtManager(IConfiguration configuration)
         {
-            _secret = configuration["JwtSettings:Secret"];
-            _issuer = configuration["JwtSettings:Issuer"];
-            _audience = configuration["JwtSettings:Audience"];
-            _expiryInDays = byte.Parse(configuration["JwtSettings:ExpiryInDays"]!);
+            _secret = configuration["JwtSettings:secret"];
+            _issuer = configuration["JwtSettings:issuer"];
+            _audience = configuration["JwtSettings:audience"];
+            _expiryInDays = byte.Parse(configuration["JwtSettings:expiryInDays"]!);
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using Firebase.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
@@ -197,6 +198,7 @@ namespace Mingle.API.Controllers
         /// <exception cref="FirebaseAuthHttpException">Firebase ile ilgili bir hata oluştuğunda fırlatılır.</exception>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SignOut()
         {
             try

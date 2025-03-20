@@ -16,15 +16,27 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 
-// Add services to the container.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+}
+else
+{
+    builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+}
+
+
 builder.Services.AddControllers();
+
+
+// SignalR
 builder.Services.AddSignalR(options =>
 {
     options.MaximumReceiveMessageSize = 41943040; // 5 MB
 });
 
 
-// CORS
+// Cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Mingle.Cors", policy =>
@@ -114,11 +126,12 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JwtSettings:Issuer"),
-        ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JwtSettings:Audience"),
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JwtSettings:Secret")))
+        ValidIssuer = builder.Configuration["JwtSettings:issuer"] ?? throw new ArgumentNullException("JwtSettings:issuer"),
+        ValidAudience = builder.Configuration["JwtSettings:audience"] ?? throw new ArgumentNullException("JwtSettings:audience"),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:secret"] ?? throw new ArgumentNullException("JwtSettings:secret")))
     };
 });
+
 
 
 var app = builder.Build();
@@ -144,7 +157,6 @@ app.UseExceptionHandler(errorApp =>
 });
 
 
-// Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 

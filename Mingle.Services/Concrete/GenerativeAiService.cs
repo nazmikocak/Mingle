@@ -72,9 +72,9 @@ namespace Mingle.Services.Concrete
         {
             string url = request.AiModel switch
             {
-                "Flux" => _huggingFaceConfig.FluxImageUrl,
-                "Artples" => _huggingFaceConfig.ArtplesImageUrl,
-                "Compvis" => _huggingFaceConfig.CompvisImageUrl,
+                "Flux" => _huggingFaceConfig.fluxImage,
+                "Artples" => _huggingFaceConfig.artplesImage,
+                "Compvis" => _huggingFaceConfig.compvisImage,
                 _ => throw new BadRequestException("Geçersiz AI modeli!"),
             };
 
@@ -86,7 +86,7 @@ namespace Mingle.Services.Concrete
             string jsonRequest = JsonConvert.SerializeObject(contentRequest);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _huggingFaceConfig.ApiKey);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _huggingFaceConfig.apiKey);
 
             HttpResponseMessage response = await _httpClient.PostAsync(url, content);
 

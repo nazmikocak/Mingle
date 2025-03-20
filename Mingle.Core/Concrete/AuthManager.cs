@@ -24,7 +24,7 @@ namespace Mingle.Core.Concrete
         /// <param name="configuration">Yapılandırma ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public AuthManager(IConfiguration configuration)
         {
-            _apiKey = configuration["FirebaseSettings:ApiKey"]!;
+            _apiKey = configuration["Firebase:apiKey"]!;
         }
 
 
@@ -45,7 +45,7 @@ namespace Mingle.Core.Concrete
                 return (false, "Geçersiz sağlayıcı. Google hesabı gereklidir.");
             }
 
-            if (!dto.ApiKey.Equals(_apiKey))
+            if (!dto.apiKey.Equals(_apiKey))
             {
                 return (false, "API anahtarı geçersiz.");
             }
@@ -79,7 +79,7 @@ namespace Mingle.Core.Concrete
                 return (false, "Geçersiz sağlayıcı. Facebook hesabı gereklidir.");
             }
 
-            if (!dto.ApiKey.Equals(_apiKey))
+            if (!dto.apiKey.Equals(_apiKey))
             {
                 return (false, "API anahtarı geçersiz.");
             }

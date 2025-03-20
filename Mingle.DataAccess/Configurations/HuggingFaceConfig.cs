@@ -8,22 +8,22 @@ namespace Mingle.DataAccess.Configurations
     public class HuggingFaceConfig
     {
         /// <summary>Hugging Face API anahtarını içerir.</summary>
-        public string ApiKey { get; }
+        public string apiKey { get; }
 
 
 
         /// <summary>FLUX modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string FluxImageUrl { get; }
+        public string fluxImage { get; }
 
 
 
         /// <summary>Artples modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string ArtplesImageUrl { get; }
+        public string artplesImage { get; }
 
 
 
         /// <summary>CompVis modelini kullanarak görsel üretimi için API URL'sini içerir.</summary>
-        public string CompvisImageUrl { get; }
+        public string compvisImage { get; }
 
 
 
@@ -33,15 +33,15 @@ namespace Mingle.DataAccess.Configurations
         /// <param name="configuration">Uygulamanın yapılandırma ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public HuggingFaceConfig(IConfiguration configuration)
         {
-            var apiKey = configuration["HuggingFaceSettings:ApiKey"]!;
-            var fluxImageUrl = configuration["HuggingFaceSettings:FluxImageUrl"]!;
-            var artplesImageUrl = configuration["HuggingFaceSettings:ArtplesImageUrl"]!;
-            var compvisImageUrl = configuration["HuggingFaceSettings:CompvisImageUrl"]!;
+            var apiKey = configuration["HuggingFace:apiKey"]!;
+            var fluxImageUrl = configuration["HuggingFace:fluxImage"]!;
+            var artplesImageUrl = configuration["HuggingFace:artplesImage"]!;
+            var compvisImageUrl = configuration["HuggingFace:compvisImage"]!;
 
-            ApiKey = apiKey;
-            FluxImageUrl = fluxImageUrl;
-            ArtplesImageUrl = artplesImageUrl;
-            CompvisImageUrl = compvisImageUrl;
+            apiKey = apiKey;
+            fluxImage = fluxImageUrl;
+            artplesImage = artplesImageUrl;
+            compvisImage = compvisImageUrl;
         }
     }
 }

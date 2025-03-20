@@ -20,9 +20,9 @@ namespace Mingle.DataAccess.Configurations
         /// <param name="configuration">Uygulamanın yapılandırma ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public CloudinaryConfig(IConfiguration configuration)
         {
-            var cloudName = configuration["CloudinarySettings:CloudName"];
-            var apiKey = configuration["CloudinarySettings:ApiKey"];
-            var apiSecret = configuration["CloudinarySettings:ApiSecret"];
+            var cloudName = configuration["Cloudinary:cloudName"];
+            var apiKey = configuration["Cloudinary:apiKey"];
+            var apiSecret = configuration["Cloudinary:apiSecret"];
 
             Account account = new Account(
                 cloudName,

@@ -26,9 +26,9 @@ namespace Mingle.DataAccess.Configurations
         /// <param name="configuration">Uygulamanın yapılandırma ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public FirebaseConfig(IConfiguration configuration)
         {
-            var apiKey = configuration["FirebaseSettings:ApiKey"];
-            var authDomain = configuration["FirebaseSettings:AuthDomain"];
-            var databaseUrl = configuration["FirebaseSettings:DatabaseUrl"];
+            var apiKey = configuration["Firebase:apiKey"];
+            var authDomain = configuration["Firebase:authDomain"];
+            var databaseUrl = configuration["Firebase:databaseUrl"];
 
             var config = new FirebaseAuthConfig
             {

@@ -18,8 +18,8 @@ namespace Mingle.DataAccess.Configurations
         /// <param name="configuration">Uygulamanın yapılandırma ayarlarını içeren <see cref="IConfiguration"/> nesnesi.</param>
         public GeminiConfig(IConfiguration configuration)
         {
-            var apiKey = configuration["GeminiSettings:ApiKey"];
-            var textUrl = configuration["GeminiSettings:TextUrl"];
+            var apiKey = configuration["Gemini:apiKey"];
+            var textUrl = configuration["Gemini:textUrl"];
 
             TextGeneration = textUrl + apiKey;
         }

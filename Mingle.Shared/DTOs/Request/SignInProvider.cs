@@ -15,7 +15,7 @@
         public required StsTokenManager StsTokenManager { get; init; }
         public required string CreatedAt { get; init; }
         public required string LastLoginAt { get; init; }
-        public required string ApiKey { get; init; }
+        public required string apiKey { get; init; }
         public required string AppName { get; init; }
     }
 
