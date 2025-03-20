@@ -11,13 +11,9 @@ using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Mapping;
 using System.Text;
-using DotNetEnv;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-Env.Load();
 
 
 if (builder.Environment.IsDevelopment())
@@ -28,10 +24,6 @@ else
 {
     builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 }
-
-
-
-builder.Configuration.AddEnvironmentVariables();
 
 
 builder.Services.AddControllers();
