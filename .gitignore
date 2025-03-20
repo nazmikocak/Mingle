@@ -364,6 +364,3 @@ appsettings.Development.json
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-# Ignore appsettings for development environment
-appsettings.Development.json
