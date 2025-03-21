@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Mingle.Cors", policy =>
     {
-        policy.WithOrigins("https://mingleweb.netlify.app")
+        policy.WithOrigins("https://mingleweb.netlify.app", "https://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); 

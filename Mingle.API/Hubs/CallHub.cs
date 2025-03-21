@@ -64,8 +64,8 @@ namespace Mingle.API.Hubs
             var (calls, callRecipientIds) = await _callService.GetCallLogs(UserId);
             var recipientProfiles = await _userService.GetUserProfilesAsync(callRecipientIds);
 
-            await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
-            await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
+            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialCalls", calls);
+            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
 
             await base.OnConnectedAsync();
         }

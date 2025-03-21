@@ -84,9 +84,9 @@ namespace Mingle.API.Hubs
 
             var sendTasks = new[]
             {
-                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
-                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
+                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialChats", chats),
+                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
             };
 
             await Task.WhenAll(sendTasks);
