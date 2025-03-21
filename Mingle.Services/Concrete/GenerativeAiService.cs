@@ -1,15 +1,17 @@
-﻿using Microsoft.Extensions.Options;
-using Mingle.DataAccess.Configurations;
+﻿using Mingle.DataAccess.Configurations;
 using Mingle.Services.Abstract;
 using Mingle.Services.Exceptions;
 using Mingle.Shared.DTOs.Request;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 
 namespace Mingle.Services.Concrete
 {
+    /// <summary>
+    /// Yapay zeka metin ve görsel oluşturma işlemlerini yöneten servis sınıfıdır.
+    /// HuggingFace ve Gemini API'leri ile entegre çalışarak, metin ve görsel üretme işlemleri gerçekleştirilir.
+    /// </summary>
     public sealed class GenerativeAiService : IGenerativeAiService
     {
         private readonly HuggingFaceConfig _huggingFaceConfig;
@@ -18,6 +20,11 @@ namespace Mingle.Services.Concrete
 
 
 
+        /// <summary>
+        /// GenerativeAiService sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="geminiConfig">Gemini API yapılandırma ayarlarını içeren config.</param>
+        /// <param name="huggingFaceConfig">Hugging Face API yapılandırma ayarlarını içeren config.</param>
         public GenerativeAiService(GeminiConfig geminiConfig, HuggingFaceConfig huggingFaceConfig)
         {
             _textGeneration = geminiConfig.TextGeneration;
@@ -26,6 +33,14 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Gemini API kullanarak metin oluşturur.
+        /// </summary>
+        /// <param name="request">Yapay zeka modelinden metin üretmek için kullanılan istek verisi.</param>
+        /// <returns>Gemini API tarafından üretilen metin.</returns>
+        /// <exception cref="BadRequestException">Geçersiz AI modeli verildiğinde fırlatılır.</exception>
+        /// <exception cref="Exception">Gemini API ile bağlantı hatası durumunda fırlatılır.</exception>
         public async Task<string> GeminiGenerateTextAsync(AiRequest request)
         {
             if (!request.AiModel.Equals("Gemini-2.0-Flash"))
@@ -68,6 +83,14 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Hugging Face API kullanarak görsel oluşturur.
+        /// </summary>
+        /// <param name="request">Yapay zeka modelinden görsel üretmek için kullanılan istek verisi.</param>
+        /// <returns>Hugging Face API tarafından üretilen görselin Base64 kodlamalı hali.</returns>
+        /// <exception cref="BadRequestException">Geçersiz AI modeli verildiğinde fırlatılır.</exception>
+        /// <exception cref="Exception">Hugging Face API ile görsel oluşturulamadığında fırlatılır.</exception>
         public async Task<string> HfGenerateImageAsync(AiRequest request)
         {
             string url = request.AiModel switch

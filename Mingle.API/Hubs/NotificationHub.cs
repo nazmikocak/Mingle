@@ -1,6 +1,7 @@
 ﻿using Firebase.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Exceptions;
@@ -39,6 +40,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         /// <summary>
         /// <see cref="NotificationHub"/> sınıfının yeni bir örneğini oluşturur.
         /// </summary>
@@ -60,17 +62,7 @@ namespace Mingle.API.Hubs
             await base.OnConnectedAsync();
         }
 
-
-
-        public async Task Initial()
-        {
-            DateTime lastConnectionDate = DateTime.MinValue;
-            await _userService.UpdateLastConnectionDateAsync(UserId, lastConnectionDate!);
-
-            await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } } });
-        }
-
-
+        
 
         /// <summary>
         /// Kullanıcı bağlantısını kestiğinde çağrılır. Kullanıcının son bağlantı tarihini günceller ve diğer kullanıcılara bildirir.
@@ -85,6 +77,31 @@ namespace Mingle.API.Hubs
 
             await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } } });
             await base.OnDisconnectedAsync(exception);
+        }
+
+
+
+        /// <summary>
+        /// Kullanıcının son bağlantı tarihini sıfırlayarak günceller ve diğer istemcilere bildirir.
+        /// </summary>
+        /// <returns>Asenkron işlemi temsil eden bir <see cref="Task"/> nesnesi.</returns>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
+        public async Task Initial()
+        {
+            try
+            {
+                DateTime lastConnectionDate = DateTime.MinValue;
+                await _userService.UpdateLastConnectionDateAsync(UserId, lastConnectionDate!);
+
+                await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>>
+                {
+                    { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } }
+                });
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+            }
         }
 
 

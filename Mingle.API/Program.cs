@@ -25,9 +25,8 @@ else
     builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 }
 
+
 builder.Configuration.AddEnvironmentVariables();
-
-
 builder.Services.AddControllers();
 
 
@@ -114,7 +113,7 @@ builder.Services.AddSingleton<GeminiConfig>();
 builder.Services.AddSingleton<HuggingFaceConfig>();
 
 
-// Authentication
+// Authentication JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -135,10 +134,10 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-
 var app = builder.Build();
 
 
+// Error
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -159,10 +158,12 @@ app.UseExceptionHandler(errorApp =>
 });
 
 
+// Swagger UI
 app.UseSwagger();
 app.UseSwaggerUI();
 
 
+// Middleware 
 app.UseHttpsRedirection();
 app.UseCors("Mingle.Cors");
 app.UseAuthentication();

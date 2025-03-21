@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mingle.Services.Exceptions
+﻿namespace Mingle.Services.Exceptions
 {
+    /// <summary>
+    /// Bulunamayan kaynak durumunda fırlatılan özel hata.
+    /// </summary>
     public sealed class NotFoundException : Exception
     {
+        /// <param name="message">Hata mesajı.</param>
         public NotFoundException(string message) : base(message) { }
     }
 }

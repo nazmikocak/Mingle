@@ -46,6 +46,7 @@ namespace Mingle.API.Hubs
         }
 
 
+
         /// <summary>
         /// <see cref="ChatHub"/> sınıfının yeni bir örneğini oluşturur.
         /// </summary>
@@ -89,25 +90,37 @@ namespace Mingle.API.Hubs
 
 
 
-        public async Task Initial() 
+        /// <summary>
+        /// Kullanıcının tüm sohbetlerini, alıcı profillerini ve grup profillerini yükler ve istemciye iletir.
+        /// </summary>
+        /// <returns>Asenkron işlemi temsil eden bir <see cref="Task"/> nesnesi.</returns>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
+        public async Task Initial()
         {
-            var chatsTask = _chatService.GetAllChatsAsync(UserId);
-            var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
-
-            var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
-            var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
-
-            var recipientProfiles = await recipientProfilesTask;
-            var groupProfiles = await groupProfilesTask;
-
-            var sendTasks = new[]
+            try
             {
-                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
-                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
-            };
+                var chatsTask = _chatService.GetAllChatsAsync(UserId);
+                var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
 
-            await Task.WhenAll(sendTasks);
+                var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
+                var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
+
+                var recipientProfiles = await recipientProfilesTask;
+                var groupProfiles = await groupProfilesTask;
+
+                var sendTasks = new[]
+                {
+                    Clients.Caller.SendAsync("ReceiveInitialChats", chats),
+                    Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                    Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
+                };
+
+                await Task.WhenAll(sendTasks);
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("UnexpectedError", new { message = "Beklenmedik bir hata oluştu!", errorDetails = ex.Message });
+            }
         }
 
 
@@ -284,9 +297,6 @@ namespace Mingle.API.Hubs
         {
             try
             {
-                var calculator = new PackageSizeCalculationHelper();
-                calculator.CalculateMessageSizeAndPacketEstimate(dto);
-
                 var (message, chatParticipants) = await _messageService.SendMessageAsync(UserId, chatId, chatType, dto);
 
                 var saveMessageTask = _messageRepository.CreateMessageAsync(UserId, chatType, chatId, message.First().Value.First().Value.First().Key, message.First().Value.First().Value.First().Value);
@@ -312,7 +322,7 @@ namespace Mingle.API.Hubs
         }
 
 
-        
+
         /// <summary>
         /// Bir mesajın teslim edildiğini işaretler ve sohbet katılımcılarına bildirir.
         /// </summary>

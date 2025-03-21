@@ -8,6 +8,10 @@ using Mingle.Shared.DTOs.Request;
 
 namespace Mingle.Services.Concrete
 {
+    /// <summary>
+    /// Mesaj gönderme, silme ve durum güncelleme işlemlerini yöneten servis sınıfıdır.
+    /// Sohbetler arası mesajlaşma işlemleri için gerekli işlemleri içerir.
+    /// </summary>
     public sealed class MessageService : IMessageService
     {
         private readonly IGroupRepository _groupRepository;
@@ -15,6 +19,13 @@ namespace Mingle.Services.Concrete
         private readonly IChatRepository _chatRepository;
 
 
+
+        /// <summary>
+        /// MessageService sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="groupRepository">Grup yönetimi için kullanılan repository.</param>
+        /// <param name="cloudRepository">Dosya yükleme işlemleri için kullanılan repository.</param>
+        /// <param name="chatRepository">Sohbet yönetimi için kullanılan repository.</param>
         public MessageService(IGroupRepository groupRepository, ICloudRepository cloudRepository, IChatRepository chatRepository)
         {
             _groupRepository = groupRepository;
@@ -23,6 +34,17 @@ namespace Mingle.Services.Concrete
         }
 
 
+        /// <summary>
+        /// Bir mesajı gönderir.
+        /// </summary>
+        /// <param name="userId">Mesajı gönderen kullanıcının ID'si.</param>
+        /// <param name="chatId">Mesajın gönderileceği sohbetin ID'si.</param>
+        /// <param name="chatType">Sohbet tipi (Bireysel ya da Grup).</param>
+        /// <param name="dto">Gönderilen mesajın içeriği.</param>
+        /// <returns>Gönderilen mesajın bilgilerini içeren bir tuple.</returns>
+        /// <exception cref="NotFoundException">Sohbet bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı sohbet üzerinde yetkiye sahip değilse fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler için fırlatılır.</exception>
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> SendMessageAsync(string userId, string chatId, string chatType, SendMessage dto)
         {
             var chatParticipants = await _chatRepository.GetChatParticipantsByIdAsync(chatType, chatId) ?? throw new NotFoundException("Sohbet bulunamadı.");
@@ -116,6 +138,19 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bir mesajı siler.
+        /// </summary>
+        /// <param name="userId">Mesajı silen kullanıcının ID'si.</param>
+        /// <param name="chatType">Sohbet tipi (Bireysel ya da Grup).</param>
+        /// <param name="chatId">Sohbetin ID'si.</param>
+        /// <param name="messageId">Silinecek mesajın ID'si.</param>
+        /// <param name="deletionType">Silme türü (0: Sadece kendisi, 1: Herkes için).</param>
+        /// <returns>Silinen mesajın bilgilerini içeren bir tuple.</returns>
+        /// <exception cref="NotFoundException">Mesaj bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı sohbet üzerinde yetkiye sahip değilse fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler için fırlatılır.</exception>
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeleteMessageAsync(string userId, string chatType, string chatId, string messageId, byte deletionType)
         {
             FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));
@@ -186,6 +221,19 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bir mesajın teslim veya okunma durumunu günceller.
+        /// </summary>
+        /// <param name="userId">Durumu güncelleyen kullanıcının ID'si.</param>
+        /// <param name="chatType">Sohbet tipi (Bireysel ya da Grup).</param>
+        /// <param name="chatId">Sohbetin ID'si.</param>
+        /// <param name="messageId">Durumu güncellenecek mesajın ID'si.</param>
+        /// <param name="fieldName">Güncellenecek durum (Delivered veya Read).</param>
+        /// <returns>Güncellenmiş mesajın bilgilerini içeren bir tuple.</returns>
+        /// <exception cref="NotFoundException">Mesaj bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı sohbet üzerinde yetkiye sahip değilse fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz parametreler için fırlatılır.</exception>
         public async Task<(Dictionary<string, Dictionary<string, Dictionary<string, Message>>>, List<string>)> DeliverOrReadMessageAsync(string userId, string chatType, string chatId, string messageId, string fieldName)
         {
             FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"), (messageId, "messageId"));

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mingle.Services.Exceptions
+﻿namespace Mingle.Services.Exceptions
 {
+    /// <summary>
+    /// Erişim engellenmiş durumunda fırlatılan özel hata.
+    /// </summary>
     public sealed class ForbiddenException : Exception
     {
+        /// <param name="message">Hata mesajı.</param>
         public ForbiddenException(string message) : base(message) { }
     }
 }

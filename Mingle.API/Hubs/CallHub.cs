@@ -67,17 +67,6 @@ namespace Mingle.API.Hubs
 
 
 
-        public async Task Initial()
-        {
-            var (calls, callRecipientIds) = await _callService.GetCallLogs(UserId);
-            var recipientProfiles = await _userService.GetUserProfilesAsync(callRecipientIds);
-
-            await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
-            await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
-        }
-
-
-
         /// <summary>
         /// Kullanıcı bağlantısı kesildiğinde çağrılır. Bağlantının neden kesildiği isteğe bağlı bir <see cref="Exception"/> ile sağlanabilir.
         /// </summary>
@@ -87,6 +76,22 @@ namespace Mingle.API.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await base.OnDisconnectedAsync(exception);
+        }
+
+
+
+        /// <summary>
+        /// Kullanıcının çağrı geçmişini ve ilgili alıcı profillerini yükler ve istemciye iletir.
+        /// </summary>
+        /// <returns>Asenkron işlemi temsil eden bir <see cref="Task"/> nesnesi.</returns>
+        /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
+        public async Task Initial()
+        {
+            var (calls, callRecipientIds) = await _callService.GetCallLogs(UserId);
+            var recipientProfiles = await _userService.GetUserProfilesAsync(callRecipientIds);
+
+            await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
+            await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
         }
 
 

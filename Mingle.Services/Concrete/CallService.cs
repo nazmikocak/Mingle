@@ -7,17 +7,34 @@ using Mingle.Services.Utilities;
 
 namespace Mingle.Services.Concrete
 {
+    /// <summary>
+    /// Kullanıcı çağrılarını yöneten servis sınıfıdır.
+    /// Çağrı başlatma, kabul etme, sonlandırma ve çağrı geçmişini getirme gibi işlemleri içerir.
+    /// </summary>
     public sealed class CallService : ICallService
     {
         private readonly ICallRepository _callRepository;
 
 
+
+        /// <summary>
+        /// CallService sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="callRepository">Çağrı işlemleri için kullanılan repository.</param>
         public CallService(ICallRepository callRepository)
         {
             _callRepository = callRepository;
         }
 
 
+        /// <summary>
+        /// Yeni bir çağrı başlatır.
+        /// </summary>
+        /// <param name="userId">Çağrıyı başlatan kullanıcının kimliği.</param>
+        /// <param name="recipientId">Çağrının alıcısının kimliği.</param>
+        /// <param name="callType">Çağrı türü (sesli veya görüntülü).</param>
+        /// <returns>Çağrı kimliği döndürülür.</returns>
+        /// <exception cref="BadRequestException">Kullanıcı başka bir çağrıda ise fırlatılır.</exception>
         public async Task<string> StartCallAsync(string userId, string recipientId, CallType callType)
         {
             FieldValidationHelper.ValidateRequiredFields((recipientId, "recipientId"), (callType.ToString(), "callType"));
@@ -52,6 +69,15 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Kullanıcının gelen bir çağrıyı kabul etmesini sağlar.
+        /// </summary>
+        /// <param name="userId">Çağrıyı kabul eden kullanıcının kimliği.</param>
+        /// <param name="callId">Çağrı kimliği.</param>
+        /// <returns>Asenkron işlemi temsil eden bir <see cref="Task"/> nesnesi.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının çağrı üzerinde yetkisi yoksa fırlatılır.</exception>
         public async Task AcceptCallAsync(string userId, string callId)
         {
             FieldValidationHelper.ValidateRequiredFields((callId, "callId"));
@@ -69,6 +95,17 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bir çağrıyı sonlandırır.
+        /// </summary>
+        /// <param name="userId">Çağrıyı sonlandıran kullanıcının kimliği.</param>
+        /// <param name="callId">Çağrı kimliği.</param>
+        /// <param name="callStatus">Çağrının sonlandırılma durumu.</param>
+        /// <param name="createdDate">Çağrının başlama tarihi.</param>
+        /// <returns>Çağrı bilgilerini içeren bir sözlük döndürülür.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının çağrı üzerinde yetkisi yoksa fırlatılır.</exception>
         public async Task<Dictionary<string, Call>> EndCallAsync(string userId, string callId, CallStatus callStatus, DateTime? createdDate)
         {
             FieldValidationHelper.ValidateRequiredFields((callId, "callId"), (callStatus.ToString(), "callStatus"));
@@ -89,6 +126,15 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Kullanıcının belirli bir çağrıyı silmesini sağlar.
+        /// </summary>
+        /// <param name="userId">Çağrıyı silen kullanıcının kimliği.</param>
+        /// <param name="callId">Silinecek çağrının kimliği.</param>
+        /// <returns>Asenkron işlemi temsil eden bir <see cref="Task"/> nesnesi.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının çağrı üzerinde yetkisi yoksa fırlatılır.</exception>
         public async Task DeleteCallAsync(string userId, string callId)
         {
             FieldValidationHelper.ValidateRequiredFields((callId, "callId"));
@@ -106,6 +152,15 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Belirli bir çağrıya katılan kullanıcıların kimliklerini döndürür.
+        /// </summary>
+        /// <param name="userId">Kullanıcının kimliği.</param>
+        /// <param name="callId">Çağrı kimliği.</param>
+        /// <returns>Çağrıya katılan kullanıcıların kimlik listesi.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcının çağrı üzerinde yetkisi yoksa fırlatılır.</exception>
         public async Task<List<string>> GetCallParticipantsAsync(string userId, string callId)
         {
             var callParticipants = await _callRepository.GetCallParticipantsByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");
@@ -119,6 +174,11 @@ namespace Mingle.Services.Concrete
         }
 
 
+        /// <summary>
+        /// Kullanıcının çağrı geçmişini getirir.
+        /// </summary>
+        /// <param name="userId">Kullanıcının kimliği.</param>
+        /// <returns>Çağrı geçmişi ve alıcı kimliklerini içeren bir tuple döndürür.</returns>
         public async Task<(Dictionary<string, Dictionary<string, Call>>, List<string>)> GetCallLogs(string userId)
         {
             var callSnapshot = await _callRepository.GetCallsAsync();
@@ -151,6 +211,14 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Kullanıcının belirli bir çağrısını getirir.
+        /// </summary>
+        /// <param name="userId">Çağrıyı sorgulayan kullanıcının kimliği.</param>
+        /// <param name="callId">Çağrı kimliği.</param>
+        /// <returns>Çağrı nesnesi.</returns>
+        /// <exception cref="NotFoundException">Çağrı bulunamazsa fırlatılır.</exception>
         public async Task<Call> GetCallAsync(string userId, string callId)
         {
             var call = await _callRepository.GetCallByIdAsync(callId) ?? throw new NotFoundException("Çağrı bulunamadı");

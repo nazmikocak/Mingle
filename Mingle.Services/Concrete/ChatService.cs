@@ -8,6 +8,10 @@ using Mingle.Services.Utilities;
 
 namespace Mingle.Services.Concrete
 {
+    /// <summary>
+    /// Sohbet işlemlerini yöneten servis sınıfıdır.
+    /// Bireysel ve grup sohbetlerinin oluşturulması, görüntülenmesi ve arşivlenmesi gibi işlemleri içerir.
+    /// </summary>
     public sealed class ChatService : IChatService
     {
         private readonly IGroupRepository _groupRepository;
@@ -15,6 +19,13 @@ namespace Mingle.Services.Concrete
         private readonly IUserRepository _userRepository;
 
 
+
+        /// <summary>
+        /// ChatService sınıfının yeni bir örneğini oluşturur.
+        /// </summary>
+        /// <param name="groupRepository">Grup yönetimi için kullanılan repository.</param>
+        /// <param name="chatRepository">Sohbet yönetimi için kullanılan repository.</param>
+        /// <param name="userRepository">Kullanıcı yönetimi için kullanılan repository.</param>
         public ChatService(IGroupRepository groupRepository, IChatRepository chatRepository, IUserRepository userRepository)
         {
             _groupRepository = groupRepository;
@@ -23,6 +34,16 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Yeni bir sohbet oluşturur.
+        /// </summary>
+        /// <param name="userId">Sohbeti başlatan kullanıcının kimliği.</param>
+        /// <param name="chatType">Sohbet türü (bireysel veya grup).</param>
+        /// <param name="recipientId">Sohbetin alıcısının kimliği.</param>
+        /// <returns>Yeni oluşturulmuş sohbeti içeren bir sözlük.</returns>
+        /// <exception cref="NotFoundException">Kullanıcı veya grup bulunamadığında fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Geçersiz sohbet türü verildiğinde fırlatılır.</exception>
         public async Task<Dictionary<string, Chat>> CreateChatAsync(string userId, string chatType, string recipientId)
         {
             FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (recipientId, "recipientId"));
@@ -100,6 +121,12 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Kullanıcının tüm sohbetlerini getirir.
+        /// </summary>
+        /// <param name="userId">Kullanıcının kimliği.</param>
+        /// <returns>Kullanıcının bireysel ve grup sohbetlerini içeren bir sözlük.</returns>
         public async Task<(Dictionary<string, Dictionary<string, Chat>>, List<string>, List<string>)> GetAllChatsAsync(string userId)
         {
             var individualChatsTask = _chatRepository.GetChatsAsync("Individual");
@@ -166,6 +193,16 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bir sohbeti temizler.
+        /// </summary>
+        /// <param name="userId">Sohbeti temizleyen kullanıcının kimliği.</param>
+        /// <param name="chatType">Sohbet türü (bireysel veya grup).</param>
+        /// <param name="chatId">Temizlenecek sohbetin kimliği.</param>
+        /// <returns>Temizlenmiş sohbeti içeren bir sözlük.</returns>
+        /// <exception cref="NotFoundException">Sohbet bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı yetkisi olmadığında fırlatılır.</exception>
         public async Task<Dictionary<string, Dictionary<string, Chat>>> ClearChatAsync(string userId, string chatType, string chatId)
         {
             FieldValidationHelper.ValidateRequiredFields((chatType, "chatType"), (chatId, "chatId"));
@@ -204,6 +241,16 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bireysel sohbeti arşivler.
+        /// </summary>
+        /// <param name="userId">Sohbeti arşivleyen kullanıcının kimliği.</param>
+        /// <param name="chatId">Arşivlenecek sohbetin kimliği.</param>
+        /// <returns>Arşivleme işlemini içeren bir sözlük.</returns>
+        /// <exception cref="NotFoundException">Sohbet bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı yetkisi olmadığında fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Sohbet zaten arşivlenmişse fırlatılır.</exception>
         public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> ArchiveIndividualChatAsync(string userId, string chatId)
         {
             FieldValidationHelper.ValidateRequiredFields((chatId, chatId));
@@ -234,6 +281,16 @@ namespace Mingle.Services.Concrete
         }
 
 
+
+        /// <summary>
+        /// Bireysel sohbeti arşivden çıkarır.
+        /// </summary>
+        /// <param name="userId">Sohbeti arşivden çıkaran kullanıcının kimliği.</param>
+        /// <param name="chatId">Arşivden çıkarılacak sohbetin kimliği.</param>
+        /// <returns>Arşivden çıkarma işlemini içeren bir sözlük.</returns>
+        /// <exception cref="NotFoundException">Sohbet bulunamadığında fırlatılır.</exception>
+        /// <exception cref="ForbiddenException">Kullanıcı yetkisi olmadığında fırlatılır.</exception>
+        /// <exception cref="BadRequestException">Sohbet zaten arşivde değilse fırlatılır.</exception>
         public async Task<Dictionary<string, Dictionary<string, Dictionary<string, DateTime>>>> UnarchiveIndividualChatAsync(string userId, string chatId)
         {
             FieldValidationHelper.ValidateRequiredFields((chatId, "chatId"));
