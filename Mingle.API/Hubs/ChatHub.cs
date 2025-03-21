@@ -67,30 +67,11 @@ namespace Mingle.API.Hubs
 
         /// <summary>
         /// Kullanıcı hub'a bağlandığında tetiklenen metod.
-        /// Kullanıcıya ait tüm sohbetler, grup profilleri ve alıcı profilleri çekilir ve istemciye iletilir.
         /// </summary>
         /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public override async Task OnConnectedAsync()
         {
-            var chatsTask = _chatService.GetAllChatsAsync(UserId);
-            var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
-
-            var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
-            var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
-
-            var recipientProfiles = await recipientProfilesTask;
-            var groupProfiles = await groupProfilesTask;
-
-            var sendTasks = new[]
-            {
-                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialChats", chats),
-                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
-                Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
-            };
-
-            await Task.WhenAll(sendTasks);
-
             await base.OnConnectedAsync();
         }
 
@@ -104,6 +85,29 @@ namespace Mingle.API.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await base.OnDisconnectedAsync(exception);
+        }
+
+
+
+        public async Task Initial() 
+        {
+            var chatsTask = _chatService.GetAllChatsAsync(UserId);
+            var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
+
+            var recipientProfilesTask = _userService.GetRecipientProfilesAsync(chatsRecipientIds);
+            var groupProfilesTask = _groupService.GetGroupProfilesAsync(userGroupIds);
+
+            var recipientProfiles = await recipientProfilesTask;
+            var groupProfiles = await groupProfilesTask;
+
+            var sendTasks = new[]
+            {
+                Clients.Caller.SendAsync("ReceiveInitialChats", chats),
+                Clients.Caller.SendAsync("ReceiveInitialGroupProfiles", groupProfiles),
+                Clients.Caller.SendAsync("ReceiveInitialRecipientChatProfiles", recipientProfiles),
+            };
+
+            await Task.WhenAll(sendTasks);
         }
 
 

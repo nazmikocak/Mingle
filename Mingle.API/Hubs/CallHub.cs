@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
 using Mingle.Services.Abstract;
+using Mingle.Services.Concrete;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -55,19 +56,24 @@ namespace Mingle.API.Hubs
 
 
         /// <summary>
-        /// Kullanıcı bağlantısı kurulduğunda çağrılır. Kullanıcının önceki çağrı geçmişi ve alıcı profilleri istemciye iletilir.
+        /// Kullanıcı bağlantısı kurulduğunda çağrılır.
         /// </summary>
         /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public override async Task OnConnectedAsync()
         {
+            await base.OnConnectedAsync();
+        }
+
+
+
+        public async Task Initial()
+        {
             var (calls, callRecipientIds) = await _callService.GetCallLogs(UserId);
             var recipientProfiles = await _userService.GetUserProfilesAsync(callRecipientIds);
 
-            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialCalls", calls);
-            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
-
-            await base.OnConnectedAsync();
+            await Clients.Caller.SendAsync("ReceiveInitialCalls", calls);
+            await Clients.Caller.SendAsync("ReceiveInitialCallRecipientProfiles", recipientProfiles);
         }
 
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Services.Abstract;
+using Mingle.Services.Concrete;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -50,17 +51,23 @@ namespace Mingle.API.Hubs
 
 
         /// <summary>
-        /// Kullanıcı bağlantı kurduğunda çağrılır. Kullanıcının son bağlantı tarihini günceller ve diğer kullanıcılara bildirir.
+        /// Kullanıcı bağlantı kurduğunda çağrılır.
         /// </summary>
         /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
         /// <exception cref="Exception">Bağlantı kurulurken bir hata oluşursa fırlatılır.</exception>
         public override async Task OnConnectedAsync()
         {
+            await base.OnConnectedAsync();
+        }
+
+
+
+        public async Task Initial()
+        {
             DateTime lastConnectionDate = DateTime.MinValue;
             await _userService.UpdateLastConnectionDateAsync(UserId, lastConnectionDate!);
 
             await Clients.Others.SendAsync("ReceiveRecipientProfiles", new Dictionary<string, Dictionary<string, DateTime>> { { UserId, new Dictionary<string, DateTime> { { "lastConnectionDate", lastConnectionDate } } } });
-            await base.OnConnectedAsync();
         }
 
 
