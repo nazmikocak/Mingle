@@ -73,6 +73,24 @@ namespace Mingle.API.Hubs
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public override async Task OnConnectedAsync()
         {
+            await base.OnConnectedAsync();
+        }
+
+
+
+        /// <summary>
+        /// Kullanıcı hub'dan ayrıldığında tetiklenen metod.
+        /// </summary>
+        /// <param name="exception">Bağlantı sırasında oluşan hata (varsa).</param>
+        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            await base.OnDisconnectedAsync(exception);
+        }
+
+
+        public async Task Test() 
+        {
             var chatsTask = _chatService.GetAllChatsAsync(UserId);
             var (chats, chatsRecipientIds, userGroupIds) = await chatsTask;
 
@@ -90,22 +108,7 @@ namespace Mingle.API.Hubs
             };
 
             await Task.WhenAll(sendTasks);
-
-            await base.OnConnectedAsync();
         }
-
-
-
-        /// <summary>
-        /// Kullanıcı hub'dan ayrıldığında tetiklenen metod.
-        /// </summary>
-        /// <param name="exception">Bağlantı sırasında oluşan hata (varsa).</param>
-        /// <returns>Bir <see cref="Task"/> nesnesi döner.</returns>
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {
-            await base.OnDisconnectedAsync(exception);
-        }
-
 
 
         /// <summary>
