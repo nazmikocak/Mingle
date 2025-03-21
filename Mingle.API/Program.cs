@@ -45,7 +45,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("https://mingleweb.netlify.app")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              .SetIsOriginAllowed(origin => true);
     });
 });
 
