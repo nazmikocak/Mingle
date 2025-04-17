@@ -35,107 +35,95 @@ This project serves as an example of how **real-time messaging, group chats, mul
 - Quick registration using **Google** and **Facebook**.
 - Password reset via email.
 - JWT based secure login.
-___
-
+   
 ### 💬 **Real-Time Messaging**
 - Real-time **group** and **individual** messaging support.
 - Message **status** tracking (sent, delivered, read).
 - AI-integrated response generation.
 - File and media attachment support.
 - Options to **delete** and **copy** messages.
-___
-
+   
 ### 📞 **Voice and Video Calls** 📱🎥
 - One-to-one voice and video calls with registered users.
 - Mute microphone and toggle speaker on/off.
 - Call logs tracked with status and type.
-___
-
+   
 ### ✨ **AI-Generated Content**
 - Integrated with external AI models (Gemini, Flux, Artples, Compvis).
 - **Text & image** generation via API endpoints.
 - **Rebuilding**, **liking** and **copying** AI responses.
-___
-
+   
 ### 🧾 **Call Logs and Archives**  
 - Full call history tracking that can be cleared on demand.
 - **Archiving** and **unarchiving** options for individual chats.
-___
-
+   
 ### 👥 **Group Management**  
 - Group creation and **role-based** permissions.
 - Group admin controls (add, remove, update roles).
 - Ability to **leave** the group at any time.
-___
-
+   
 ### ☁️ **Media & File Uploads**  
 - **File processing** for optimized delivery.
 - MIME/type validation, secure upload, and retrieval.
 - Supported: **DOC, XLSX, TXT, ZIP, MP3, WEBP, PNG etc**.
-___
-
+   
 ### 🔧 **Configuration and Error Handling**  
 - Field/File validation helpers.
 - **Clean** and **scalable** structure.
 - Global exception handling through dedicated exception middleware.
-___
-
+   
 ### ⚙️ **Settings**
 - User account management.
 - Theme customization. 
 - Security settings.
 - Help & support
-___
-
+   
 ### 🔑 **Message Encryption**
 - **End-to-end encryption** for secure communication.
 - All chat messages are encrypted for enhanced privacy.
-___
-
+   
 ### 🔍 **Search**
 - Search for specific users, groups, calls, and archives.
-___
-
+   
 ### 📱 **Device Compatibility**  
 - Works well on both **desktop** and **mobile devices**.  
 - Adjusts to different screen sizes for a smooth experience.  
-___
-
+   
 ![369714386-693d2a0b-b493-4e18-befa-da1365294af0](https://github.com/user-attachments/assets/03ca933f-35ce-420b-9412-9e56917543e0)
 
 ### 🖥️ **ASP.NET Core Web API**
 ASP.NET is a robust framework for building backend APIs. It serves as the backbone of this project, handling data processing, user authentication, and real-time communication with the frontend.
-
+   
 ### ⚛️ **React**
 React is a JavaScript library for building user interfaces. It helps create dynamic and reusable components, enhancing the user experience and making the application more maintainable.
-
+   
 ### 🎨 **Sass/SCSS**
 Sass/SCSS is a powerful and organized version of CSS. It provides advanced features like variables, nesting, and mixins, helping to structure and maintain large-scale CSS more effectively.
-
+   
 ### 🔑 **Firebase Authentication**
 Firebase Authentication is used to handle user authentication securely. It allows users to sign up and log in using email/password or third-party services like Google and Facebook.
-
+   
 ### 🔥 **Firebase Realtime Database**
 Firebase Realtime Database enables real-time synchronization of data across all clients. It is used to store and manage user data, chat history, call logs, and group records efficiently.
-
+   
 ### ☁️ **Cloudinary**
 Cloudinary is a powerful cloud-based media management service used for storing, optimizing, and delivering images and files. In this project, it handles media uploads, transformations, and fast content delivery, ensuring efficient and scalable asset management.
-
+   
 ### 🔌 **WebSocket**
 WebSocket provides full-duplex communication channels over a single TCP connection, enabling real-time, bidirectional communication between the frontend and backend, crucial for live messaging and updates.
-
+   
 ### 🎥 **WebRTC**
 WebRTC enables real-time peer-to-peer communication, including voice and video calls. It allows users to connect with each other seamlessly for interactive communication.
-
+   
 ### ⚡ **Vite**
 Vite is a fast and efficient build tool for modern web projects. It enables quick reload and builds, improving the development workflow and integrating smoothly with React.
-
+   
 ### 🌐 **Netlify**
 Netlify is a platform for deploying and hosting the project. It automates the deployment process, ensuring the app is live and served securely on the web.
 
 ### 🗄️ **Monster ASP.NET**
 It is a platform focused on hosting ASP.NET and .NET Core applications. It automates the deployment process, ensuring the app is live and served securely on the web.
-
+   
 ![projectdependencies](https://github.com/user-attachments/assets/6448ea9b-da46-40e1-b4a5-b039ac4ec629)
 
 ### 📁 **Mingle.API**
@@ -380,7 +368,7 @@ This phase is crucial because it ensures the application keeps evolving to meet 
 
 - **Developers**:  
   The **backend** of the project was developed by **Nazmi KOÇAK**. For more information about the developer, please visit the [LinkedIn profile](https://www.linkedin.com/in/nazmikocak/).  
-  The **frontend** of the project was developed by **Hamza Ali DOĞAN**. For more details, you can visit the [backend repository](https://github.com/HamzaDogann/Mingle).  
+  The **frontend** of the project was developed by **Hamza Ali DOĞAN**. For more details, you can visit the [frontend repository](https://github.com/HamzaDogann/Mingle).  
 
 - **Feedback and Support**:  
   If you have any feedback or need support, feel free to contact me at [nazmikocak.dev@hotmail.com].  
