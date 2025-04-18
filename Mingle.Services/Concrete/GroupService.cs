@@ -61,7 +61,7 @@ namespace Mingle.Services.Concrete
             }
             else
             {
-                photoUrl = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1734185322/DefaultGroupProfileImage.png");
+                photoUrl = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1744980063/DefaultGroupProfileImage_mikyya.png");
             }
 
             var group = new Group
@@ -169,7 +169,7 @@ namespace Mingle.Services.Concrete
                 }
                 else
                 {
-                    photoUrl = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1734185322/DefaultGroupProfileImage.png");
+                    photoUrl = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1744980063/DefaultGroupProfileImage_mikyya.png");
                 }
             }
 

@@ -117,7 +117,7 @@ namespace Mingle.Services.Concrete
         /// <returns>Varsayılan fotoğraf URL'sini içeren bir <see cref="Uri"/>.</returns>
         public async Task<Uri> RemoveProfilePhotoAsync(string userId)
         {
-            var defaultPhoto = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1734185072/DefaultUserProfilePhoto.png");
+            var defaultPhoto = new Uri("https://res.cloudinary.com/mingle-realtime-messaging-app/image/upload/v1744980054/DefaultUserProfilePhoto_bfx3gw.png");
             await _userRepository.UpdateUserFieldAsync(userId, "ProfilePhoto", defaultPhoto);
 
             return defaultPhoto;
