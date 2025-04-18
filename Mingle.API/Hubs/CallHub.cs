@@ -1,10 +1,7 @@
-﻿using Firebase.Database;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
-using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
-using Mingle.Services.Concrete;
 using Mingle.Services.Exceptions;
 using System.Security.Claims;
 
@@ -92,7 +89,7 @@ namespace Mingle.API.Hubs
 
                         await Clients.User(callParticipants[i]).SendAsync("ReceiveEndCall", new Dictionary<string, object>
                         {
-                            { "call", call },
+                            { "call", endCall },
                             { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }
                         }
                         );
