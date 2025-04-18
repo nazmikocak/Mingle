@@ -205,7 +205,7 @@ All API endpoints were designed following RESTful principles and made documentab
 
 This comprehensive database design ensures that the real-time nature of the application is supported by a high-performance data layer.
 
-![Frame 223 (3)](https://github.com/user-attachments/assets/ba0f52eb-8409-4942-99b4-880a9745e304)
+![image](https://github.com/user-attachments/assets/1976bd58-4dcc-422a-9b6a-fef5a3d42f7f)
 ___
 
 ### **5. Choosing Technologies to Meet Project Requirements**
