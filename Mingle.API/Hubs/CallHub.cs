@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mingle.Entities.Enums;
+using Mingle.Entities.Models;
 using Mingle.Services.Abstract;
 using Mingle.Services.Concrete;
 using Mingle.Services.Exceptions;
@@ -75,6 +76,29 @@ namespace Mingle.API.Hubs
         /// <exception cref="Exception">Beklenmedik bir hata oluşursa fırlatılır.</exception>
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            var (calls,_) = await _callService.GetCallLogs(UserId);
+
+            foreach (var call in calls.Values.First())
+            {
+                if (call.Value.Status.Equals(CallStatus.Ongoing))
+                {
+                    var endCall = await _callService.EndCallAsync(UserId, call.Key, CallStatus.Accepted, DateTime.UtcNow);
+                    var callParticipants = endCall.Values.First().Participants;
+                    var recipientProfiles = await _userService.GetUserProfilesAsync(callParticipants);
+
+                    for (int i = 0; i < callParticipants.Count; i++)
+                    {
+                        var profileToSend = callParticipants[i].Equals(UserId) ? recipientProfiles[callParticipants[1]] : recipientProfiles[UserId];
+
+                        await Clients.User(callParticipants[i]).SendAsync("ReceiveEndCall", new Dictionary<string, object>
+                        {
+                            { "call", call },
+                            { profileToSend.Equals(recipientProfiles[callParticipants[1]]) ? callParticipants[1] : UserId, profileToSend }
+                        }
+                        );
+                    }
+                }
+            }
             await base.OnDisconnectedAsync(exception);
         }
 
